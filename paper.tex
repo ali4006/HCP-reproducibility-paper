@@ -1,0 +1,69 @@
+\documentclass{article}
+
+\usepackage{pdfcomment}
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
+\newcommand{\todo}[2]{\pdfmargincomment[color=red,author=#1,open=true]{#2}}
+
+\title{Reproducibility of HCP pipelines across operating systems}
+
+\author{Lalet Scaria, Lindsay B. Lewis, Tristan Glatard}
+
+\begin{document}
+
+\maketitle
+
+\abstract{This paper is a reproducibility study of the work in~\cite{glasser2015multi}.}
+
+\section{Introduction}
+
+Groenschild \emph{et al.} first identified the effect of operating
+systems on Freesurfer
+results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} we
+quantified this effect on some of the main neuroimaging pipelines
+including several FSL pipelines, CIVET and Freesurfer. In this work we
+aim at evaluating this effect on the work in~\cite{glasser2015multi}.
+
+\section{Materials and Methods}
+
+\subsection{General framework}
+
+We installed the pipelines in three versions of Linux using Docker containers.
+
+Data: report on versions and subjects used.
+
+We integrated the pipelines in CBRAIN through the Boutiques system.
+
+We executed the pipelines on Compute Canada.
+
+\subsection{Minimal pre-processing pipelines}
+
+Described in~\cite{glasser2013minimal}.
+
+Report on versions used and any other specificity such as dependencies (e.g. explain why they depend on gcc).
+
+\subsection{Results comparisons}
+
+Describe the scripts that will be written to compare results.
+
+\section{Results}
+
+Show results of the comparison.
+
+\section{Discussion}
+
+Discuss the results.
+
+\section{Conclusion}
+
+Conclude and highlight future work.
+
+\section{Acknowledgments}
+
+CBRAIN team. Compute Canada.
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
