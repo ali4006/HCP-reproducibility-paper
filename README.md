@@ -1,5 +1,5 @@
 # HCP-reproducibility-paper
-A paper for the HCP reproducibility paper
+A repository for the HCP reproducibility paper
 
 ## How to contribute
 
