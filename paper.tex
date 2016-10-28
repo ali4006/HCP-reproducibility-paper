@@ -8,7 +8,7 @@
 
 \title{Reproducibility of HCP pipelines across operating systems}
 
-\author{Lalet Scaria, Lindsay B. Lewis, Tristan Glatard}
+\author{Lalet Scaria, Lindsay B. Lewis, Alan C. Evans, Tristan Glatard}
 
 \begin{document}
 
@@ -27,29 +27,45 @@ aim at evaluating this effect on the work in~\cite{glasser2015multi}.
 
 \section{Materials and Methods}
 
-\subsection{General framework}
-
-We installed the pipelines in three versions of Linux using Docker containers.
+\subsection{Dataset}
 
 Data: report on versions and subjects used.
-
-We integrated the pipelines in CBRAIN through the Boutiques system.
-
-We executed the pipelines on Compute Canada.
 
 \subsection{Minimal pre-processing pipelines}
 
 Described in~\cite{glasser2013minimal}.
 
-We developed our own FSL installer to be able to customize easily the FSL version and build (the script provided by FSL installs the latest version by default).
+We installed the pipelines in three versions of Linux using Docker
+containers. Refer to (immutable) version of containers used. Make sure
+the exact same containers are used for all subjects (no rebuild as
+rebuild would trigger package update). For each execution, we
+monitored the list of packages used with versions.
 
-Report on versions used and any other specificity such as dependencies (e.g. explain why they depend on gcc).
+We integrated the pipelines in CBRAIN through the Boutiques system.
+
+\paragraph{Hardware.} We executed the pipelines on Compute Canada
+using the Guillimin cluster of Calcul Qu\'ebec. We monitored the
+hardware used (CPU and memory). 
+
+\paragraph{FSL installation.} We developed our own FSL installer to be
+able to customize easily the FSL version and build (the script
+provided by FSL installs the latest version by default). We used FSL
+5.0.6, built for CentOS5 and CentOS6.
+
+\paragraph{Execution.} The pipeline was launched twice in the same
+environment to detect any use of pseudo-random numbers. We
+made sure that the results produced by these two executions were
+identical.
 
 \subsection{Results comparisons}
 
 Describe the scripts that will be written to compare results.
 
 \section{Results}
+
+Show lists of packages used with version. Focus on important
+differences (e.g.: python interpreter, gcc if relevant) and explain
+why these packages are important.
 
 Show results of the comparison.
 
