@@ -76,6 +76,19 @@ identical.
 
 Describe the scripts that will be written to compare results.
 
+
+Safeguards:
+\begin{itemize}
+\item Checksums to detect file corruption.
+\item Each task works on its own copy of the input files to avoid race conditions in case pipeline modifies its inputs.
+\item Hardware information is captured to make sure that differences are not coming from, e.g., different CPUs (when on cluster).
+\item Checksum of Docker container is recorded to make sure that the same container was used all over.
+\item Multiple runs are executed per condition to detect potential intra-condition differences (e.g., use of pseudo-random numbers).
+\end{itemize}
+
+Describe how metrics (distances?) are associated to file types (based on regexp) and used to compute distance matrices.
+
+
 \section{Results}
 
 Show lists of packages used with version. Focus on important
