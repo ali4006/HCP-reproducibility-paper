@@ -72,22 +72,30 @@ environment to detect any use of pseudo-random numbers. We
 made sure that the results produced by these two executions were
 identical.
 
-\subsection{Results comparisons}
+\subsection{File comparisons}
 
 Describe the scripts that will be written to compare results.
-
 
 Safeguards:
 \begin{itemize}
 \item Checksums to detect file corruption.
 \item Each task works on its own copy of the input files to avoid race conditions in case pipeline modifies its inputs.
 \item Hardware information is captured to make sure that differences are not coming from, e.g., different CPUs (when on cluster).
-\item Checksum of Docker container is recorded to make sure that the same container was used all over.
+\item Checksum of Docker container is recorded to make sure that the same container was used all over. Also, list of packages with versions is printed for every task. 
 \item Multiple runs are executed per condition to detect potential intra-condition differences (e.g., use of pseudo-random numbers).
 \end{itemize}
 
-Describe how metrics (distances?) are associated to file types (based on regexp) and used to compute distance matrices.
+Describe how metrics (distances?) are associated to file types (based on regexp) and used to compute distance matrices. Including metrics to implement the safeguards. Report comparison algorithm (see Google Drive).
 
+\subsection{Pipeline analysis}
+
+Once differences between conditions are quantified, we automatically identify the steps in the pipeline responsible for such differences as follows:
+\begin{itemize}
+\item Capture the execution trace using reprozip (based on system-call interception).
+\item Query the reprozip trace to retrieve the executable(s) that wrote in a given file.
+\end{itemize}
+
+% Could also identify the steps in the pipeline that amplified/reduced differences.
 
 \section{Results}
 
