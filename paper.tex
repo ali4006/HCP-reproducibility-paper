@@ -87,7 +87,7 @@ For the creation of Docker container contianer the HCP Pipelines, there are a fe
 
 \paragraph{PreFreeSurfer Installation}
 From the base image of the centos versions 5, 6 and 7, we created docker containers containing all the necessary libraries and softwares needed for the PreFreeSurfer Pipelines.A list of software packages installed in the docker container is available at (https://github.com/lalet/Dockerfiles/blob/master/Dockerfile.exec-centos5.fslbuild-centos5). CentOS-5 , yum repos are no longer supported, so we had to bypass the repo url to enable the software installation. Numpy library had to be installed separately after RPM rebuilt command since normal installation of numpy was throwing error. To install FMRIB Library a separate installation script was written (https://github.com/lalet/Dockerfiles/blob/master/myFslInstallerScript.sh) which would install the required FMRIB Library based on the input parameters. HCP pipeline version 3.19.0 is used for the study. Humanconnectome workbenchversion 1.2.3 is also installed in the docker directory. Environment variables needed for the functioning of FMRBI and HCP Pipelines are added later on.
-A few scripts are also added to the image. They are,
+Below listed scripts are also added to the image. They are,
 \begin{itemize}
   \item monitor.sh - For monitoring the hardware details and software library versions
   \item create-execution.sh for keeping the input directories unmodified and thus preventing modification of input files.
