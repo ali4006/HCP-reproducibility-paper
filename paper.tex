@@ -74,6 +74,19 @@ environment to detect any use of pseudo-random numbers. We
 made sure that the results produced by these two executions were
 identical.
 
+\subsection{FreeSurfer Docker container}
+
+For the creation of Docker container contianer the FreeSurfer Pipelines, there are a few prerequisites. They are
+
+\begin{itemize}
+  \item 64 Bit Operating System (We chose Centos 5, 6 and 7)
+  \item FMRIB Software Library(a.k.a FSL) version 5.0.6 (An installation script was developed for this)
+  \item Freesurfer version 5.3.0-HCP
+  \item Connectome Workbench
+\end{itemize}
+
+Out of the images having PreFreeSurfer and environment variables available in Dockerhub(https://hub.docker.com/u/bigdatalabteam/dashboard/), we installed FreeSurfer. FreeSurfer(ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/5.3.0-HCP/freesurfer-Linux-centos4\_x86\_64-stable-pub-v5.3.0-HCP.tar.gz) was used for installation. SetUpFreeSurfer script should be sourced before running the FreeSurferPipelineBatch script. There were a few missing libraries that are added using yum to the base image o f the centos since these libraries are used by FreeSurfer Pipeline. The images which are input to the FreeSurfer should be processed using PreFreeSurfer. FreeSurfer needs a license number which is obtained from the FreeSurfer site and it is essential for smooth functioning of FreeSurfer. 
+
 \subsection{Results comparisons}
 
 Describe the scripts that will be written to compare results.
