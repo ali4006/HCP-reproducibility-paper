@@ -74,9 +74,9 @@ environment to detect any use of pseudo-random numbers. We
 made sure that the results produced by these two executions were
 identical.
 
-\subsection{FreeSurfer Docker container}
+\paragraph{HCP Pipelines}
 
-For the creation of Docker container contianer the FreeSurfer Pipelines, there are a few prerequisites. They are
+For the creation of Docker container contianer the HCP Pipelines, there are a few prerequisites. They are
 
 \begin{itemize}
   \item 64 Bit Operating System (We chose Centos 5, 6 and 7)
@@ -85,7 +85,19 @@ For the creation of Docker container contianer the FreeSurfer Pipelines, there a
   \item Connectome Workbench
 \end{itemize}
 
-Out of the images having PreFreeSurfer and environment variables available in Dockerhub(https://hub.docker.com/u/bigdatalabteam/dashboard/), we installed FreeSurfer. FreeSurfer(ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/5.3.0-HCP/freesurfer-Linux-centos4\_x86\_64-stable-pub-v5.3.0-HCP.tar.gz) was used for installation. SetUpFreeSurfer script should be sourced before running the FreeSurferPipelineBatch script. There were a few missing libraries that are added using yum to the base image o f the centos since these libraries are used by FreeSurfer Pipeline. The images which are input to the FreeSurfer should be processed using PreFreeSurfer. FreeSurfer needs a license number which is obtained from the FreeSurfer site and it is essential for smooth functioning of FreeSurfer. 
+\paragraph{PreFreeSurfer Installation}
+From the base image of the centos versions 5, 6 and 7, we created docker containers containing all the necessary libraries and softwares needed for the PreFreeSurfer Pipelines.A list of software packages installed in the docker container is available at (https://github.com/lalet/Dockerfiles/blob/master/Dockerfile.exec-centos5.fslbuild-centos5). CentOS-5 , yum repos are no longer supported, so we had to bypass the repo url to enable the software installation. Numpy library had to be installed separately after RPM rebuilt command since normal installation of numpy was throwing error. To install FMRIB Library a separate installation script was written (https://github.com/lalet/Dockerfiles/blob/master/myFslInstallerScript.sh) which would install the required FMRIB Library based on the input parameters. HCP pipeline version 3.19.0 is used for the study. Humanconnectome workbenchversion 1.2.3 is also installed in the docker directory. Environment variables needed for the functioning of FMRBI and HCP Pipelines are added later on.
+A few scripts are also added to the image. They are,
+\begin{itemize}
+  \item monitor.sh - For monitoring the hardware details and software library versions
+  \item create-execution.sh for keeping the input directories unmodified and thus preventing modification of input files.
+  \item checksums.sh - To make sure that the files are not corrupted while transferring or processing the subjects.
+  \item command-line-script.sh - For submitting the PreFreeSurfer Pipeline script with the right paramets.
+\end{itemize}
+
+
+\paragraph{FreeSurfer Installation}
+Out of the images having PreFreeSurfer and environment variables available in Dockerhub(https://hub.docker.com/u/bigdatalabteam/dashboard/), we installed FreeSurfer. FreeSurfer(ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/5.3.0-HCP/freesurfer-Linux-centos4\_x86\_64-stable-pub-v5.3.0-HCP.tar.gz) was used for installation. SetUpFreeSurfer script should be sourced before running the FreeSurferPipelineBatch script. There were a few missing libraries that are added using yum to the base image of the centos since these libraries are used by FreeSurfer Pipeline. The images which are input to the FreeSurfer should be processed using PreFreeSurfer. FreeSurfer needs a license number which is obtained from the FreeSurfer site and it is essential for smooth functioning of FreeSurfer. 
 
 \subsection{Results comparisons}
 
