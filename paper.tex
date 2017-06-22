@@ -19,9 +19,8 @@
 \section{Introduction}
 
 Groenschild \emph{et al.} first identified the effect of operating
-systems on Freesurfer
-results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} we
-quantified this effect on some of the main neuroimaging pipelines
+systems on Freesurfer results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} 
+we quantified this effect on some of the main neuroimaging pipelines
 including several FSL pipelines, CIVET and Freesurfer. In this work we
 aim at evaluating this effect on the work in~\cite{glasser2015multi}.
 
@@ -38,6 +37,13 @@ Reproducibility has several other aspects, see, e.g.,
 
 \section{Materials and Methods}
 \begin{itemize}
+\subsection{Operating System and Applications} 
+Since we are conducting a study on the influence of the changes in operating system and the underlying libraries on the biological images,we chose different versions of CentOS. CentOS is a community-driven  free software effort focused on delivering a roubust open source ecosystem. CentOS focuses on development of framework for cloud providers, the hosting community, and scientific data processing.\cite{https://www.centos.org/about/} The different versions chosen we selected for our study are centos5.11, centos6.8 and centos7.2.1511. These images are available in the official centos \url{https://hub.docker.com/\_/centos/} docker repository.
+
+These operating system versions are base images. A base image is the image that is used to create all of your container images\url{https://www.ibm.com/support/knowledgecenter/en/SS6PEW\_9.5.0/com.ibm.help.install.omsoftware.doc/installation/c\_DockerBaseImage.html}. On top of the base images, the required software libraries were installed to create containers having all the required prerequisites and softwares.
+
+Human Connectome Project\cite{The WU-Minn Human Connectome Project: An Overview} is a consortium led by Washington University, University of Minnesota, and Oxford University is undertaking a systematic effort to map macroscopic human brain circuits and their relationship to behavior in a large population of healthy adults.
+
   \item{verifyFiles Script}
   \item{Input parameters}
   \item{Working}
@@ -48,11 +54,11 @@ Reproducibility has several other aspects, see, e.g.,
   \item{Ignored files}
   \item{checksums-before-after}
   \item{monitor.txt}
-  \item{metrices}
+  \item{Metrices}
   \item{Describe how the reference file was processed,"docker run -it --rm --security-opt seccomp=unconfined -w /data -v /home/lscaria/BigDataLab:/data 8eeec0517441 /bin/bash"}
-  \item{hardware-monitor metric}
+  \item{Hardware-monitor metric}
   \item{Distance using fslmats,nibabel}
-  \item{corruption check flag}
+  \item{Corruption check flag}
 \end{itemize}
 \subsection{Dataset}
 
