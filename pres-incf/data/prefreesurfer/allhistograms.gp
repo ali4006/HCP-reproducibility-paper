@@ -7,7 +7,7 @@ set term png
 bin_width = 0.01;
 set xlabel "NRMSE"
 set ylabel "No. of Files"
-set yrange [0:500]
+set yrange [0:200]
 set xrange [0:.2]
 # Each bar is half the (visual) width of its x-range.
 set boxwidth 0.01
@@ -45,4 +45,4 @@ plot 'distortion.dat' using (rounded($1)):(1) smooth frequency with boxes
 # prefreesurfer
 set output "prefreesurfer.png"
 set title "Prefreesurfer"
-plot 'prefreesurfer.txt' using (rounded($1)):(1) smooth frequency with boxes
+plot 'prefreesurfer.dat' using (rounded($1)):(1) smooth frequency with boxes
