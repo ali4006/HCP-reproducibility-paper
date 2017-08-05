@@ -33,7 +33,13 @@ in~\cite{diethelm2012limits} mentions reproducibility issues coming
 from parallelization.
 
 Reproducibility has several other aspects, see, e.g.,
-\url{https://medium.com/@lorenaabarba/barba-group-reproducibility-syllabus-e3757ee635cf#.ty3zmgd4k}/
+\url{https://medium.com/@lorenaabarba/barba-group-reproducibility-syllabus-e3757ee635cf#.ty3zmgd4k}
+
+James P Turner, speaker in INCF 2016 Track B, is looking at numerical stability on GPUs. And reproducibility.
+
+For an overview of variability accross analysis methods in fMRI, see \url{http://journal.frontiersin.org/article/10.3389/fnins.2012.00149/full}.
+
+For a general overview in fMRI, see \url{http://www.nature.com/nrn/journal/vaop/ncurrent/box/nrn.2016.167_BX3.html}
 
 \section{Materials and Methods}
 \begin{itemize}
@@ -122,8 +128,30 @@ Below listed scripts are also added to the image. They are,
 Out of the images having PreFreeSurfer and environment variables available in Dockerhub(https://hub.docker.com/u/bigdatalabteam/dashboard/), we installed FreeSurfer. FreeSurfer(ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/5.3.0-HCP/freesurfer-Linux-centos4\_x86\_64-stable-pub-v5.3.0-HCP.tar.gz) was used for installation. SetUpFreeSurfer script should be sourced before running the FreeSurferPipelineBatch script. There were a few missing libraries that are added using yum to the base image of the centos since these libraries are used by FreeSurfer Pipeline. The images which are input to the FreeSurfer should be processed using PreFreeSurfer. FreeSurfer needs a license number which is obtained from the FreeSurfer site and it is essential for smooth functioning of FreeSurfer. 
 
 \subsection{Results comparisons}
+\subsection{File comparisons}
 
 Describe the scripts that will be written to compare results.
+
+Safeguards:
+\begin{itemize}
+\item Checksums to detect file corruption.
+\item Each task works on its own copy of the input files to avoid race conditions in case pipeline modifies its inputs.
+\item Hardware information is captured to make sure that differences are not coming from, e.g., different CPUs (when on cluster).
+\item Checksum of Docker container is recorded to make sure that the same container was used all over. Also, list of packages with versions is printed for every task. 
+\item Multiple runs are executed per condition to detect potential intra-condition differences (e.g., use of pseudo-random numbers).
+\end{itemize}
+
+Describe how metrics (distances?) are associated to file types (based on regexp) and used to compute distance matrices. Including metrics to implement the safeguards. Report comparison algorithm (see Google Drive).
+
+\subsection{Pipeline analysis}
+
+Once differences between conditions are quantified, we automatically identify the steps in the pipeline responsible for such differences as follows:
+\begin{itemize}
+\item Capture the execution trace using reprozip (based on system-call interception).
+\item Query the reprozip trace to retrieve the executable(s) that wrote in a given file.
+\end{itemize}
+
+% Could also identify the steps in the pipeline that amplified/reduced differences.
 
 \section{Results}
 
@@ -136,6 +164,10 @@ Show results of the comparison.
 \section{Discussion}
 
 Discuss the results.
+
+Mention that this was only possible because the unprocessed data was shared in the first place.
+
+DICOM to Nifti conversion was out of scope and may introduce other issues.
 
 \section{Conclusion}
 
