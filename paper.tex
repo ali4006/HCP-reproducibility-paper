@@ -8,7 +8,7 @@
 
 \title{Reproducibility of HCP pipelines across operating systems}
 
-\author{Lalet Scaria, Lindsay B. Lewis, Alan C. Evans, Tristan Glatard}
+\author{Lalet Scaria, Lindsay B. Lewis, Najmeh Khalili-Mahani, Alan C. Evans, Tristan Glatard}
 
 \begin{document}
 
@@ -19,9 +19,8 @@
 \section{Introduction}
 
 Groenschild \emph{et al.} first identified the effect of operating
-systems on Freesurfer
-results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} we
-quantified this effect on some of the main neuroimaging pipelines
+systems on Freesurfer results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} 
+we quantified this effect on some of the main neuroimaging pipelines
 including several FSL pipelines, CIVET and Freesurfer. In this work we
 aim at evaluating this effect on the work in~\cite{glasser2015multi}.
 
@@ -45,7 +44,30 @@ For an overview of variability accross analysis methods in fMRI, see \url{http:/
 For a general overview in fMRI, see \url{http://www.nature.com/nrn/journal/vaop/ncurrent/box/nrn.2016.167_BX3.html}
 
 \section{Materials and Methods}
+\begin{itemize}
+\subsection{Operating System and Applications} 
+The study on the influence of the changes in operating system and the underlying libraries on the biological images is the topic of this paper. For conducting this study, we chose different versions of CentOS. CentOS is a community-driven  free software effort focused on delivering a roubust open source ecosystem. CentOS focuses on development of framework for cloud providers, the hosting community, and scientific data processing.\cite{https://www.centos.org/about/} The different versions chosen we selected for our study are centos5.11, centos6.8 and centos7.2.1511. These images are available in the official centos \url{https://hub.docker.com/\_/centos/} docker repository.
 
+The operating system versions used for the study are base images available in the official repository of centos docker repository. A base image is the image that is used to create all of your container images\url{https://www.ibm.com/support/knowledgecenter/en/SS6PEW\_9.5.0/com.ibm.help.install.omsoftware.doc/installation/c\_DockerBaseImage.html}. On top of the base images, the required software libraries were installed to create containers having all the required prerequisites and softwares.
+
+The data used for the study is referred in this document as subjects. These subjects are publicly available from the human connectome project dataset repository. Human Connectome Project\cite{The WU-Minn Human Connectome Project: An Overview} is a consortium led by Washington University, University of Minnesota, and Oxford University is undertaking a systematic effort to map macroscopic human brain circuits andtheir relationship to behavior in a large population of healthy adults.
+
+  \item{verifyFiles Script}
+  \item{Input parameters}
+  \item{Working}
+  \item{Reference File}
+  \item{SQLite}
+  \item{Reprozip}
+  \item{Query to find out the process that created a particular file}
+  \item{Ignored files}
+  \item{checksums-before-after}
+  \item{monitor.txt}
+  \item{Metrices}
+  \item{Describe how the reference file was processed,"docker run -it --rm --security-opt seccomp=unconfined -w /data -v /home/lscaria/BigDataLab:/data 8eeec0517441 /bin/bash"}
+  \item{Hardware-monitor metric}
+  \item{Distance using fslmats,nibabel}
+  \item{Corruption check flag}
+\end{itemize}
 \subsection{Dataset}
 
 Data: report on versions and subjects used.
@@ -71,11 +93,43 @@ able to customize easily the FSL version and build (the script
 provided by FSL installs the latest version by default). We used FSL
 5.0.6, built for CentOS5 and CentOS6.
 
+\paragraph{Algorithms}
+A brief description of the algorithms used in the script for analysis
+
+\paragraph{Softwares and Libraries}
+A brief description of the softwares and libraries used
+
 \paragraph{Execution.} The pipeline was launched twice in the same
 environment to detect any use of pseudo-random numbers. We
 made sure that the results produced by these two executions were
 identical.
 
+\paragraph{HCP Pipelines}
+
+For the creation of Docker container contianer the HCP Pipelines, there are a few prerequisites. They are
+
+\begin{itemize}
+  \item 64 Bit Operating System (We chose Centos 5, 6 and 7)
+  \item FMRIB Software Library(a.k.a FSL) version 5.0.6 (An installation script was developed for this)
+  \item Freesurfer version 5.3.0-HCP
+  \item Connectome Workbench
+\end{itemize}
+
+\paragraph{PreFreeSurfer Installation}
+From the base image of the centos versions 5, 6 and 7, we created docker containers containing all the necessary libraries and softwares needed for the PreFreeSurfer Pipelines.A list of software packages installed in the docker container is available at (https://github.com/lalet/Dockerfiles/blob/master/Dockerfile.exec-centos5.fslbuild-centos5). CentOS-5 , yum repos are no longer supported, so we had to bypass the repo url to enable the software installation. Numpy library had to be installed separately after RPM rebuilt command since normal installation of numpy was throwing error. To install FMRIB Library a separate installation script was written (https://github.com/lalet/Dockerfiles/blob/master/myFslInstallerScript.sh) which would install the required FMRIB Library based on the input parameters. HCP pipeline version 3.19.0 is used for the study. Humanconnectome workbenchversion 1.2.3 is also installed in the docker directory. Environment variables needed for the functioning of FMRBI and HCP Pipelines are added later on.
+Below listed scripts are also added to the image. They are,
+\begin{itemize}
+  \item monitor.sh - For monitoring the hardware details and software library versions
+  \item create-execution.sh for keeping the input directories unmodified and thus preventing modification of input files.
+  \item checksums.sh - To make sure that the files are not corrupted while transferring or processing the subjects.
+  \item command-line-script.sh - For submitting the PreFreeSurfer Pipeline script with the right paramets.
+\end{itemize}
+
+
+\paragraph{FreeSurfer Installation}
+Out of the images having PreFreeSurfer and environment variables available in Dockerhub(https://hub.docker.com/u/bigdatalabteam/dashboard/), we installed FreeSurfer. FreeSurfer(ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/5.3.0-HCP/freesurfer-Linux-centos4\_x86\_64-stable-pub-v5.3.0-HCP.tar.gz) was used for installation. SetUpFreeSurfer script should be sourced before running the FreeSurferPipelineBatch script. There were a few missing libraries that are added using yum to the base image of the centos since these libraries are used by FreeSurfer Pipeline. The images which are input to the FreeSurfer should be processed using PreFreeSurfer. FreeSurfer needs a license number which is obtained from the FreeSurfer site and it is essential for smooth functioning of FreeSurfer. 
+
+\subsection{Results comparisons}
 \subsection{File comparisons}
 
 Describe the scripts that will be written to compare results.
@@ -125,7 +179,7 @@ Conclude and highlight future work.
 
 \section{Acknowledgments}
 
-CBRAIN team. Compute Canada.
+CBRAIN team. Compute Canada(Calcul Quebec).
 
 \bibliographystyle{plain}
 \bibliography{biblio}

@@ -1,0 +1,3 @@
+Metircs,monitor.txt,metrics/monitor-filter.py,prefreesurfer-interrun/metrics-prefreesurfer-interrun.csv
+NRMSE,nii.gz,metrics/nrmse.sh,prefreesurfer-interrun/nrmse-prefreesurfer-interrun.csv
+Dice,T1w_acpc_brain_mask.nii.gz,metrics/dice.sh,prefreesurfer-interrun/dice-prefreesurfer-interrun.csv

@@ -1,0 +1,8 @@
+Metircs,monitor.txt,metrics/monitor-filter.py,freesurfer/metrics-freesurfer-interos.csv
+NRMSE,nii.gz,metrics/nrmse.sh,freesurfer/nrmse-freesurfer-interos.csv
+MGZ,.mgz,metrics/nrmse.sh,freesurfer/nrmse-mgz.csv
+Dice,.mgz,metrics/dice.sh,freesurfer/dice-mgz.csv
+Brain-mask-dice,T1w_acpc_brain_mask.nii.gz,metrics/dice.sh,freesurfer/dice-freesurfer-interos.csv
+Dice-mri,brainmask.mgz,metrics/dice.sh,freesurfer/dice-brainmask.csv
+Dice-mriwm,wm.mgz,metrics/dice.sh,freesurfer/dice-wm.csv
+Dice-aseg,aseg.mgz,metrics/dice.sh,freesurfer/dice-aseg.csv

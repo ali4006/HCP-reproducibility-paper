@@ -1,0 +1,4 @@
+                                         	CentOS6/run-1 vs CentOS7/run-1	CentOS5/run-1 vs CentOS7/run-1	CentOS5/run-1 vs CentOS6/run-1	
+T1w/subject_name/mri/aseg.mgz            	              3.9455445359               	              3.9539471105               	              3.9505739149               	
+T1w/subject_name/mri/aparc+aseg.mgz      	              3.9553772054               	              3.9558245268               	              3.9561517352               	
+T1w/subject_name/mri/aparc.a2009s+aseg.mgz	              3.9553772054               	              3.9558245268               	              3.9561517352               	
