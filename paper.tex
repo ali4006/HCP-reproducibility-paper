@@ -2,6 +2,7 @@
 
 \usepackage{pdfcomment}
 \usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
 
 \newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
 \newcommand{\todo}[2]{\pdfmargincomment[color=red,author=#1,open=true]{#2}}
@@ -44,7 +45,7 @@ For an overview of variability accross analysis methods in fMRI, see \url{http:/
 For a general overview in fMRI, see \url{http://www.nature.com/nrn/journal/vaop/ncurrent/box/nrn.2016.167_BX3.html}
 
 \section{Materials and Methods}
-\begin{itemize}
+
 \subsection{Operating System and Applications} 
 The study on the influence of the changes in operating system and the underlying libraries on the biological images is the topic of this paper. For conducting this study, we chose different versions of CentOS. CentOS is a community-driven  free software effort focused on delivering a roubust open source ecosystem. CentOS focuses on development of framework for cloud providers, the hosting community, and scientific data processing.\cite{https://www.centos.org/about/} The different versions chosen we selected for our study are centos5.11, centos6.8 and centos7.2.1511. These images are available in the official centos \url{https://hub.docker.com/\_/centos/} docker repository.
 
@@ -52,6 +53,7 @@ The operating system versions used for the study are base images available in th
 
 The data used for the study is referred in this document as subjects. These subjects are publicly available from the human connectome project dataset repository. Human Connectome Project\cite{The WU-Minn Human Connectome Project: An Overview} is a consortium led by Washington University, University of Minnesota, and Oxford University is undertaking a systematic effort to map macroscopic human brain circuits andtheir relationship to behavior in a large population of healthy adults.
 
+\begin{itemize}
   \item{verifyFiles Script}
   \item{Input parameters}
   \item{Working}
