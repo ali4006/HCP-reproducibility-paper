@@ -148,7 +148,8 @@ Show results of the comparison.
 \subsection{Inter-OS differences}
 
 
-From Lalet's thesis
+\paragraph{Binary differences}
+
 
 Among the 117 data files produced by PreFreeSurfer, 23 did not have any error for any subject, 92 had errors 
 for all subjects and 2 had errors for 1 subject only. 
@@ -166,13 +167,12 @@ variation (see Figure \ref{fig:1}).
 
 \subsection{Pipeline analysis}
 
-Ali's results
-
 Figure \ref{fig:2} shows the annotated provenance graph of the
 PreFreeSurfer pipeline executed on CentOS6 and CentOS7.  Processes
 that created errors are shown in red, processes that removed errors
 are in blue, and other processes are in green.  Squares denote
-processes for which the classification is uncertain. Black edges link
+processes for which the classification is uncertain, due to temporary
+files that were removed during the execution. Black edges link
 sub-processes to their parents while dashed edges denote file
 dependencies between processes (green edges: files with no errors; red
 edges: files with errors; yellow edges: temporary files).  The
@@ -189,8 +189,10 @@ BiasFieldCorrection).  Besides, transformation format conversion with
 “\emph{convertwarp}” (2 occurrences, in DistortionCorrection) was able
 to remove errors.
 
+\todo{Check if a given file is written by only one process (add a safeguard in your code).}
+
 \begin{figure}
-  \includegraphics[width=\linewidth]{graph}
+  \includegraphics[width=\linewidth]{images/graph}
   \caption{An annotated provenance graph from the PreFreesurfer pipeline. Processes that created errors are in red. 
 Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
   \label{fig:2}
