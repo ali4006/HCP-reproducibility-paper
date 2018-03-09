@@ -64,31 +64,44 @@ Notes:
 
 \subsection{Data and Processing}
 
-We randomly selected 6 subjects from the HCP data release S500 and
-processed them with the HCP structural pre-processing pipelines
-v3.19.0 (PreFreeSurfer and FreeSurfer)~\cite{Glasser2013} in CentOS
-6.8 and CentOS 7.2 using Docker containers. We collected the
-provenance trace (tree of executed processes and files accessed in
-read or write mode) for one subject using system-call interception as
-provided by the reprozip tool~\cite{5}.
+We randomly selected 10 subjects from the HCP data release S500 and processed them on a 
+containerized version of HCP pipelines. The Docker images are built for the HCP structural 
+pre-processing pipelines v3.19.0 (PreFreeSurfer and FreeSurfer)~\cite{Glasser2013} 
+in CentOS 6.8 and CentOS 7.2 for the ease of conducting the experiment and reproducibility issues. 
+We collected the provenance trace (tree of executed processes and files accessed in read or write mode) 
+for one subject using system-call interception as provided by the reprozip tool~\cite{5}.
 
-Notes:
-\begin{itemize}
-\item Point to the Docker images
-\end{itemize}
+\subsection{HCP Minimal preprocessing Pipelines}
 
-\paragraph{Pipelines}
+The Human Connectom Project (HCP)~\cite{Gla13} is a set of pipelines To help extraction of structural, functional or diffusion MRI data
+across a large set of high resolution MR images.these preprocessing pipelines creates results that are available in standard
+volume and combined surface and volume spaces which makes it easier for researchers to compare
+the images across the neuroimaging spectrum.
 
-Described in~\cite{glasser2013minimal}.
+\paragraph{Structural Pipelines} The structural pre-processing consists of PreFreeSurfer, FreeSurfer and PostFreeSurfer. 
+\paragraph{Functional Pipelines} Functional pre-processing consists of fMRIVolume and fMRISurface~\cite{FSL}. 
+\paragraph{Diffusion Preprocessing pipeline} preparing...
 
 \paragraph{Processing environment}
 
-See Lalet's thesis. Boutiques, CBRAIN, wrappers scripts, etc.
+To ensure that the origin of differences are generated exactly across the operating system updates (inter-os differences) 
+on HCP preprocessing pipelines, some pre-executions have been done in a wrapper script; 
+(a) the checksum of the files are computed in each subject before and after a multiple execution to detect 
+potential intra-condition differences (e.g., use of pseudo-random numbers). 
+(b) Checksum of Docker container is recorded to make sure that the same container was used all over. Also, list of packages 
+with versions is printed for every task. (c) Hardware information is captured to make sure that differences are not coming from, for instance, different CPUs (when on cluster).
 
-The pipeline was launched twice in the same
-environment to detect any use of pseudo-random numbers. We
-made sure that the results produced by these two executions were
-identical.
+HCP preprocessing pipelines are both time-consuming and computationally intensive which might even run for days, depending upon 
+the type and size of dataset. We made use of a web platform (CBRAIN) for managing the containers and data with the help of Boutiques technology. 
+The Canadian Brain Imaging Research Platform (CBRAIN), is a web platform developed at the Montreal Neurological Institute (MNI) to tackle 
+the Big-Data research and heavy computational challenges faced by neuroimaging researchers. ~\cite{DBLP:journals/fini/DasGRSPMSRSKMKR17}.
+CBRAIN supports container technologies like Docker, Singularity and it also extends its support to Boutiques. Thus, 
+with the help of container technologies and Boutiques, applications can be ported to CBRAIN. Any user who has access to this application 
+can try to reproduce the experiments since the data and the application are accessible within the framework. However, one caveat is that, 
+the neuroimaginng pipelines might have different results due to differences in computing platforms on which the images are getting processed ~\cite{10.3389/conf.fninf.2014.18.00076}
+therefore, the execution results of the pipelines across different operating systems are considered to find out 
+the cause of the reproducibility issues using an interposition techniques for the provenance capture.
+
 
 \begin{itemize}
   \item monitor.sh - For monitoring the hardware details and software library versions
@@ -104,12 +117,28 @@ identical.
 
 \subsection{Measuring differences}
 
- We computed a file difference matrix between files produced in each
- operating system based on file checksums as in~\cite{Scaria2017}.
+We computed a file difference matrix between files produces in each operating system based on file checksum as in~\cite{Scaria2017}.
+ The checksums are computed before and after execution so that corruption check can be done with the use of recorded checksums.
+ We have used MD5 {\url{https://tools.ietf.org/html/rfc1321}} algorithm for calculating the checksum of files. 
+The output of a MD5 algorithm is a 128-bit ``fingerprint" or ``message digest"~\cite{md5}. 
+Though MD5 is not completely secure against collision attack, Repro-tools focus more on the data integrity than security 
+and how fast the algorithm is able to create the checksum. These qualities make MD5 a good choice for checksum generation in Repro-tools.
+\paragraph{} For the files that are identified to have differences, different kind of metrics are used base on the file 
+type to quantify the differences. Normalized root mean square error, Dice Coefficient, Text filter etc. are the 
+various metrics used for quantifying the differences. As defined in \cite{khosrow2017handbook}, ``The Root Mean Square Deviation (RMSD) 
+or root-mean-square error (RMSE) is a frequently used measure of the difference between values predicted by a model or 
+an estimator and the values actually observed". Normalizing the RMSD value makes it easier to compare between models or datasets.
+\paragraph{} Dice Similarity Coefficient can be used as a statistical validation metric for measuring the reproducibility
+ of magnetic resonance images~\cite{Zou2004}. To measure the similarity of image files in reproducibility study, we used dice similarity coefficient. 
+The coefficient ranges from 0.0 to 1. 1 meaning the images are exactly similiar and 0 meaning there is zero similarity.
+\paragraph{} These metric values help us understand how big or small the differences are. Apart from quantifying 
+the differences using type specific metrics, Repro-tools can also be used to trace the provenance of these differences.
+ It is able to identify all the processes and associated parameters that wrote the files having differences. 
+These details about various processes is helpful in debugging the pipelines. This information helps in 
+recreating the processing step by step and also to identify the processes that creates the differences.
+
 
 Binary and non-binary.
-
-See Lalet's thesis
 
 Describe the scripts that will be written to compare results.
 
@@ -121,21 +150,31 @@ Drive).
 
 \subsection{Pipeline analysis: Characterizing differences}
 
-From the reprozip trace and file error matrix, we classified
- processes depending whether they created errors, removed errors, or
- did not have any impact. To control the propagation of errors in the
- pipeline and allow for the classification of all processes, process
- classification was done in an iterative manner in which we
- artificially corrected errors by replacing the original process by a
- file copy from the results obtained in the other operating system. In
- this way, we were able to pinpoint the origin of the errors measured
- in the pipeline.
-
- Once differences between conditions are quantified, we automatically identify the steps in the pipeline responsible for such differences as follows:
-\begin{itemize}
-\item Capture the execution trace using reprozip (based on system-call interception).
-\item Query the reprozip trace to retrieve the executable(s) that wrote in a given file.
-\end{itemize}
+Once differences between conditions are quantified, we automatically identify the steps in the pipeline responsible for such differences.
+ we use the reprozip tool [Chirigati, 2016] to record: (1) the tree of processes executed by the pipeline and
+ (2) the list of files read and written by each process. This information is collected by system call interceptions, 
+through the ptrace system call in Unix-like operating system, and stored in a sqlite database. The database has three 
+tables including table of processes to store information of all the processes which are created by clone() 
+or fork() Linux system calls and the table of opened files which keeps the detail of all files including the pipeline 
+and temporary files. This table has an attribute to specify the file mode, namely files with mode 0X01 and 0X02 are read 
+from and written on respectively; the final table indicated the executed files in the pipeline through execv() system call.
+ In fact, the tree of processes is retrieved by query the root process at the first level and then all its child processes with 
+dependency files in the next levels from database. The process tree of two subjects has tested in the same pipeline conditions
+ which are similar, so we collect such data only for one subject (The term condition refers to the variation of operating systems
+ on which the data processing takes place). Furthermore, the process tree is acyclic “with the respect of this assumption that 
+there is no race conditions between processes to write on the same file.”
+\paragraph{} In the next step, we classify the processes into three categories considering to the obtained process tree 
+and the error matrix file. First, processes that read file(s) without error but write different file(s) create error in 
+the pipeline. The second group of the processes are those which remove errors in pipeline, read file(s) with error and
+ write “nothing or” file(s) without error. Most of the processes are in the third category beyond any fault which
+ read and write file(s) without error. The processes in each category may read or write temporary file(s) that implies 
+the uncertainty of the process.
+\paragraph{} Pipeline is conducted of a bunch of processes sequentially, setting a modification step after classification
+ of processes iteratively enables us to control the propagation of errors in the pipeline correctly. In each iteration
+ we detect all the processes which are create error in the pipeline and then by fixing those processes artificially, 
+we’ll find the other processes in the pipeline that introduce an error. This procedure will be terminated by fixing all the processes. 
+To fix the processes that create error, we replace their dependency files with error by the same file copy from the results 
+obtained in the other operating system. In this way, we were able to pinpoint the origin of the errors measured in the pipeline.
 
 \section{Results}
 
@@ -151,8 +190,8 @@ Show results of the comparison.
 \paragraph{Binary differences}
 
 
-Among the 117 data files produced by PreFreeSurfer, 23 did not have any error for any subject, 92 had errors 
-for all subjects and 2 had errors for 1 subject only. 
+Among the 117 data files produced by PreFreeSurfer, 21 did not have any error for any subject, 92 had errors 
+for all subjects and 4 had errors for 3 subjects only. 
 
 In a previous study~\cite{Scaria2017}, we showed that
 pre-processing pipelines of the Human Connectome
@@ -164,6 +203,20 @@ variation (see Figure \ref{fig:1}).
     pipelines on subject 105216 (CentOS 6 vs CentOS 7). \todo{Represent this in a different way.}}
   \label{fig:1}
 \end{figure}
+
+\paragraph{}
+Two types of differences can occur in the subjects due to the differences in the operating systems. 
+One is inter-OS difference caused by the operating system library updates and the other type,
+ intra-OS differences occurs as a result of the pseudo-random processes used in the pipelines.
+ An example of a pseudo-random process function is, a random number generator that would get initialized 
+using a seed state. the proposed method can be used to identify both kind of differences. 
+The files that are common to all the subjects only are taken into consideration for comparison. The first step
+ is identification of files with differences in their checksums. This is identified using the checksums that are
+ recorded after the processing. Intra-OS differences are identified using the run-number added as the suffix for
+ the conditions. For example, the two batches of subjects processed under the same condition (CentOS6) are stored 
+as run-1 and run-2. The files belonging to the subjects stored under the above mentioned conditions are treated as intra-OS runs.
+
+
 
 \subsection{Pipeline analysis}
 
