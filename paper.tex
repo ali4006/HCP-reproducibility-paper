@@ -173,15 +173,34 @@ are created by the \texttt{clone()} or \texttt{fork()} Linux
 \todo{check if POSIX} system calls. It also records the files opened by each process (in read, write or execution mode), including the final and
 temporary files.
 
-We reconstruct
-the tree of processes starting from the first process created by the pipeline and retrieving its child processes with dependency files in
-the next levels from database. \todo{Start here.} The process tree of two subjects has
-tested in the same pipeline conditions which are similar, so we
-collect such data only for one subject (The term condition refers to
-the variation of operating systems on which the data processing takes
-place). Furthermore, the process tree is acyclic “with the respect of
-this assumption that there is no race conditions between processes to
-write on the same file.”
+We reconstruct the tree of processes starting from the first process
+created by the pipeline and defining its child processes as the ones
+that were created through \texttt{clone()} or \texttt{fork()}. We
+create a process graph from this tree by adding edges corresponding to
+file dependencies between processes. A file dependency is defined
+between processes A and B if a file written by A is read by
+B. Figure~\ref{fig:graph-example} shows an example of a process graph
+constructed at this stage \todo{Build the graph obtained on
+  bin/example.sh and add it to the Figure}.
+\begin{figure}
+%  \includegraphics{brain\_classification}
+  \caption{Process graph constructed from an example brain extraction script.}
+  \label{fig:graph-example}
+\end{figure}
+
+A different process graph may be produced for every subject in every
+execution condition. Among our dataset, we identified 4 types of
+subjects with different numbers of T1w and T2w images. We verified
+that the process graphs were identical for all subjects of the same
+type, for all execution conditions. The remainder of the analysis is
+done separately for each subject type. \todo{Check that}
+
+Cycles may be present in the process graph in case a file was written
+by more than one process.  We remove the cycles in the process graph
+by removing file edges between processes A and B when A's process
+creation timestamp is posterior to B's or when A=B.
+
+\todo{Start from here}
 \paragraph{} In the next step, we classify the processes into three categories considering to the obtained process tree 
 and the error matrix file. First, processes that read file(s) without error but write different file(s) create error in 
 the pipeline. The second group of the processes are those which remove errors in pipeline, read file(s) with error and
