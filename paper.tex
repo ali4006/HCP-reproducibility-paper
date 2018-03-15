@@ -77,6 +77,8 @@ results of the pipelines across different operating systems are
 considered to find out the cause of the reproducibility issues using
 an interposition techniques for the provenance capture.
 
+\todo{Check everywhere that differences are called error. And define that in the intro.}
+
 
 \section{Materials and Methods}
 
@@ -169,21 +171,22 @@ NRMSE = {\frac{RMSE} {y_{max} - y_{min}}}
 \end{equation}
 \end{center}
 
-\subsection{Pipeline analysis: Characterizing differences}
+\subsection{Pipeline analysis: Characterizing errors}
 
-Once differences between conditions are quantified, we automatically
+Once errors between conditions are quantified, we automatically
 identify the steps in the pipeline responsible for such differences.
 We use the \reprozip tool~\cite{reprozip} to record: (1) the tree of
 processes executed by the pipeline and (2) the list of files read and
 written by each process. This information is collected by system call
-interceptions, through the \texttt{ptrace} as a UNIX base system call, and stored in a \texttt{SQLite}
-database. The database stores information on all the processes which
-are created by the \texttt{clone()} in Linux or \texttt{fork()} in UNIX-like
-operating system calls. It also records the files opened by each process (in read, write or execution mode), including the final and
-temporary files.
+interceptions, through the \texttt{ptrace} Unix system call, and
+stored in a \texttt{SQLite} database. The database stores information
+on all the processes which are created by the \texttt{clone()} or
+\texttt{fork()} system calls. It also records the files opened by each
+process (in read, write or execution mode), including the result files
+and the temporary files.
 
 We reconstruct the tree of processes starting from the first process
-created by the pipeline and defining its child processes as the ones
+created by the pipeline and identifying its child processes as the ones
 that were created through \texttt{clone()} or \texttt{fork()}. We
 create a process graph from this tree by adding edges corresponding to
 file dependencies between processes. A file dependency is defined
@@ -194,7 +197,15 @@ constructed at this stage.
 \begin{figure}
 %  \includegraphics{brain\_classification}
   \includegraphics[scale=0.3]{images/simple_graph}
-  \caption{Process graph constructed from an example brain extraction script.}
+  \caption{Process graph constructed from an example brain extraction
+    script. Every node in the graph is labeled using (1) a process id
+    created by our reconstruction, (2) the name of the executable run
+    by the process. Processes that read or write temporary files are
+    represented with squares; other ones with circles. Plain edges
+    represent the process tree (\texttt{fork()} or \texttt{clone()}
+    system calls). Dashed edges represent file dependencies: temporary
+    files are in yellow and result files are in green.\todo{Add the
+      script next to the graph. Remove node colors.}}
   \label{fig:graph-example}
 \end{figure}
 
@@ -202,35 +213,50 @@ A different process graph may be produced for every subject in every
 execution condition. Among our dataset, we identified 4 types of
 subjects with different numbers of T1w and T2w images. We verified
 that the process graphs were identical for all subjects of the same
-type, for all execution conditions. The remainder of the analysis is
-done separately for each subject type.
+type, for all execution conditions \todo{Check that}. The remainder of
+the analysis is done separately for each subject type.
 
 Cycles may be present in the process graph in case a file was written
 by more than one process.  We remove the cycles in the process graph
 by removing file edges between processes A and B when A's process
-creation timestamp is posterior to B's or when A=B.
+creation timestamp is posterior to B's or when A=B \todo{to be done}.
 
-\todo{Start from here}
-\paragraph{} In the next step, we classify the processes into three categories considering to the obtained process tree 
-and the error matrix file. First, processes that read file(s) without error but write different file(s) create error in 
-the pipeline. The second group of the processes are those which remove errors in pipeline, read file(s) with error and
- write “nothing or” file(s) without error. Most of the processes are in the third category beyond any fault which
- read and write file(s) without error. The processes in each category may read or write temporary file(s) that implies 
-the uncertainty of the process.
-\paragraph{} Pipeline is conducted of a bunch of processes sequentially, setting a modification step after classification
- of processes iteratively enables us to control the propagation of errors in the pipeline correctly. In each iteration
- we detect all the processes which are create error in the pipeline and then by fixing those processes artificially, 
-we’ll find the other processes in the pipeline that introduce an error. This procedure will be terminated by fixing all the processes. 
-To fix the processes that create error, we replace their dependency files with error by the same file copy from the results 
-obtained in the other operating system. In this way, we were able to pinpoint the origin of the errors measured in the pipeline.
+\paragraph{} In the next step, we classify the processes into three categories based on the process graph
+and the error matrix file mentioned in the previous Section:
+\begin{enumerate}
+\item Processes that read files that do not have errors and write files that do not have errors are \emph{transparent}.
+\item Processes that read files that do not have any error but write files that have errors \emph{create} errors in the pipeline. 
+\item Processes that read files that have errors and write files that do not have errors \emph{remove} errors from the pipeline.
+\end{enumerate}
 
-\todo{Check that} We also recorded the provenance trace of the execution using \reprozip. \reprozip identifies all the
-processes and associated parameters that wrote the files having
-differences.  These details about various processes is helpful in
-debugging the pipelines. This information helps in recreating the
-processing step by step and also to identify the processes that
-creates the differences.
+The classification of processes that read or write temporary files is
+uncertain when these files are deleted during the execution. In such
+situations, our classification marks processes as uncertain as we were
+unable to find a technical solution to prevent temporary files from
+being deleted by the pipeline \todo{investigate that a bit more}.
 
+Another challenge is to classify processes that read files that have
+errors and write files that also have errors. In such situations, it
+is not possible to determine from the pipeline results whether
+the process created errors, removed some errors, or was
+transparent. We label such processes \emph{unknown}. To address this issue, we developed an iterative approach that consists of the following steps:
+\begin{enumerate}
+  \item Run the pipeline in conditions 1 and 2; classify the
+    processes as \emph{transparent}, \emph{create errors},
+    \emph{remove errors} or \emph{unknown}.
+  \item If there are \emph{unknown} processes then: replace each process P that create errors by a process Q that
+    copies the results produced by process P in condition 1 to the pipeline output in condition 2.
+  \item Repeat steps 1 and 2 until there is no \emph{unknown} process left.
+\end{enumerate}
+The replacement of process P at step 2 is done by overwriting P's
+executable with a custom script produced by step 1. This custom script
+copies the results obtained in condition 1 if it is invoked with the
+arguments of a process that created errors, and calls P's original
+executable otherwise. This algorithm converges to a process graph
+without any \emph{unknown} process after a finite number of iterations.
+
+Figure~\ref{fig:iterations} illustrates this iterative process on the previous
+exemplar pipeline.
 
 \section{Results}
 
