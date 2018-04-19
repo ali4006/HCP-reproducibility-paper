@@ -216,24 +216,46 @@ that the process graphs were identical for all subjects of the same
 type, for all execution conditions \todo{Check that}. The remainder of
 the analysis is done separately for each subject type.
 
-Cycles may be present in the process graph in case a file was written
-by more than one process.  We remove the cycles in the process graph
-by removing file edges between processes A and B when A's process
-creation timestamp is posterior to B's or when A=B \todo{to be done}.
+Cycles may be present in the process graph in case a file was written 
+by more than one process. We remove such cycles by removing file edges 
+between processes A and B when A's process creation timestamp is 
+posterior to B's or when A=B. Indeed, such edges cannot happen in 
+practice unless A and B were running concurrently, which we assume is 
+not the case (we also checked that on the workflow we tested). 
 
-\paragraph{} In the next step, we classify the processes into three categories based on the process graph
-and the error matrix file mentioned in the previous Section:
+\paragraph{} In the next step, we classify the processes into three 
+categories based on the process graph and the error matrix file 
+mentioned in the previous Section:
 \begin{enumerate}
-\item Processes that read files that do not have errors and write files that do not have errors are \emph{transparent}.
-\item Processes that read files that do not have any error but write files that have errors \emph{create} errors in the pipeline. 
-\item Processes that read files that have errors and write files that do not have errors \emph{remove} errors from the pipeline.
+\item Processes 
+that read files that do not have errors and write files that do not 
+have errors are \emph{transparent}.
+\item Processes that read files 
+that do not have any error but write files that have errors 
+\emph{create} errors in the pipeline.
+\item Processes that read files 
+that have errors and write files that do not have errors\emph{remove} 
+errors from the pipeline.
 \end{enumerate}
 
-The classification of processes that read or write temporary files is
-uncertain when these files are deleted during the execution. In such
-situations, our classification marks processes as uncertain as we were
-unable to find a technical solution to prevent temporary files from
-being deleted by the pipeline \todo{investigate that a bit more}.
+The classification of processes that read or write temporary files is 
+uncertain when these files are deleted during the execution. To address 
+this issue, we replace every process P that writes temporary files with 
+a modification of P that first calls P and then backs up all its output 
+files to a read-only directory. This replacement is done by modifying 
+the Unix PATH variable to point to a directory containing the modified
+versions of the processes. This solution does not cover the temporary files
+that are removed by P itself; this is not a problem since these files do not
+play any role in the subsequent steps of the pipeline, by definition.
+
+Files written by multiple processes also lead to unknown classification 
+labels. To address this issue for a file F written by processes in 
+\textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we (1) check that processes 
+in \textbf{P} do not write concurrently to F, (2) we establish an order 
+on \textbf{P} based on the creation timestamp of the processes, (3) we 
+replace ever process $P_{i}$ in \textbf{P} by a wrapper that first 
+calls $P_{i}$ and then backs up F to a read-only directory. Thus, 
+multiple versions of F are saved and used in the analysis.
 
 Another challenge is to classify processes that read files that have
 errors and write files that also have errors. In such situations, it
@@ -248,15 +270,17 @@ transparent. We label such processes \emph{unknown}. To address this issue, we d
     copies the results produced by process P in condition 1 to the pipeline output in condition 2.
   \item Repeat steps 1 and 2 until there is no \emph{unknown} process left.
 \end{enumerate}
-The replacement of process P at step 2 is done by overwriting P's
-executable with a custom script produced by step 1. This custom script
+The replacement of process P at step 2 is done by replacing P
+with a custom script produced by step 1. This custom script
 copies the results obtained in condition 1 if it is invoked with the
 arguments of a process that created errors, and calls P's original
-executable otherwise. This algorithm converges to a process graph
+executable otherwise. The replacement is done through the PATH variable, as before. This algorithm converges to a process graph
 without any \emph{unknown} process after a finite number of iterations.
 
 Figure~\ref{fig:iterations} illustrates this iterative process on the previous
 exemplar pipeline.
+
+\todo{Explain how graphs are represented.}
 
 \section{Results}
 
