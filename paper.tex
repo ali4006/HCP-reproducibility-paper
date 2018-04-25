@@ -283,15 +283,45 @@ without any \emph{unknown} process after a finite number of iterations.
   \label{fig:iterations}
 \end{figure}
 
-Figure~\ref{fig:iterations} illustrates the modification process iteratively in three steps for the previous example.
- Processes that created errors are shown in red, processes that removed errors are in blue,
- yellow nodes are the processes which propagate errors, and other processes are in green.
- For instance, in step one after correcting bet process, fslmaths is recognized as a red process in the next step.
-In fact, the created graph in a real pipeline execution is much more complex. 
-To simplicity of intricate graph and tracing processes comprehensible, 
-the original graph compacted to several subgraphs using a compression technique. 
-The compression technique will apply, (1) build subgraphs for every interesting node (e.g. red and blue nodes with their children)
- (2) remove the interesting nodes from graph (3) finding largest connected components in the remaining nodes (iteratively).
+Figure~\ref{fig:iterations} illustrates our iterative classification 
+process for the example in Figure~\ref{fig:graph-example}. At every 
+step, processes that created errors are shown in red, processes that 
+removed errors are in blue, processes that propagated errors are in 
+yellow, and other processes (transparent processes) are in green. As in 
+Figure~\ref{fig:graph-example}, plain black edges represent the process 
+tree and dashed edges represent file dependencies: green edges 
+represent files with no errors, while red edges represent files with 
+errors. Temporary files are not represented because they have been 
+backed up as previously described.
+
+The three steps in Figure~\ref{fig:iterations} correspond to the 
+iterations of the classification algorithm At step one \texttt{2\#bet2} 
+is classified as error creator (red) as it produced files with errors 
+from files without error. \texttt{3\#fslstats} is classified as error 
+remover (blue) as it produced files without errors from files with 
+errors. \texttt{4\#fslmaths} and \texttt{5\#fslstats} are classified as 
+unknown (yellow) as they produce files with errors from files with errors.
+
+At step 2, the files produced by \texttt{2\#bet2} in the tested 
+condition are replaced with the files produced by \texttt{2\#bet2} in 
+the other condition. \texttt{3\#fslstats} is now classified as transparent, \texttt{4\#fslmaths} is now classified
+as error creator and \texttt{5\#fslstats} is still unknown.
+
+ At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
+ condition are replaced with the files produced by \texttt{4\#fslmaths} 
+ in the other condition. \texttt{5\#fslstats} is now transparent.
+ 
+ As a result of those 3 steps, the final process classification is: 
+ \texttt{2\#bet2} and \texttt{4\#fslmath} are error creators (red), 
+ \texttt{3\#fslstats} is error remover (blue) and the other processes 
+ are transparent.
+
+The process graphs of real pipelines are much larger than the one in 
+Figure~\ref{fig:iterations}. To represent such large graphs, we 
+summarize them by (1) building subgraphs for every interesting node 
+(e.g. red and blue nodes with their children) (2) remove the 
+interesting nodes from graph (3) finding largest connected components 
+in the remaining nodes (iteratively).
 
 \section{Results}
 
