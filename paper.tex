@@ -277,10 +277,21 @@ arguments of a process that created errors, and calls P's original
 executable otherwise. The replacement is done through the PATH variable, as before. This algorithm converges to a process graph
 without any \emph{unknown} process after a finite number of iterations.
 
-Figure~\ref{fig:iterations} illustrates this iterative process on the previous
-exemplar pipeline.
+\begin{figure}
+  \includegraphics[scale=0.3]{images/iterative_modif}
+  \caption{iteration of proposed modification.}
+  \label{fig:iterations}
+\end{figure}
 
-\todo{Explain how graphs are represented.}
+Figure~\ref{fig:iterations} illustrates the modification process iteratively in three steps for the previous example.
+ Processes that created errors are shown in red, processes that removed errors are in blue,
+ yellow nodes are the processes which propagate errors, and other processes are in green.
+ For instance, in step one after correcting bet process, fslmaths is recognized as a red process in the next step.
+In fact, the created graph in a real pipeline execution is much more complex. 
+To simplicity of intricate graph and tracing processes comprehensible, 
+the original graph compacted to several subgraphs using a compression technique. 
+The compression technique will apply, (1) build subgraphs for every interesting node (e.g. red and blue nodes with their children)
+ (2) remove the interesting nodes from graph (3) finding largest connected components in the remaining nodes (iteratively).
 
 \section{Results}
 
