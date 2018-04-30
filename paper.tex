@@ -4,6 +4,11 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{verbatim}
 
 \newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
@@ -194,20 +199,84 @@ between processes A and B if a file written by A is read by
 B. Figure~\ref{fig:graph-example} shows an example of a process graph
 constructed at this stage.
 
-\begin{figure}
-%  \includegraphics{brain\_classification}
-  \includegraphics[scale=0.3]{images/simple_graph}
-  \caption{Process graph constructed from an example brain extraction
+\medskip
+\noindent
+\begin{minipage}[]{.5\linewidth}
+  \centering
+  \includegraphics[scale=0.2,width=.4\linewidth]{images/simple_graph}
+%  \captionof{figure}{This is a figure caption.} \label{myfig1}
+\end{minipage}
+\begin{minipage}[]{.3\linewidth}
+\small\captionof{algorithm}{sample script of a process graph}\label{sample_script}
+%\begin{algorithmic}[1]
+%\begin{lstlisting}[frame=single]  % Start your code-block
+%
+%#!/bin/bash
+%
+%if [ # !=1 ]
+%then
+%    echo "usage: 0 <inputimage.nii.gz>"
+%    exit 1
+%fi
+%\end{lstlisting}
+
+{\scriptsize
+\begin{verbatim}[frame=single]
+#!/bin/bash
+if [ # !=1 ]
+then
+    echo "usage: 0 <inputimage.nii.gz>"
+    exit 1
+fi
+input_image=$1
+bet_output="$(basename ${input_image} .nii.gz)_brain.nii.gz"
+bet_output_binarized="$(basename ${input_image} .nii.gz)_brain_bin.nii.gz"
+
+bet ${input_image} ${bet_output}
+echo "Voxels / Volume in brain mask:"
+fslstats ${bet_output} -V
+fslmaths ${bet_output} ${bet_output_binarized}
+echo "Voxels / Volum in binarized brain mask:"
+\rm ${bet_output}
+\end{verbatim}
+}
+
+%input_image=$1
+%bet_output="$(basename ${input_image} .nii.gz)_brain.nii.gz"
+%bet_output_binarized="$(basename ${input_image} .nii.gz)_brain_bin.nii.gz"
+%
+%bet ${input_image} ${bet_output}
+%echo "Voxels / Volume in brain mask:"
+%fslstats ${bet_output} -V
+%fslmaths ${bet_output} ${bet_output_binarized}
+%echo "Voxels / Volum in binarized brain mask:"
+%\rm ${bet_output}
+
+
+%  \Procedure{Euclid}{$a,b$}\Comment{The g.c.d. of a and b}
+%    \State $r\gets a\bmod b$
+%    \While{$r\not=0$}\Comment{We have the answer if r is 0}
+%      \State $a\gets b$
+%      \State $b\gets r$
+%      \State $r\gets a\bmod b$
+%    \EndWhile\label{euclidendwhile}
+%    \State \textbf{return} $b$\Comment{The gcd is b}
+%  \EndProcedure
+
+
+%\end{algorithmic}
+\end{minipage}
+
+\captionof{figure}{Process graph constructed from an example brain extraction
     script. Every node in the graph is labeled using (1) a process id
     created by our reconstruction, (2) the name of the executable run
     by the process. Processes that read or write temporary files are
     represented with squares; other ones with circles. Plain edges
     represent the process tree (\texttt{fork()} or \texttt{clone()}
     system calls). Dashed edges represent file dependencies: temporary
-    files are in yellow and result files are in green.\todo{Add the
-      script next to the graph. Remove node colors.}}
-  \label{fig:graph-example}
-\end{figure}
+    files are in yellow and result files are in green.} \label{myfig1}
+
+\medskip
 
 A different process graph may be produced for every subject in every
 execution condition. Among our dataset, we identified 4 types of
@@ -278,50 +347,20 @@ executable otherwise. The replacement is done through the PATH variable, as befo
 without any \emph{unknown} process after a finite number of iterations.
 
 \begin{figure}
-  \includegraphics[scale=0.3]{images/iterative_modif}
+  \includegraphics[scale=0.6]{images/iterative_modif}
   \caption{iteration of proposed modification.}
   \label{fig:iterations}
 \end{figure}
 
-Figure~\ref{fig:iterations} illustrates our iterative classification 
-process for the example in Figure~\ref{fig:graph-example}. At every 
-step, processes that created errors are shown in red, processes that 
-removed errors are in blue, processes that propagated errors are in 
-yellow, and other processes (transparent processes) are in green. As in 
-Figure~\ref{fig:graph-example}, plain black edges represent the process 
-tree and dashed edges represent file dependencies: green edges 
-represent files with no errors, while red edges represent files with 
-errors. Temporary files are not represented because they have been 
-backed up as previously described.
-
-The three steps in Figure~\ref{fig:iterations} correspond to the 
-iterations of the classification algorithm At step one \texttt{2\#bet2} 
-is classified as error creator (red) as it produced files with errors 
-from files without error. \texttt{3\#fslstats} is classified as error 
-remover (blue) as it produced files without errors from files with 
-errors. \texttt{4\#fslmaths} and \texttt{5\#fslstats} are classified as 
-unknown (yellow) as they produce files with errors from files with errors.
-
-At step 2, the files produced by \texttt{2\#bet2} in the tested 
-condition are replaced with the files produced by \texttt{2\#bet2} in 
-the other condition. \texttt{3\#fslstats} is now classified as transparent, \texttt{4\#fslmaths} is now classified
-as error creator and \texttt{5\#fslstats} is still unknown.
-
- At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
- condition are replaced with the files produced by \texttt{4\#fslmaths} 
- in the other condition. \texttt{5\#fslstats} is now transparent.
- 
- As a result of those 3 steps, the final process classification is: 
- \texttt{2\#bet2} and \texttt{4\#fslmath} are error creators (red), 
- \texttt{3\#fslstats} is error remover (blue) and the other processes 
- are transparent.
-
-The process graphs of real pipelines are much larger than the one in 
-Figure~\ref{fig:iterations}. To represent such large graphs, we 
-summarize them by (1) building subgraphs for every interesting node 
-(e.g. red and blue nodes with their children) (2) remove the 
-interesting nodes from graph (3) finding largest connected components 
-in the remaining nodes (iteratively).
+Figure~\ref{fig:iterations} illustrates the modification process iteratively in three steps for the previous example.
+ Processes that created errors are shown in red, processes that removed errors are in blue,
+ yellow nodes are the processes which propagate errors, and other processes are in green.
+ For instance, in step one after correcting bet process, fslmaths is recognized as a red process in the next step.
+In fact, the created graph in a real pipeline execution is much more complex. 
+To simplicity of intricate graph and tracing processes comprehensible, 
+the original graph compacted to several subgraphs using a compression technique. 
+The compression technique will apply, (1) build subgraphs for every interesting node (e.g. red and blue nodes with their children)
+ (2) remove the interesting nodes from graph (3) finding largest connected components in the remaining nodes (iteratively).
 
 \section{Results}
 
