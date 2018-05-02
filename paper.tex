@@ -4,6 +4,10 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{verbatim}
 
 \newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
@@ -194,20 +198,45 @@ between processes A and B if a file written by A is read by
 B. Figure~\ref{fig:graph-example} shows an example of a process graph
 constructed at this stage.
 
-\begin{figure}
-%  \includegraphics{brain\_classification}
-  \includegraphics[scale=0.3]{images/simple_graph}
-  \caption{Process graph constructed from an example brain extraction
+\medskip
+\noindent
+\begin{minipage}[]{.5\linewidth}
+  \centering
+  \includegraphics[scale=0.2,width=.4\linewidth]{images/simple_graph}
+%  \captionof{figure}{This is a figure caption.} \label{myfig1}
+\end{minipage}
+\begin{minipage}[]{.3\linewidth}
+\small\captionof{algorithm}{sample script of a process graph}\label{sample_script}
+{\scriptsize
+\begin{verbatim}
+#!/bin/bash
+if [ # !=1 ]
+then
+    echo "usage: 0 <inputimage.nii.gz>"
+    exit 1
+fi
+input_image=$1
+bet_output="$(basename ${input_image} .nii.gz)_brain.nii.gz"
+bet_output_binarized="$(basename ${input_image} .nii.gz)_brain_bin.nii.gz"
+
+bet ${input_image} ${bet_output} > bet_temp.out
+echo "Voxels / Volume in brain mask:"
+fslstats ${bet_output} -V
+fslmaths ${bet_output} ${bet_output_binarized}
+echo "Voxels / Volum in binarized brain mask:"
+\rm bet_temp.out
+\end{verbatim}
+}
+\end{minipage}
+\captionof{figure}{Process graph constructed from an example brain extraction
     script. Every node in the graph is labeled using (1) a process id
     created by our reconstruction, (2) the name of the executable run
     by the process. Processes that read or write temporary files are
     represented with squares; other ones with circles. Plain edges
     represent the process tree (\texttt{fork()} or \texttt{clone()}
     system calls). Dashed edges represent file dependencies: temporary
-    files are in yellow and result files are in green.\todo{Add the
-      script next to the graph. Remove node colors.}}
-  \label{fig:graph-example}
-\end{figure}
+    files are in yellow and result files are in green.} \label{myfig1}
+\medskip
 
 A different process graph may be produced for every subject in every
 execution condition. Among our dataset, we identified 4 types of
@@ -278,7 +307,7 @@ executable otherwise. The replacement is done through the PATH variable, as befo
 without any \emph{unknown} process after a finite number of iterations.
 
 \begin{figure}
-  \includegraphics[scale=0.3]{images/iterative_modif}
+  \includegraphics[scale=0.6]{images/iterative_modif}
   \caption{iteration of proposed modification.}
   \label{fig:iterations}
 \end{figure}
@@ -319,9 +348,10 @@ as error creator and \texttt{5\#fslstats} is still unknown.
 The process graphs of real pipelines are much larger than the one in 
 Figure~\ref{fig:iterations}. To represent such large graphs, we 
 summarize them by (1) building subgraphs for every interesting node 
-(e.g. red and blue nodes with their children) (2) remove the 
-interesting nodes from graph (3) finding largest connected components 
-in the remaining nodes (iteratively).
+(e.g. red and blue nodes with their children) (2) building connected components 
+in the absence of interesting nodes for the remaining nodes in the process graph. 
+Each node in the summarized graph represent either a shrinked interesting subgraph or 
+connected component and edges represent any connection between two shrinked nodes.
 
 \section{Results}
 
@@ -368,7 +398,7 @@ as run-1 and run-2. The files belonging to the subjects stored under the above m
 
 \subsection{Pipeline analysis}
 
-Figure \ref{fig:2} shows the annotated provenance graph of the
+Figure \ref{fig:summarized-graph} shows the annotated provenance graph of the
 PreFreeSurfer pipeline executed on CentOS6 and CentOS7.  Processes
 that created errors are shown in red, processes that removed errors
 are in blue, and other processes are in green.  Squares denote
@@ -393,10 +423,19 @@ to remove errors.
 \todo{Check if a given file is written by only one process (add a safeguard in your code).}
 
 \begin{figure}
+  \includegraphics[width=\linewidth]{images/summarized_graph}
+  \caption{An annotated summarized process graph from the PreFreesurfer pipeline.
+Each node in the graph is represented in red, blue or green colors and is labeled 
+using the name of the executable run by the interesting process. The close up nodes 
+reveal each shrinked subgraph in details.}
+  \label{fig:summarized-graph}
+\end{figure}
+
+\begin{figure}
   \includegraphics[width=\linewidth]{images/graph}
-  \caption{An annotated provenance graph from the PreFreesurfer pipeline. Processes that created errors are in red. 
+  \caption{A complete process graph from the PreFreesurfer pipeline.
 Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
-  \label{fig:2}
+  \label{fig:complete-graph}
 \end{figure}
 
 \section{Discussion}
