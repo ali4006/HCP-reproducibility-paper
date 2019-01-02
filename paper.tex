@@ -10,14 +10,18 @@
 \usepackage{listings}
 \usepackage{verbatim}
 \usepackage{booktabs}
-\usepackage[flushleft]{threeparttable}
+\usepackage{makecell}
 
+\usepackage[flushleft]{threeparttable}
 
 \newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 \newcommand{\reprozip}[0]{ReproZip}
 
-\title{Numerical error propagation in the HCP structural pre-processing pipelines}
+\title{Numerical error propagation in the HCP structural pre-processing 
+pipelines}
+\title{Reprotool: a debugging tool to identify numerical errors 
+and assess reproducibility of the neuroimaging pipelines}
 
 \author{M. Ali Salari, Lalet Scaria, Gregory Kiar, Lindsay B. Lewis,
   Alan C. Evans, Tristan Glatard}
@@ -26,193 +30,172 @@
 
 \maketitle
 
-\abstract{This paper is a reproducibility study of the work in~\cite{glasser2015multi}.}
+\abstract{
+
+
+Many experiments show that computational analysis results are still not 
+completely reproducible. Although new technologies such as 
+virtualization , version control systems , and provenance management 
+tools provide more reliable environment and significantly improve the 
+reproducibility crisis. 
+In particular, computational environments are known to have an effect 
+on the results produced by neuroimaging pipelines, presumably due to 
+the creation, propagation and amplification of small numerical errors 
+across the pipelines. Similarly, small perturbations that originated 
+from computational environments including diverse operating systems, 
+hardware categories, software version, etc. highlight the numerical 
+errors.
+However, the precise causes of such instabilities and the path along 
+which they propagate in the pipelines are unclear.  We present a 
+technique to identify the processes in the pipeline that create numerical 
+errors along the execution, and we apply this technique to the HCP 
+structural pre-processing pipelines.
 
 \section{Introduction}
 
-Operating systems are known to have an effect on the results produced
-by neuroimaging pipelines~\cite{Gronenschild2012, Glatard2015},
-presumably due to the creation, propagation and amplification of small
-numerical errors across the pipelines.  Such errors highlight
-numerical instability which is also likely to appear as a result of
-other types of small perturbations such as acquisition and parametric
-noise. However, the precise causes of
-such instabilities and the path along which they propagate in the
-pipelines are unclear.  We present a technique to identify the
-processes in a pipeline that create numerical errors along the
-execution, and we apply this technique to the HCP structural
-pre-processing pipelines.
+Research findings are expected to be reproducible to evaluate the 
+authenticity and reliability of the claims.There are different 
+terminologies for the terms reproducibility, repeatability, and 
+replicability over the time. For example, the Association for Computing 
+Machinery (ACM)~\cite{acm2016terminology} proposes three different 
+definitions. From the ACM's points of view, repeatability is defined as 
+repeating the computation by the same experimental setup including 
+operator team, operating conditions, location, and measuring system. 
+Replicability has almost the similar definition with repeatability 
+which use the identical experimental conditions except performer team 
+which means that an independent group can achieve the same results. 
+Beside, reproducibility is measured by performing different 
+experimental setup via different laboratory team independently. In this 
+paper, we follow Peng's~\cite{peng2011reproducible} definition of 
+reproducibility which is assessed by performing the experiment using 
+the same data and the same analytic methods and expecting the same 
+results. A reproducible study provides a context in which, one is able 
+to get the consistence results to the original work. In addition, it 
+enables others to use the existing work as a part of their 
+experiments~\cite{plesser2018reproducibility}. It not only saves a 
+great deal of time, but also contributes to focusing on the other 
+parts.
 
+Reproducibility of computational pipelines has been repeatedly 
+investigated so far. The comparisons show that the analysis results are 
+not completely reproducible across the small perturbations which have 
+emerged by changing the execution environments including operating 
+system, software and analysis method, and hardware configuration. There 
+are different studies that discovered factors that introduce such tiny 
+perturbations and consequently hamper the reproducibility of the 
+experiments. In particular, Groenschild \emph{et al.} first identified 
+the effect of operating systems on Freesurfer 
+results~\cite{Gronenschild2012}. Similarly, the effect of OS is 
+quantified in~\cite{Glatard2015} more specifically on some 
+of the main neuroimaging pipelines including several FSL pipelines, 
+CIVET and Freesurfer. The results of comparisons indicate a significant 
+errors between analysis results of the same experiment on different 
+operating system. 
 
-Groenschild \emph{et al.} first identified the effect of operating
-systems on Freesurfer
-results~\cite{Gronenschild2012}. In~\cite{10.3389/fninf.2015.00012} we
-quantified this effect on some of the main neuroimaging pipelines
-including several FSL pipelines, CIVET and Freesurfer. In this work we
-aim at evaluating this effect on the work in~\cite{glasser2015multi}.
-\todo{Link this to Lindsay's HBM 2017 poster and to Redolfi et al.}
-
-The operating system is defined here as a consistent set of software
+It should be noted that \emph{error} is defined as the statistical 
+differences between results of two experiments in this work. Moreover, 
+the operating system is defined here as a consistent set of software 
 packages organized in a trusted repository.
 
-The operating system is not the only part of the computational
-environment that may hamper reproducibility. The work
-in~\cite{diethelm2012limits} mentions reproducibility issues coming
-from parallelization.
+The operating system is not the only part of the computational 
+environment that may hamper reproducibility. Many other computational 
+factors including hardware configuration, software version, and 
+parallelization techniques are reported~\cite{diethelm2012limits} as 
+the main influential computing infrastructure on reproducibility. 
 
-Notes:
-\begin{itemize}
-  \item Reproducibility has several other aspects, see, e.g.,
-\url{https://medium.com/@lorenaabarba/barba-group-reproducibility-syllabus-e3757ee635cf#.ty3zmgd4k}
- \item James P Turner, speaker in INCF 2016 Track B, is looking at numerical stability on GPUs. And reproducibility.
- \item For an overview of variability accross analysis methods in fMRI, see \url{http://journal.frontiersin.org/article/10.3389/fnins.2012.00149/full}.
- \item For a general overview in fMRI, see \url{http://www.nature.com/nrn/journal/vaop/ncurrent/box/nrn.2016.167_BX3.html}
-\end{itemize}
+It has revealed that the majority of analysis results are not 
+numerically reproducible because of arithmetic operations which is 
+associated with the type of execution such as sequential or parallel 
+executions, floating-point operations, different standard calculations 
+like IEEE-754 or other standards, etc.
 
-% There is a computational challenge
-HCP preprocessing pipelines are both time-consuming and
-computationally intensive which might even run for days, depending
-upon the type and size of dataset.
+In order to overcome these issues and making reproducible analysis, a 
+comprehensive solution requires which not only encapsulates and 
+re-executes all the software/hardware dependencies but also fixes the 
+numerical instabilities. Therefore, we introduce a framework to 
+identify the processes in the pipeline which are responsible for such 
+numerical errors along the execution. In this paper, the execution 
+results of the pipelines across different operating systems are 
+considered to find out the cause of the reproducibility issues using an 
+interposition techniques.
 
-Any
-user who has access to this application can try to reproduce the
-experiments since the data and the application are accessible within
-the framework. However, one caveat is that, the neuroimaginng
-pipelines might have different results due to differences in computing
-platforms on which the images are getting processed
-~\cite{10.3389/conf.fninf.2014.18.00076} therefore, the execution
-results of the pipelines across different operating systems are
-considered to find out the cause of the reproducibility issues using
-an interposition techniques for the provenance capture.
+Figure~\ref{fig:overview} illustrate an overview of the proposed 
+technique. First, we execute pipelines in a consistence environment 
+using docker container and Boutiques framework. In the next step, the 
+origin of errors, processes that make differences, are detected through 
+a classification approach. Processes are classified by several 
+modifications iteratively and finally, it creates corresponding process 
+graph of the pipeline execution. We will explain each step in detail in 
+the following sections.
 
-\todo{Check everywhere that differences are called error. And define that in the intro.}
-
-
-\section{Materials and Methods}
-
-\subsection{Data}
-
-We randomly selected 10 subjects from the HCP data release
-S500 which are described in table~\ref{table:data}. \todo{ list the subjects.}
-
-\begin{table}[H]\hspace*{-1cm}
+\begin{figure}[H]
 \centering
-\begin{threeparttable}
-\caption{An overview of the HCP data (Humman Connectome DB).}
+  \includegraphics[scale=0.5]{images/overview.png}
+  \caption{An overview of proposed technique.}
+  \label{fig:overview}
+\end{figure}
 
-\begin{tabular}{@{}llllll@{}}
-\toprule
-Subject & Release & Acquisition & Gender & Age      & Subj\_Type   \\ \midrule
-103515  & Q1      & Q02         & F      & 26-30    & type1         \\
-105216  & Q3      & Q03         & M      & 26-30    & type4         \\
-103414  & Q2      & Q02         & F      & 22-25    & type1         \\
-125525  & Q1      & Q01         & F      & 31-35    & type1         \\
-142828  & Q1      & Q01         & M      & 31-35    & type1         \\
-129533  & Q3      & Q04         & F      & 31-35    & type1         \\
-103818  & Q1      & Q01         & F      & 31-35    & type3         \\
-133928  & Q2      & Q03         & M      & 26-30    & type3         \\
-148032  & Q3      & Q03         & F      & 31-35    & type2         \\
-139637  & Q2      & Q03         & F      & 31-35    & type1         \\ \bottomrule
-\end{tabular}
-\begin{tablenotes}
-      \small
-      \item *Subj\_Type refers to the graph topology type of the subjects,
-      we will discuss further on the next sections.
-\end{tablenotes}
-\end{threeparttable}
-\label{table:data}
-\end{table}
+\paragraph{} The reminder of this paper explains the proposed debugging tool in two 
+parts. First, the execution environment of the pipelines and then the 
+classification procedure of the processes are clarified. We describe 
+the HCP preprocessing pipelines as a popular neuroimaging pipelines to 
+test and apply reprotool. Finally, we report the analytic process which 
+are responsible for the errors in the pipelines.
 
+\section{Processing Environment}
 
-\subsection{HCP Minimal preprocessing Pipelines}
+We build the containerized version of pipelines for each operating 
+system using docker technology which encapsulated whole the pipeline 
+dependencies. The docker images consists of an specific computing 
+environment such as operating system version, hardware configuration, 
+software version, etc. Furthermore, derived images can be stored on 
+the dockerhub repositories and be version controlled in the same way as 
+the analysis code so that the exact same environment can be used to run 
+an experiment.
 
-The Human Connectome Project (HCP)~\cite{Gla13} developed a set of
-pipelines to help extraction of structural, functional or diffusion
-MRI data across a large set of high resolution MR images. These
-preprocessing pipelines create results that are available in standard
-volume and combined surface and volume spaces which makes it easier
-for researchers to compare the images across the neuroimaging
-spectrum.
+To simplify computational reproducibility of the analysis, we execute 
+docker images using Boutiques framework based on the command-line 
+descriptions~\cite{glatard2017boutiques}. The Boutiques descriptor 
+specifies the parameters and implementation of the experiment, and the 
+invocation schema describes the parameter values such as input/output 
+data path.
 
-\paragraph{Structural Pipelines} The structural pre-processing consists of PreFreeSurfer, FreeSurfer and PostFreeSurfer. 
-\paragraph{Functional Pipelines} Functional pre-processing consists of fMRIVolume and fMRISurface~\cite{FSL}. 
-\paragraph{Diffusion Preprocessing pipeline} preparing...
+We processed subjects twice in every condition to identify possible 
+\emph{intra-condition} errors coming from the use of pseudo-random 
+numbers or other external factors. To further ensure that the observed 
+errors are caused by operating system updates (\emph{inter-os 
+differences}) and not by other factors, we implemented the following 
+sanity checks:
 
-\todo{Write a short summary of what the pipelines do.}
-
-we focused on HCP structural pre-processing pipelines to:
 \begin{itemize}
-\item Quantify the effect of OS on HCP pre-processing pipelines.
-\item Identify the process(es) in the pipelines that are responsible for such effects.
-\end{itemize}
 
-\subsection{Processing environment}
-
-We executed the pipelines using Docker
-containers to simplify the deployment of different operating
-system versions on execution platforms. The Docker images were built for the HCP
- pre-processing pipelines v3.19.0 (PreFreeSurfer and
-FreeSurfer)~\cite{Glasser2013} in CentOS 6.8 and CentOS 7.2. Docker images are available on DockerHub for reuse \url{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}. We
-collected the provenance trace (tree of executed processes and files
-accessed in read or write mode) for each type of subjects using system-call
-interception as provided by the \reprozip tool~\cite{Chirigati2016}.
-
-
-
-To support the computational challenge, we used the Canadian Brain
-Imaging Research Platform (CBRAIN)~\cite{cbrain} to manage the
-containers and data. CBRAIN is a Web platform developed at the
-Montreal Neurological Institute (MNI) to tackle the computational
-challenges faced by neuroimaging researchers.  Applications can be
-ported to CBRAIN using the Docker and Singularity container
-technologies through the Boutiques framework~\cite{boutiques}. Our
-CBRAIN HCP plugins are publicly available at \url{https://github.com/glatard/cbrain-plugins-hcp} for
-installation and re-use in CBRAIN instances.
-
-We processed subjects twice in every condition to identify possible \emph{intra-condition} errors coming from the use of pseudo-random numbers or other external
-factors. 
-
-To further ensure that the observed errors are caused by operating system
-updates (\emph{inter-os differences}) and not by other factors, we
-implemented the following sanity checks:
-\begin{itemize}
-\item The file checksums of every
-subject are computed before and after processing to detect potential corruption during file transfers and other manipulations.
+\item The file checksums of every subject are computed before and after 
+processing to detect potential corruption during file transfers and 
+other manipulations. 
 \item The checksum of the Docker container images is recorded with
-  every execution to identify any unintentional package update. In
-  addition, the list of packages with versions is printed by every
-  task and checked for consistency.
+  every execution to identify any unintentional package update. In 
+  addition, the list of packages with versions is printed by every task 
+  and checked for consistency.
 \item Hardware information is captured to make sure that errors are
   not coming from different CPU architectures.
 \item Every task is executed on its own copy of the data to ensure
   that input data is not modified by the pipeline. 
 \end{itemize}
+	
 
-\todo{Check ~\cite{DBLP:journals/fini/DasGRSPMSRSKMKR17}}
+\section{Measuring Differences}
 
-\begin{figure}[H]
-\centering
-  \includegraphics[scale=0.9]{images/overview.png}
-  \caption{An overview of proposed technique.}
-  \label{fig:overview}
-\end{figure}
+We compute a file difference matrix between files produced for every 
+subject in every operating system based on MD5 
+checksums~\cite{md51992url} as in~\cite{Scaria2017}. MD5 is suitable to 
+identify incidental file differences, although it is not 
+cryptographically secure. Files produced only in some subjects or in 
+some operating systems were left out.
 
-Figure~\ref{fig:overview} illustrate an overview of the proposed technique. First, we execute pipelines in a
-consistence environments and then the origin of errors in the pipeline is detected through a
-classification approach. We will explain each step in detail in the following sections.
+In addition, we are able to quantify errors in the image files using 
+the Dice coefficient and normalized root mean square error (NRMSE) 
+computed as follows:
 
-\subsection{Measuring differences}
-
-
-
-We computed a file difference matrix between files produced for every
-subject in every operating system based on MD5 checksums~\cite{md5}
-(\url{https://tools.ietf.org/html/rfc1321}) as
-in~\cite{Scaria2017}. MD5 is suitable to identify incidental file
-differences, although it is not cryptographically secure. Files
-produced only in some subjects or in some operating systems were left out.
-
-We quantified the error in the image files using the Dice coefficient and normalized root mean square error (NRMSE) computed as follows:
 \begin{center}
 \begin{equation}
 RMSE = {\sqrt {\frac{1} {n}{\sum\limits_{t = 1}^n {(\hat{y}_{t} - {y}_{t} } })^{2} } }
@@ -225,11 +208,11 @@ NRMSE = {\frac{RMSE} {y_{max} - y_{min}}}
 \end{equation}
 \end{center}
 
-\subsection{Pipeline analysis: Characterizing errors}
+\section{Pipeline Analysis: Characterizing Errors}
 
 Once errors between conditions are quantified, we automatically
 identify the steps in the pipeline responsible for such differences.
-We use the \reprozip tool~\cite{reprozip} to record: (1) the tree of
+We use the \reprozip tool~\cite{Chirigati2016} to record: (1) the tree of
 processes executed by the pipeline and (2) the list of files read and
 written by each process. This information is collected by system call
 interceptions, through the \texttt{ptrace} Unix system call, and
@@ -239,13 +222,13 @@ on all the processes which are created by the \texttt{clone()} or
 process (in read, write or execution mode), including the result files
 and the temporary files.
 
-We reconstruct the tree of processes starting from the first process
-created by the pipeline and identifying its child processes as the ones
-that were created through \texttt{clone()} or \texttt{fork()}. We
-create a process graph from this tree by adding edges corresponding to
-file dependencies between processes. A file dependency is defined
-between processes A and B if a file written by A is read by
-B. Figure~\ref{fig:simple_script} shows an example of a process graph
+We reconstruct the tree of processes starting from the first process 
+created by the pipeline and identifying its child processes as the ones 
+that were created through \texttt{clone()} or \texttt{fork()}. We 
+create a process graph from this tree by adding edges corresponding to 
+file dependencies between processes. A file dependency is defined 
+between processes A and B if a file written by A is read by B. 
+Figure~\ref{fig:simple_script} shows an example of a process graph 
 constructed at this stage.
 
 \medskip
@@ -279,21 +262,22 @@ echo "Voxels / Volum in binarized brain mask:"
 }
 \end{minipage}
 \captionof{figure}{Process graph constructed from an example brain extraction
-    script. Every node in the graph is labeled using (1) a process id
-    created by our reconstruction, (2) the name of the executable run
-    by the process. Processes that read or write temporary files are
-    represented with squares; other ones with circles. Plain edges
-    represent the process tree (\texttt{fork()} or \texttt{clone()}
-    system calls). Dashed edges represent file dependencies: temporary
-    files are in yellow and result files are in green.} \label{fig:simple_script}
+	script. Every node in the graph is labeled using (1) a process id 
+	created by our reconstruction, (2) the name of the executable run 
+	by the process. Processes that read or write temporary files are 
+	represented with squares; other ones with circles. Plain edges 
+	represent the process tree (\texttt{fork()} or \texttt{clone()} 
+	system calls). Dashed edges represent file dependencies: temporary 
+	files are in yellow and result files are in green.} 
+	\label{fig:simple_script}
 \medskip
 
-A different process graph may be produced for every subject in every
-execution condition. Among our dataset, we identified 4 types of
-subjects with different numbers of T1w and T2w images. We verified
-that the process graphs were identical for all subjects of the same
-type, for all execution conditions \todo{Check that}. The remainder of
-the analysis is done separately for each subject type.
+A different process graph may be produced for every subject in every 
+execution condition. Among our dataset, we identified 4 types of 
+subjects with different numbers of T1w and T2w images. We verified that 
+the process graphs were identical for all subjects of the same type, 
+for all execution conditions \todo{Check that}. The remainder of the 
+analysis is done separately for each subject type.
 
 Cycles may be present in the process graph in case a file was written 
 by more than one process. We remove such cycles by removing file edges 
@@ -343,35 +327,41 @@ errors from the pipeline (Figure~\ref{fig:processes}.c).
     \label{fig:yellow}
 \end{subfigure}
     \caption{Different type of classified process based on the input/output files.
-  Dashed edges refer to the file dependencies between processes A and B if a file written bu A is read bu B.
-  Solid black edges refer ti the relationship between parent and child processes.}
+  Dashed edges refer to the file dependencies between processes A and B 
+  if a file written by A is read by B. Solid black edges refer to the 
+  relationship between parent and child processes.}
     \label{fig:processes}
 \end{figure}
 
-\paragraph{Challenge1:} The classification of processes that read or write temporary files is 
-uncertain when these files are deleted during the execution. To address 
-this issue, we replace every process P that writes temporary files with 
-a modification of P that first calls P and then backs up all its output 
-files to a read-only directory. This replacement is done by modifying 
-the Unix PATH variable to point to a directory containing the modified
-versions of the processes. This solution does not cover the temporary files
-that are removed by P itself; this is not a problem since these files do not
-play any role in the subsequent steps of the pipeline, by definition.
+\paragraph{Challenge1:} The classification of processes that read or 
+write temporary files is uncertain when these files are deleted during 
+the execution. To address this issue, we replace every process P that 
+writes temporary files with a modification of P that first calls P and 
+then backs up all its output files to a read-only directory. This 
+replacement is done by modifying the Unix PATH variable to point to a 
+directory containing the modified versions of the processes. This 
+solution does not cover the temporary files that are removed by P 
+itself; this is not a problem since these files do not play any role in 
+the subsequent steps of the pipeline, by definition.
 
-\paragraph{Challenge2:} Files written by multiple processes also lead to unknown classification 
-labels. To address this issue for a file F written by processes in 
-\textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we (1) check that processes 
-in \textbf{P} do not write concurrently to F, (2) we establish an order 
-on \textbf{P} based on the creation timestamp of the processes, (3) we 
-replace ever process $P_{i}$ in \textbf{P} by a wrapper that first 
-calls $P_{i}$ and then backs up F to a read-only directory. Thus, 
-multiple versions of F are saved and used in the analysis.
+\paragraph{Challenge2:} Files written by multiple processes also lead 
+to unknown classification labels. To address this issue for a file F 
+written by processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
+(1) check that processes in \textbf{P} do not write concurrently to F, 
+(2) we establish an order on \textbf{P} based on the creation timestamp 
+of the processes, (3) we replace ever process $P_{i}$ in \textbf{P} by 
+a wrapper that first calls $P_{i}$ and then backs up F to a read-only 
+directory. Thus, multiple versions of F are saved and used in the 
+analysis.
 
-\paragraph{Challenge3:} Another challenge is to classify processes that read files that have
-errors and write files that also have errors. In such situations, it
-is not possible to determine from the pipeline results whether
-the process created errors, removed some errors, or was
-transparent. We label such processes \emph{unknown}. To address this issue, we developed an iterative approach that consists of the following steps:
+\paragraph{Challenge3:} Another challenge is to classify processes that 
+read files that have errors and write files that also have errors. In 
+such situations, it is not possible to determine from the pipeline 
+results whether the process created errors, removed some errors, or was 
+transparent. We label such processes \emph{unknown}. To address this 
+issue, we developed an iterative approach that consists of the 
+following steps: 
+
 \begin{enumerate}
   \item Run the pipeline in conditions 1 and 2; classify the
     processes as \emph{transparent}, \emph{create errors},
@@ -381,13 +371,13 @@ transparent. We label such processes \emph{unknown}. To address this issue, we d
   \item Repeat steps 1 and 2 until there is no \emph{unknown} process left.
 \end{enumerate}
 
-The replacement of process P at step 2 is done by replacing P
-with a custom script produced by step 1. This custom script
-copies the results obtained in condition 1 if it is invoked with the
-arguments of a process that created errors, and calls P's original
-executable otherwise. The replacement is done through the PATH variable, as before.
-This algorithm converges to a process graph without any \emph{unknown} process after
-a finite number of iterations.
+The replacement of process P at step 2 is done by replacing P with a 
+custom script produced by step 1. This custom script copies the results 
+obtained in condition 1 if it is invoked with the arguments of a 
+process that created errors, and calls P's original executable 
+otherwise. The replacement is done through the PATH variable, as 
+before. This algorithm converges to a process graph without any 
+\emph{unknown} process after a finite number of iterations.
 
 \begin{figure}[H]
 \centering
@@ -413,12 +403,14 @@ is classified as error creator (red) as it produced files with errors
 from files without error. \texttt{3\#fslstats} is classified as error 
 remover (blue) as it produced files without errors from files with 
 errors. \texttt{4\#fslmaths} and \texttt{5\#fslstats} are classified as 
-unknown (yellow) as they produce files with errors from files with errors.
+unknown (yellow) as they produce files with errors from files with 
+errors.
 
 At step 2, the files produced by \texttt{2\#bet2} in the tested 
 condition are replaced with the files produced by \texttt{2\#bet2} in 
-the other condition. \texttt{3\#fslstats} is now classified as transparent, \texttt{4\#fslmaths} is now classified
-as error creator and \texttt{5\#fslstats} is still unknown.
+the other condition. \texttt{3\#fslstats} is now classified as 
+transparent, \texttt{4\#fslmaths} is now classified as error creator 
+and \texttt{5\#fslstats} is still unknown.
 
  At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
  condition are replaced with the files produced by \texttt{4\#fslmaths} 
@@ -432,267 +424,239 @@ as error creator and \texttt{5\#fslstats} is still unknown.
 The process graphs of real pipelines are much larger than the one in 
 Figure~\ref{fig:iterations}. To represent such large graphs, we 
 summarize them by (1) building subgraphs for every interesting node 
-(e.g. red and blue nodes with their children) (2) building connected components 
-in the absence of interesting nodes for the remaining nodes in the process graph. 
-Each node in the summarized graph represent either a shrinked interesting subgraph or 
-connected component and edges represent any connection between two shrinked nodes.
+(e.g. red and blue nodes with their children) (2) building connected 
+components in the absence of interesting nodes for the remaining nodes 
+in the process graph. Each node in the summarized graph represent 
+either a shrinked interesting subgraph or connected component and edges 
+represent any connection between two shrinked nodes.
+
+
+
+\section{HCP Minimal preprocessing Pipelines}
+
+
+The Human Connectome Project (HCP)~\cite{glasser2013minimal} developed 
+a set of pipelines to help extraction of structural, functional or 
+diffusion MRI data across a large set of high resolution MR images. 
+These pre-processing pipelines create results that are available in 
+standard volume and combined surface and volume spaces which makes it 
+easier for researchers to compare the images across the neuroimaging 
+spectrum. 
+
+We focused on HCP structural pre-processing pipelines to (1)quantify 
+the effect of OS on HCP pre-processing pipelines (2) identify the 
+process(es) in the pipelines that are responsible for such effects.
+
+\paragraph{Structural Pre-processing Pipelines} The structural 
+pre-processing consists of PreFreeSurfer, FreeSurfer and 
+PostFreeSurfer~\cite{glasser2013minimal}. In this paper, we analyzed two 
+pipelines, PreFreeSurfer and FreeSurfer. 
+
+PreFreeSurfer consist of various steps including correction of MR 
+gradient nonlinearity distortions, align the T1w and T2w images using 
+FSL FLIRT, Align native space to MNI template using ACPC and FSL FLIRT, 
+brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w 
+to T1w using FLIRT's BBR, perform a bias field correction, and register 
+the subject's native structural space to MNI space. 
+
+FreeSurfer steps are downsample the images if it exceeds the resolution limit, 
+generation of white matter surface using a segmentation of downsampled image, 
+adjust T1w colum intensity and white matter surface position based on 0.7mm 
+T1w images, fine tune the T2w to T1w registration using FreeSurfer's BBRegister 
+algorithm, accurately place the white and pial surface with high-resolution 0.7mm 
+T1w and T2w data, these inputs are fed back into recon-all at each stage. 
+
+We randomly selected 10 subjects from the HCP data release S500 which 
+are described in table~\ref{table:data}.
+
+\begin{table}[H]\hspace*{-1cm}
+\centering
+\begin{threeparttable}
+\caption{An overview of the HCP data (Humman Connectome DB).}
+
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Subject & Release & Acquisition & Gender & Age      & Subj\_Type   \\ \midrule
+103515  & Q1      & Q02         & F      & 26-30    & type1         \\
+105216  & Q3      & Q03         & M      & 26-30    & type4         \\
+103414  & Q2      & Q02         & F      & 22-25    & type1         \\
+125525  & Q1      & Q01         & F      & 31-35    & type1         \\
+142828  & Q1      & Q01         & M      & 31-35    & type1         \\
+129533  & Q3      & Q04         & F      & 31-35    & type1         \\
+103818  & Q1      & Q01         & F      & 31-35    & type3         \\
+133928  & Q2      & Q03         & M      & 26-30    & type3         \\
+148032  & Q3      & Q03         & F      & 31-35    & type2         \\
+139637  & Q2      & Q03         & F      & 31-35    & type1         \\ \bottomrule
+\end{tabular}
+\begin{tablenotes}
+      \small
+      \item *Subj\_Type refers to the graph topology type of the subjects,
+      we will discuss further on the next sections.
+\end{tablenotes}
+\end{threeparttable}
+\label{table:data}
+\end{table}
+
 
 \section{Results}
 
-Show lists of packages used with version. Focus on important
-differences (e.g.: python interpreter, gcc if relevant) and explain
-why these packages are important.
+We executed the pipelines using Docker containers to simplify the 
+deployment of different operating system versions on execution 
+platforms. The Docker images were built for the HCP pre-processing 
+pipelines v3.19.0 (PreFreeSurfer and FreeSurfer) in 
+CentOS 6.8 and CentOS 7.2. Docker images are available on DockerHub for 
+reuse \url{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}. 
+We collected the provenance trace (tree of executed processes and files 
+accessed in read or write mode) for each type of 
+subjects(Table~\ref{table:data}) using system-call interception as 
+provided by the \reprozip tool~\cite{Chirigati2016}.
 
-Show results of the comparison.
+\paragraph{} Two types of errors can occur in the subjects due to the 
+errors in the operating systems. One is inter-OS error caused by the 
+operating system library updates and the other type, intra-OS errors 
+occurs as a result of the pseudo-random processes used in the 
+pipelines. An example of a pseudo-random process function is, a random 
+number generator that would get initialized using a seed state. the 
+proposed method can be used to identify both kind of errors. The files 
+that are common to all the subjects only are taken into consideration 
+for comparison. The first step is identification of files with 
+differences in their checksums. This is identified using the checksums 
+that are recorded after the processing. Intra-OS errors are identified 
+using the run-number added as the suffix for the conditions. For 
+example, the two batches of subjects processed under the same condition 
+(CentOS6) are stored as run-1 and run-2. The files belonging to the 
+subjects stored under the above mentioned conditions are treated as 
+intra-OS runs.
 
 \subsection{Inter-OS differences}
 
 
 \paragraph{Binary differences}
 
+In a previous study~\cite{Scaria2017}, we showed that pre-processing 
+pipelines of the Human Connectome Project~\cite{Glasser2013} were 
+sensitive to operating system variation so that Figure 
+\ref{fig:tissue_class} illustrates the binarized errors after brain tissue 
+segmentation process in PreFreeSurfer. In addition, 
+Figure~\ref{fig:fnirt_result} shows the same errors occurred in 
+non-linear registration process between CentOS6 and CentOS7. 
+Figure~\ref{fig:pipeline_errors}.a.
 
-Among the 117 data files produced by PreFreeSurfer, 21 did not have any error for any subject, 92 had errors 
-for all subjects and 4 had errors for 3 subjects only. 
-
-In a previous study~\cite{Scaria2017}, we showed that
-pre-processing pipelines of the Human Connectome
-Project~\cite{Glasser2013} were sensitive to operating system
-variation (see Figure \ref{fig:1}).
-\begin{figure}[H]
-%  \includegraphics{brain\_classification}
-  \includegraphics[width=0.5\textwidth, height=6cm]{images/brain_classification.png}
-  \caption{Tissue classification produced by the HCP pre-processing
-    pipelines on subject 105216 (CentOS 6 vs CentOS 7).}
-  \label{fig:1}
-\end{figure}
 
 \begin{figure}[H]
 \centering
-  \includegraphics[scale=0.8]{images/fnirt_result.png}
-  \caption{Differences between FNIRT results (T2w\_acpc\_to\_MNI\_nonli.nii.gz), subject 104820 (centos6 vs. centos7).}
+  \includegraphics[scale=0.6]{images/fnirt_result.png} 
+  \caption{Absolute errors between FNIRT results from PreFreeSurfer 
+  (T2w\_acpc\_to\_MNI\_nonli.nii.gz), subject 104820 (centos6 vs. 
+  centos7)~\cite{Scaria2017}. } 
   \label{fig:fnirt_result}
 \end{figure}
 
-\paragraph{}
-Two types of differences can occur in the subjects due to the differences in the operating systems. 
-One is inter-OS difference caused by the operating system library updates and the other type,
- intra-OS differences occurs as a result of the pseudo-random processes used in the pipelines.
- An example of a pseudo-random process function is, a random number generator that would get initialized 
-using a seed state. the proposed method can be used to identify both kind of differences. 
-The files that are common to all the subjects only are taken into consideration for comparison. The first step
- is identification of files with differences in their checksums. This is identified using the checksums that are
- recorded after the processing. Intra-OS differences are identified using the run-number added as the suffix for
- the conditions. For example, the two batches of subjects processed under the same condition (CentOS6) are stored 
-as run-1 and run-2. The files belonging to the subjects stored under the above mentioned conditions are treated as intra-OS runs.
-
-
+\begin{figure}[H]
+%  \includegraphics{brain\_classification}
+\centering
+  \includegraphics[scale=0.18]{images/brain_classification.png} 
+  \caption{Binarized error between brain segmentation results from 
+  FreeSurfer, subject 105216 (CentOS6 vs. CentOS7)~\cite{Scaria2017}.
+    } 
+  \label{fig:tissue_class}
+\end{figure}
 
 \subsection{Pipeline analysis}
 
-Figure \ref{fig:summarized-graph} shows the annotated provenance graph of the
-PreFreeSurfer pipeline executed on CentOS6 and CentOS7.
-Each node in the graph represent an executed process in the pipeline.
-Processes that created errors are shown in red, processes that removed errors
-are in blue, and other processes are in green.  Squares denote
-processes for which the classification is uncertain, due to temporary
-files that were removed during the execution. Black edges link
-sub-processes to their parents while dashed edges denote file
-dependencies between processes (green edges: files with no errors; red
+We identified processes that introduce errors in both PreFreeSurfer and 
+FreeSurfer pipelines. The result of our experiment is described in the 
+following paragraphs.
+
+\paragraph{PreFreeSurfer.} Among the 117 data files produced by 
+PreFreeSurfer, 21 did not have any error for any subject, 92 had errors 
+for all subjects and 4 had errors for 3 subjects only. 
+
+Figure \ref{fig:summarized-graph} shows the annotated provenance graph 
+of the PreFreeSurfer pipeline executed on CentOS6 and CentOS7. Each 
+node in the graph represent an executed process in the pipeline. 
+Processes that created errors are shown in red, processes that removed 
+errors are in blue, and other processes are in green.  Squares denote 
+processes for which the classification is uncertain, due to temporary 
+files that were removed during the execution. Black edges link 
+sub-processes to their parents while dashed edges denote file 
+dependencies between processes (green edges: files with no errors; red 
 edges: files with errors; yellow edges: temporary files).
 
-The processes that introduce errors in PreFreeSurfer are: linear
-registration with “\emph{FLIRT}” (8 occurrences, in ACPC Alignment,
-BrainExtraction, DistortionCorrection, AtlasRegistration), non-linear
-registration with “\emph{FNIRT}” (3 occurrences, in BrainExtraction
-and AltasRegistration), image warping with “\emph{new\_invwarp}” (3
-occurrences, in BrainExtraction and AtlasRegistration).  In addition,
-errors were observed in image mean and standard-deviation computations
-with “\emph{fslstats}” (3 occurrences in BiasFieldCorrection), and in
-masked image extrapolation with “\emph{fslmaths}” (1 occurrence, in
-BiasFieldCorrection).  Besides, transformation format conversion with
-“\emph{convertwarp}” (2 occurrences, in DistortionCorrection) was able
-to remove errors.
-
-\todo{Check if a given file is written by only one process (add a safeguard in your code).}
-
-
-\begin{figure}[H]
-\centering
-  \includegraphics[scale=0.3]{images/pfs_chart.png}
-  \caption{Number of occurrences of errors in PreFreeSurfer, red and blue bars 
-indicate the processes which create and remove errors respectively.}
-  \label{fig:pfs_chart}
-\end{figure}
+The processes that introduce errors in PreFreeSurfer along with the 
+number of occurrences are depicted in Figures~\ref{fig:pfs_table, 
+fig:pfs_chart} including linear registration with “\emph{FLIRT}” (in 
+ACPC Alignment, BrainExtraction, DistortionCorrection, 
+AtlasRegistration), non-linear registration with “\emph{FNIRT}” (in 
+BrainExtraction and AltasRegistration), image warping with 
+“\emph{new\_invwarp}” (in BrainExtraction and AtlasRegistration).  In 
+addition, errors were observed in image mean and standard-deviation 
+computations with “\emph{fslstats}” (in BiasFieldCorrection), and in 
+masked image extrapolation with “\emph{fslmaths}” (in 
+BiasFieldCorrection).  Besides, transformation format conversion with 
+“\emph{convertwarp}” (in DistortionCorrection) was able to remove 
+errors.
 
 \begin{figure}[H]
 \centering
   \includegraphics[scale=0.5]{images/pfs_table.png}
-  \caption{Process name along with the pipeline elements that inbtroduce errors.}
+  \caption{Process name along with the pipeline elements that introduce errors.}
   \label{fig:pfs_table}
 \end{figure}
 
-The processes that introduce errors in FreeSurfer are shown on Figure~\ref{fig:fs_error_table}.
-Also, processes that remove errors in FreeSurfer represented on Figure~\ref{fig:fs_remove_table}.
 \begin{figure}[H]
 \centering
-  \includegraphics[scale=0.5]{images/fs_error_table.png}
-  \caption{Number of occurrences of errors in FreeSurfer pipeline, subject 103818, 
-indicate the processes that create errors.}
+  \includegraphics[scale=0.38]{images/pfs_chart.png} \caption{Number 
+  of occurrences of errors in PreFreeSurfer on subject 103515, red and 
+  blue bars indicate the processes which create and remove errors 
+  respectively.} 
+  \label{fig:pfs_chart}
+\end{figure}
+
+
+\paragraph{FreeSurfer.} In the second analysis, the result of 
+PreFreeSurfer is considered as the input files of FreeSurfer pipeline. 
+From the FreeSurfer results, total 61 files were found to be different 
+between CentOS6 and CentOS7. The processes that introduce errors in 
+FreeSurfer are shown on Figure~\ref{fig:fs_error_table}. Most frequent 
+processes that create errors are \emph{mris\_anatomical\_stats} which 
+measures a number of anatomical properties, \emph{mris\_make\_surface} 
+to generate pial surfaces, first pass, no T2 adjustment, 
+\emph{mri\_convert} which normalize T1w and T2w images for the benefit 
+of \emph{mris\_make\_surfaces}, and \emph{fslmaths} create and apply a 
+binary mask to filling of holes to remove  any non-grey/white tissue 
+using a threshold created by FSLSTATS at Mean. In addition, all the 
+other processes that created errors in the pipeline at least once are 
+categorized as others such as \emph{mri\_ca\_register}, 
+\emph{mri\_ca\_normalize}, and \emph{mri\_watershed}. Furthermore, 
+processes that remove errors in FreeSurfer represented on 
+Figure~\ref{fig:fs_remove_table} including \emph{mri\_convert} and 
+\emph{mri\_surf2surf}. 
+
+\begin{figure}[H] 
+\centering
+  \includegraphics[scale=0.6]{images/fs_error_table.png} 
+  \caption{Number of occurrences of errors in FreeSurfer pipeline, 
+subject 103818, indicate the processes that create errors.}
   \label{fig:fs_error_table}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-  \includegraphics[scale=0.5]{images/fs_remove_table.png}
-  \caption{Number of occurrences of errors in FreeSurfer pipeline, subject 103818, 
-indicate the processes that remove errors.}
+  \includegraphics[scale=0.5]{images/fs_remove_table.png} 
+  \caption{Number of occurrences of errors in FreeSurfer pipeline, 
+subject 103818, indicate the processes that remove errors.}
   \label{fig:fs_remove_table}
 \end{figure}
 
 
 \section{Discussion}
 
-pipeline amplify small numerical differences, they are numerically unstable.
-Furthermore, math libraries evolve over time, leading to different numerical errors.
-we listed some of the irreproducibility causes of the pipelines as we mentioned
-in the previous section overally along with exact command arguments.
-
-\begin{itemize}
-\item FSLSTATS: Calculate statistics on an image (mean, standard deviation and etc.)
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-STD=`${FSLDIR}/bin/fslstats $WD/T1wmulT2w_brain_norm_modulate.nii.gz -S` 
-MEAN=`${FSLDIR}/bin/fslstats $WD/T1wmulT2w_brain_norm_modulate.nii.gz -M` 
-    \end{lstlisting}
-\item FSLMATH: Create and apply a binary mask to filling of holes to remove  any non-grey/white tissue
-using a threshold created by FSLSTATS at Mean.
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-{FSLDIR}/bin/fslmaths $WD/T1wmulT2w_brain_norm_modulate -thr $Lower -bin -ero -mul 255 
-                      $WD/T1wmulT2w_brain_norm_modulate_mask ${CARET7DIR}/wb_command -volume-remove-islands 
-                      $WD/T1wmulT2w_brain_norm_modulate_mask.nii.gz $WD/T1wmulT2w_brain_norm_modulate_mask.nii.gz
-    \end{lstlisting}
-
-\item FLIRT: Register cropped image to MNI152 (12 DOF)
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-{FSLDIR}/bin/flirt -interp spline -in "$WD"/robustroi.nii.gz -ref "$Reference"
-                   -omat "$WD"/roi2std.mat -out "$WD"/acpc_final.nii.gz
-                   -searchrx -30 30 -searchry -30 30 -searchrz -30 30
-
-{FSLDIR}/bin/flirt -interp spline -dof 6 -in ${WD}/Magnitude_warpped${TXw}
-                    -ref ${TXwImage} -out ${WD}/Magnitude_warpped${TXw}2${TXwImageBasename}
-                    -omat ${WD}/Fieldmap2${TXwImageBasename}.mat
-                    -searchrx -30 30 -searchry -30 30 -searchrz -30 30
-    \end{lstlisting}
-
-\item FNIRT: non-linear registration to MNI
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-{FSLDIR}/bin/fnirt --in=${T1wRestore} --ref=${Reference2mm} --aff=${WD}/xfms/acpc2MNILinear.mat
-                   --refmask=${Reference2mmMask} --fout=${OutputTransform}
-                   --jout=${WD}/xfms/NonlinearRegJacobians.nii.gz --refout=${WD}/xfms/IntensityModulatedT1.nii.gz
-                   --iout=${WD}/xfms/2mmReg.nii.gz --logout=${WD}/xfms/NonlinearReg.txt
-                   --intout=${WD}/xfms/NonlinearIntensities.nii.gz --cout=${WD}/xfms/NonlinearReg.nii.gz --config=${FNIRTConfig}
-
-%~ Register to 2mm reference image (linear then non-linear)
-%~ ${FSLDIR}/bin/flirt -interp spline -dof 12 -in "$Input" -ref "$Reference2mm" 
-                    %~ -omat "$WD"/roughlin.mat -out "$WD"/"$BaseName"_to_MNI_roughlin.nii.gz -nosearch
-
-%~ ${FSLDIR}/bin/fnirt --in="$Input" --ref="$Reference2mm" --aff="$WD"/roughlin.mat
-                    %~ --refmask="$Reference2mmMask" --fout="$WD"/str2standard.nii.gz
-                    %~ --jout="$WD"/NonlinearRegJacobians.nii.gz --refout="$WD"/IntensityModulatedT1.nii.gz
-                    %~ --iout="$WD"/"$BaseName"_to_MNI_nonlin.nii.gz
-                    %~ --logout="$WD"/NonlinearReg.txt --intout="$WD"/NonlinearIntensities.nii.gz
-                    %~ --cout="$WD"/NonlinearReg.nii.gz --config="$FNIRTConfig"
-    \end{lstlisting}
-
-\item INVWARP \& APPLYWARP: Invert warp and transform dilated brain mask back into native space, and use it to mask input image
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-${FSLDIR}/bin/invwarp --ref="$Reference2mm" -w "$WD"/str2standard.nii.gz -o "$WD"/standard2str.nii.gz
-${FSLDIR}/bin/applywarp --rel --interp=nn --in="$ReferenceMask" --ref="$Input" -w "$WD"/standard2str.nii.gz -o "$OutputBrainMask"
-    \end{lstlisting}
-
-\item MRIS\_ANATOMICAL\_STATS: Measures a number of anatomical properties
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mris_anatomical_stats -mgz -cortex ../label/lh.cortex.label -f ../stats/lh.aparc.a2009s.stats -b -a ../label/lh.aparc.a2009s.annot -c ../label/aparc.annot.a2009s.ctab 0050299 lh white
-    \end{lstlisting}
-
-\item MRIS\_MAKE\_SURFACES: Generate pial surfaces, first pass, no T2 adjustment. Files created are Xh.pial, Xh.curv.pial, Xh.area.pial, Xh.thickness
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mris_make_surfaces -variablesigma ${VARIABLESIGMA} -white NOWRITE -aseg aseg.hires -orig white.deformed -filled filled.hires -wm wm.hires -sdir $SubjectDIR -mgz -T1 T1w_hires.norm "$SubjectID" lh
-    \end{lstlisting}
-
-\item MRI\_CONVERT:Normalize T1w and T2w images for the benefit of mris\_make\_surfaces
-
-\#Resample the native space binary ROI file into "brainmask" space
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mri_convert -rl /subA/mri/T1w_hires.nii.gz -rt nearest /subA/mri/filled.mgz /subA/mri/filled.hires.mgz
-    \end{lstlisting}
-
-\item MRI\_NORMALIZE: Normalize the white-matter, optionally based on control points.
-The input volume is converted into a new volume where white matter image values all range around 110.
-
-\#Uses the norm volume, and creates the brain volume, making use of the aseg and masking with brainmask
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mri_normalize -aseg aseg.mgz -mask brainmask.mgz norm.mgz brain.mgz
-    \end{lstlisting}
-
-\item MRI\_APARC2ASEG:The volumes of the cortical labels will be different than
-         reported by mris\_anatomical\_stats because partial volume information
-         is lost when mapping the surface to the volume. The values reported by
-         mris\_anatomical\_stats will be more accurate than the volumes from the
-         aparc+aseg volume.
-         
-Label the cortex of a subject's segmented volume according to the edited surface labels
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mri_aparc2aseg --s SUBJ_NUM --volmask
-\#slice labeling
-mri_aparc2aseg --s ${subject} --labelwm --hypo-as-wm --rip-unknown --volmask --o ${subj_dir}/mri/wmdivided --annot aparc.split
-    \end{lstlisting}
-
-\item MRI\_EM\_REGISTER: creates a tranform in lta format
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mri_em_register -skull -t transforms/talairach.lta nu_noneck.mgz $FREESURFER_HOME/average/RB_all_withskull_2008-03-26.gca transforms/talairach_with_skull.lta
-    \end{lstlisting}
-
-\item MRIS\_SMOOTH: Smooths the tessellation of a cortical surface.
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mris_smooth -nw -seed 1234 ../surf/lh.orig.nofix ../surf/lh.smoothwm.nofix
-    \end{lstlisting}
-
-\item MRIS\_INFLATE: inflate cortical surface.
-\#The command generates inflated and sulc files.
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-mris_inflate -no-save-sulc surf/lh.smoothwm.nofix surf/lh.inflated.nofix
-    \end{lstlisting}
-
-\item MRIS\_CALC: mris\_calc' is a simple calculator that operates on
-FreeSurfer curvatures and volumes. In most cases, the calculator functions
-with three arguments: two inputs and an <ACTION> linking them.
-Some actions, however, operate with only one input <file1>.
-In all cases, the first input <file1> is the name of a FreeSurfer curvature overlay (e.g. rh.curv)
-or volume file (e.g. orig.mgz). For two inputs, the calculator first assumes
-that the second input is a file. If, however, this second input file doesn't exist,
-the calculator assumes it refers to a float number, which is then processed according to <ACTION>.Note:
-<file1> and <file2> should typically be generated on the same subject.
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-
-mris_calc -o lh.area.mid lh.area.mid div2
-    \end{lstlisting}
-
-\item CONVERTWARP: Forward warp the fieldmap magnitude and register to TXw image (transform phase image as well).
-    \begin{lstlisting}[language=bash, basicstyle=\tiny]
-${FSLDIR}/bin/convertwarp --relout --rel --ref=${WD}/Magnitude --shiftmap=${WD}/FieldMap_ShiftMap${TXw}.nii.gz 
-                          --shiftdir=${UnwarpDir} --out=${WD}/FieldMap_Warp${TXw}.nii.gz
-    \end{lstlisting}
-\item MRI\_CONVERT:
-
-\item MRI\_SURF2SURF:
-
-\item MRIS\_MAKE\_SURFACE:
-
-\item MRI\_CA\_REGISTER:
-
-\item MRIS\_CONVERT:
-
-\end{itemize}
+pipeline amplify small numerical differences, they are numerically 
+unstable. Furthermore, math libraries evolve over time, leading to 
+different numerical errors. we listed some of the irreproducibility 
+causes of the pipelines as we mentioned in the previous section 
+overally along with exact command arguments.
 
 Mention that this was only possible because the unprocessed data was shared in the first place.
 DICOM to Nifti conversion was out of scope and may introduce other issues.
