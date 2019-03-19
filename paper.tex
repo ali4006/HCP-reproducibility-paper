@@ -14,14 +14,14 @@
 
 \usepackage[flushleft]{threeparttable}
 
-\newcommand{\note}[2]{\pdfmargincomment[color=yellow,author=#1,open=true]{#2}}
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
+\newcommand{\note}[2]{\color{blue}Note: #1\color{black}}
+
 \newcommand{\reprozip}[0]{ReproZip}
 
-\title{Numerical error propagation in the HCP structural pre-processing 
-pipelines}
+
 \title{Reprotool: a debugging tool to identify numerical errors 
-and assess reproducibility of the neuroimaging pipelines}
+and assess reproducibility of pipelines}
 
 \author{M. Ali Salari, Lalet Scaria, Gregory Kiar, Lindsay B. Lewis,
   Alan C. Evans, Tristan Glatard}
@@ -32,115 +32,127 @@ and assess reproducibility of the neuroimaging pipelines}
 
 \abstract{
 
-
 Many experiments show that computational analysis results are still not 
-completely reproducible. Although new technologies such as 
-virtualization , version control systems , and provenance management 
-tools provide more reliable environment and significantly improve the 
-reproducibility crisis. 
-In particular, computational environments are known to have an effect 
-on the results produced by neuroimaging pipelines, presumably due to 
-the creation, propagation and amplification of small numerical errors 
-across the pipelines. Similarly, small perturbations that originated 
-from computational environments including diverse operating systems, 
-hardware categories, software version, etc. highlight the numerical 
-errors.
+completely reproducible. In particular, computational environments 
+including different operating systems, hardware categories, and 
+software versions are known to have effects on the results produced by 
+analysis pipelines. These effects are presumably due to the creation, 
+propagation and amplification of small numerical errors across the 
+pipelines. 
+Although new techniques such as virtualization , version 
+control systems , and provenance management tools provide more reliable 
+environment and significantly improve the reproducibility of scientific 
+findings. 
 However, the precise causes of such instabilities and the path along 
 which they propagate in the pipelines are unclear.  We present a 
-technique to identify the processes in the pipeline that create numerical 
-errors along the execution, and we apply this technique to the HCP 
-structural pre-processing pipelines.
+technique to identify the processes in the pipeline that create 
+numerical errors along the execution, and we apply this technique to 
+the HCP structural pre-processing pipelines.
 
 \section{Introduction}
 
-Research findings are expected to be reproducible to evaluate the 
-authenticity and reliability of the claims.There are different 
-terminologies for the terms reproducibility, repeatability, and 
-replicability over the time. For example, the Association for Computing 
-Machinery (ACM)~\cite{acm2016terminology} proposes three different 
-definitions. From the ACM's points of view, repeatability is defined as 
-repeating the computation by the same experimental setup including 
-operator team, operating conditions, location, and measuring system. 
-Replicability has almost the similar definition with repeatability 
-which use the identical experimental conditions except performer team 
-which means that an independent group can achieve the same results. 
-Beside, reproducibility is measured by performing different 
-experimental setup via different laboratory team independently. In this 
-paper, we follow Peng's~\cite{peng2011reproducible} definition of 
-reproducibility which is assessed by performing the experiment using 
-the same data and the same analytic methods and expecting the same 
-results. A reproducible study provides a context in which, one is able 
-to get the consistence results to the original work. In addition, it 
-enables others to use the existing work as a part of their 
-experiments~\cite{plesser2018reproducibility}. It not only saves a 
-great deal of time, but also contributes to focusing on the other 
-parts.
+Research findings are expected to be reproducible so that 
+their authenticity and reliability can be evaluated. 
+There are different definitions for the terms reproducibility, 
+and replicability, which leads to confusion since the 
+same words are used for different concepts. 
 
-Reproducibility of computational pipelines has been repeatedly 
-investigated so far. The comparisons show that the analysis results are 
-not completely reproducible across the small perturbations which have 
-emerged by changing the execution environments including operating 
-system, software and analysis method, and hardware configuration. There 
-are different studies that discovered factors that introduce such tiny 
-perturbations and consequently hamper the reproducibility of the 
-experiments. In particular, Groenschild \emph{et al.} first identified 
-the effect of operating systems on Freesurfer 
-results~\cite{Gronenschild2012}. Similarly, the effect of OS is 
-quantified in~\cite{Glatard2015} more specifically on some 
-of the main neuroimaging pipelines including several FSL pipelines, 
-CIVET and Freesurfer. The results of comparisons indicate a significant 
-errors between analysis results of the same experiment on different 
-operating system. 
+According to Peng's definition~\cite{peng2011reproducible}, 
+reproducibility is defined as the ability to regenerate the same 
+results as the original findings when the experiment is reanalyzed 
+given exactly the same analytic methods and data. Reproducibility 
+ensures that independent scientists can reproduce the same results 
+using the same data and procedure as published in the original 
+publication. On the contrary, replicability is defined as the ability 
+to obtain similar results as published in the original study when 
+the experiment is reimplemented using independent data and analytic 
+methods. Replicability confirms scientific claims and ensures that 
+independent investigators can produce consistent results, using new 
+data and methods. 
 
-It should be noted that \emph{error} is defined as the statistical 
-differences between results of two experiments in this work. Moreover, 
-the operating system is defined here as a consistent set of software 
-packages organized in a trusted repository.
+In addition, numerical reproducibility is defined as the ability to 
+regenerate bit for bit identical results from multiple 
+runs~\cite{hill2017numerical}. Two files will be considered numerically 
+reproducible if they have identical binary contents. Binary 
+comparison is calculated by comparing checksums. It must be pointed out 
+that a computation might be reproducible based on Peng's definition, 
+but not be numerically reproducible. For instance, small numerical 
+errors created during the pipeline execution may hamper numerical 
+reproducibility, but be negligible in the final results.
 
-The operating system is not the only part of the computational 
+Reproducibility, as the cornerstone of scientific research, guarantees 
+the reliability of results. A reproducible study provides a context in 
+which one is able to get results that are consistent with the original 
+work. In addition, it not only saves a great deal of time, but also 
+enables others to use existing works as a part of their 
+experiments~\cite{plesser2018reproducibility}. 
+In this paper, we follow Peng's definition of reproducibility 
+unless we directly refer to numerical reproducibility. 
+We seek to identify the reasons why such reproducibility may not be 
+ensured, focusing in particular on computational aspects.
+
+Recently, scientists began to realize that the results of many 
+scientific experiments were neither replicable nor reproducible. 
+Results show that the variety of computational infrastructures 
+including workstation types, parallelization methods, operating 
+systems, and analysis packages are known to influence reproducibility 
+because of the creation of small numerical 
+errors~\cite{Gronenschild2012, diethelm2012limits, Glatard2015}. The 
+propagation and amplification of these tiny errors by analysis 
+pipelines may cause reproducibility issues. 
+\note{In this case, the analysis pipelines are said to be numerically 
+unstable. Numerical instability is a characteristic of the pipelines 
+which amplify small numerical errors and then hamper the 
+reproducibility of the analyses depending on the length of the pipeline 
+and magnitude of the errors. In many cases, numerical instability is an 
+important issue for reproducibility. }
+In particular, the effect of operating system is quantified 
+in~\cite{Glatard2015, Gronenschild2012} more specifically on some of 
+the main neuroimaging pipelines including FSL, CIVET and Freesurfer 
+pipelines. The results of comparisons indicate a significant errors 
+between analysis results of the same experiment on different operating 
+system. It should be noted that \emph{error} is defined as the binary 
+differences between results of two analyses in this paper, which is 
+calculated by the checksum method. 
+
+\note{The operating system is not the only part of the computational 
 environment that may hamper reproducibility. Many other computational 
 factors including hardware configuration, software version, and 
-parallelization techniques are reported~\cite{diethelm2012limits} as 
-the main influential computing infrastructure on reproducibility. 
+parallelization techniques are reported as 
+the main influential computing infrastructure on reproducibility. }
 
-It has revealed that the majority of analysis results are not 
-numerically reproducible because of arithmetic operations which is 
-associated with the type of execution such as sequential or parallel 
-executions, floating-point operations, different standard calculations 
-like IEEE-754 or other standards, etc.
+There are different solutions to make reproducible analysis including 
+containerization techniques to encapsulate software/hardware 
+dependencies, provenance capturing tools, and version control systems. 
+However, a comprehensive solution requires to fix the numerical 
+instabilities. For this purpose, we introduce a framework to identify 
+the processes in pipeline that create numerical errors across different 
+runs. In this paper, the execution results of pipelines across 
+different operating systems are considered to find out the cause of the 
+irreproducibility using an interposition techniques.
 
-In order to overcome these issues and making reproducible analysis, a 
-comprehensive solution requires which not only encapsulates and 
-re-executes all the software/hardware dependencies but also fixes the 
-numerical instabilities. Therefore, we introduce a framework to 
-identify the processes in the pipeline which are responsible for such 
-numerical errors along the execution. In this paper, the execution 
-results of the pipelines across different operating systems are 
-considered to find out the cause of the reproducibility issues using an 
-interposition techniques.
-
-Figure~\ref{fig:overview} illustrate an overview of the proposed 
+Figure~\ref{fig:overview} illustrates an overview of the proposed 
 technique. First, we execute pipelines in a consistence environment 
 using docker container and Boutiques framework. In the next step, the 
-origin of errors, processes that make differences, are detected through 
-a classification approach. Processes are classified by several 
-modifications iteratively and finally, it creates corresponding process 
-graph of the pipeline execution. We will explain each step in detail in 
-the following sections.
+processes that create differences are classified using an iterative 
+approach. Finally, we make corresponding process graph of the 
+pipeline execution that shows the processes related to the creation of 
+errors. We will explain each step in detail in the following sections.
 
 \begin{figure}[H]
 \centering
   \includegraphics[scale=0.5]{images/overview.png}
-  \caption{An overview of proposed technique.}
+  \caption{An overview of the proposed technique.}
   \label{fig:overview}
 \end{figure}
 
-\paragraph{} The reminder of this paper explains the proposed debugging tool in two 
-parts. First, the execution environment of the pipelines and then the 
-classification procedure of the processes are clarified. We describe 
-the HCP preprocessing pipelines as a popular neuroimaging pipelines to 
-test and apply reprotool. Finally, we report the analytic process which 
-are responsible for the errors in the pipelines.
+The reminder of this paper explains the Reprotool in different parts as 
+the execution environment of the pipelines, methods to measure 
+differences, and how to characterize errors. We describe the HCP 
+preprocessing pipelines as a popular neuroimaging pipelines to test and 
+apply the Reprotool on. Finally, we report the processes that are 
+responsible for the errors in the pipelines.
+
 
 \section{Processing Environment}
 
@@ -276,7 +288,7 @@ A different process graph may be produced for every subject in every
 execution condition. Among our dataset, we identified 4 types of 
 subjects with different numbers of T1w and T2w images. We verified that 
 the process graphs were identical for all subjects of the same type, 
-for all execution conditions \todo{Check that}. The remainder of the 
+for all execution conditions. The remainder of the 
 analysis is done separately for each subject type.
 
 Cycles may be present in the process graph in case a file was written 
@@ -286,7 +298,7 @@ posterior to B's or when A=B. Indeed, such edges cannot happen in
 practice unless A and B were running concurrently, which we assume is 
 not the case (we also checked that on the workflow we tested). 
 
-\paragraph{} In the next step, we classify the processes into three 
+In the next step, we classify the processes into three 
 categories based on the process graph and the error matrix file 
 mentioned in the previous Section:
 \begin{enumerate}
@@ -342,7 +354,7 @@ replacement is done by modifying the Unix PATH variable to point to a
 directory containing the modified versions of the processes. This 
 solution does not cover the temporary files that are removed by P 
 itself; this is not a problem since these files do not play any role in 
-the subsequent steps of the pipeline, by definition.
+the subsequent steps of the pipeline, by definition. 
 
 \paragraph{Challenge2:} Files written by multiple processes also lead 
 to unknown classification labels. To address this issue for a file F 
@@ -352,15 +364,16 @@ written by processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we
 of the processes, (3) we replace ever process $P_{i}$ in \textbf{P} by 
 a wrapper that first calls $P_{i}$ and then backs up F to a read-only 
 directory. Thus, multiple versions of F are saved and used in the 
-analysis.
+analysis. 
 
 \paragraph{Challenge3:} Another challenge is to classify processes that 
 read files that have errors and write files that also have errors. In 
 such situations, it is not possible to determine from the pipeline 
 results whether the process created errors, removed some errors, or was 
-transparent. We label such processes \emph{unknown}. To address this 
-issue, we developed an iterative approach that consists of the 
-following steps: 
+transparent. We label such processes \emph{unknown}. 
+
+To address Challenge 3, we developed an iterative approach that 
+consists of the following steps: 
 
 \begin{enumerate}
   \item Run the pipeline in conditions 1 and 2; classify the
@@ -398,7 +411,7 @@ errors. Temporary files are not represented because they have been
 backed up as previously described.
 
 The three steps in Figure~\ref{fig:iterations} correspond to the 
-iterations of the classification algorithm At step one \texttt{2\#bet2} 
+iterations of the classification algorithm. At step one, \texttt{2\#bet2} 
 is classified as error creator (red) as it produced files with errors 
 from files without error. \texttt{3\#fslstats} is classified as error 
 remover (blue) as it produced files without errors from files with 
@@ -412,14 +425,14 @@ the other condition. \texttt{3\#fslstats} is now classified as
 transparent, \texttt{4\#fslmaths} is now classified as error creator 
 and \texttt{5\#fslstats} is still unknown.
 
- At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
- condition are replaced with the files produced by \texttt{4\#fslmaths} 
- in the other condition. \texttt{5\#fslstats} is now transparent.
+At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
+condition are replaced with the files produced by \texttt{4\#fslmaths} 
+in the other condition. \texttt{5\#fslstats} is now transparent.
  
- As a result of those 3 steps, the final process classification is: 
- \texttt{2\#bet2} and \texttt{4\#fslmath} are error creators (red), 
- \texttt{3\#fslstats} is error remover (blue) and the other processes 
- are transparent.
+As a result of those 3 steps, the final process classification is: 
+\texttt{2\#bet2} and \texttt{4\#fslmath} are error creators (red), 
+\texttt{3\#fslstats} is error remover (blue) and the other processes 
+are transparent.
 
 The process graphs of real pipelines are much larger than the one in 
 Figure~\ref{fig:iterations}. To represent such large graphs, we 
@@ -431,9 +444,7 @@ either a shrinked interesting subgraph or connected component and edges
 represent any connection between two shrinked nodes.
 
 
-
 \section{HCP Minimal preprocessing Pipelines}
-
 
 The Human Connectome Project (HCP)~\cite{glasser2013minimal} developed 
 a set of pipelines to help extraction of structural, functional or 
@@ -447,11 +458,9 @@ We focused on HCP structural pre-processing pipelines to (1)quantify
 the effect of OS on HCP pre-processing pipelines (2) identify the 
 process(es) in the pipelines that are responsible for such effects.
 
-\paragraph{Structural Pre-processing Pipelines} The structural 
-pre-processing consists of PreFreeSurfer, FreeSurfer and 
-PostFreeSurfer~\cite{glasser2013minimal}. In this paper, we analyzed two 
-pipelines, PreFreeSurfer and FreeSurfer. 
-
+The structural pre-processing pipelines consists of PreFreeSurfer, 
+FreeSurfer and PostFreeSurfer. In this paper, 
+we analyzed two pipelines, PreFreeSurfer and FreeSurfer. 
 PreFreeSurfer consist of various steps including correction of MR 
 gradient nonlinearity distortions, align the T1w and T2w images using 
 FSL FLIRT, Align native space to MNI template using ACPC and FSL FLIRT, 
@@ -459,12 +468,13 @@ brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w
 to T1w using FLIRT's BBR, perform a bias field correction, and register 
 the subject's native structural space to MNI space. 
 
-FreeSurfer steps are downsample the images if it exceeds the resolution limit, 
-generation of white matter surface using a segmentation of downsampled image, 
-adjust T1w colum intensity and white matter surface position based on 0.7mm 
-T1w images, fine tune the T2w to T1w registration using FreeSurfer's BBRegister 
-algorithm, accurately place the white and pial surface with high-resolution 0.7mm 
-T1w and T2w data, these inputs are fed back into recon-all at each stage. 
+FreeSurfer steps are downsample the images if it exceeds the resolution 
+limit, generation of white matter surface using a segmentation of 
+downsampled image, adjust T1w colum intensity and white matter surface 
+position based on 0.7mm T1w images, fine tune the T2w to T1w 
+registration using FreeSurfer's BBRegister algorithm, accurately place 
+the white and pial surface with high-resolution 0.7mm T1w and T2w data, 
+these inputs are fed back into recon-all at each stage. 
 
 We randomly selected 10 subjects from the HCP data release S500 which 
 are described in table~\ref{table:data}.
@@ -511,7 +521,7 @@ accessed in read or write mode) for each type of
 subjects(Table~\ref{table:data}) using system-call interception as 
 provided by the \reprozip tool~\cite{Chirigati2016}.
 
-\paragraph{} Two types of errors can occur in the subjects due to the 
+Two types of errors can occur in the subjects due to the 
 errors in the operating systems. One is inter-OS error caused by the 
 operating system library updates and the other type, intra-OS errors 
 occurs as a result of the pseudo-random processes used in the 
@@ -528,29 +538,16 @@ example, the two batches of subjects processed under the same condition
 subjects stored under the above mentioned conditions are treated as 
 intra-OS runs.
 
-\subsection{Inter-OS differences}
+\subsection{Inter-OS binary differences}
 
 
-\paragraph{Binary differences}
-
-In a previous study~\cite{Scaria2017}, we showed that pre-processing 
+In the previous study~\cite{Scaria2017}, we showed that pre-processing 
 pipelines of the Human Connectome Project~\cite{Glasser2013} were 
 sensitive to operating system variation so that Figure 
-\ref{fig:tissue_class} illustrates the binarized errors after brain tissue 
-segmentation process in PreFreeSurfer. In addition, 
+\ref{fig:tissue_class} illustrates the binarized errors after brain 
+tissue segmentation process in FreeSurfer. In addition, 
 Figure~\ref{fig:fnirt_result} shows the same errors occurred in 
-non-linear registration process between CentOS6 and CentOS7. 
-Figure~\ref{fig:pipeline_errors}.a.
-
-
-\begin{figure}[H]
-\centering
-  \includegraphics[scale=0.6]{images/fnirt_result.png} 
-  \caption{Absolute errors between FNIRT results from PreFreeSurfer 
-  (T2w\_acpc\_to\_MNI\_nonli.nii.gz), subject 104820 (centos6 vs. 
-  centos7)~\cite{Scaria2017}. } 
-  \label{fig:fnirt_result}
-\end{figure}
+non-linear registration process between CentOS6 and CentOS7 in PreFreeSurfer. 
 
 \begin{figure}[H]
 %  \includegraphics{brain\_classification}
@@ -562,13 +559,26 @@ Figure~\ref{fig:pipeline_errors}.a.
   \label{fig:tissue_class}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+  \includegraphics[scale=0.6]{images/fnirt_result.png} 
+  \caption{Absolute errors between FNIRT results from PreFreeSurfer 
+  (T2w\_acpc\_to\_MNI\_nonli.nii.gz), subject 104820 (CentOS6 vs. 
+  CentOS7)~\cite{Scaria2017}. } 
+  \label{fig:fnirt_result}
+\end{figure}
+
+
+
 \subsection{Pipeline analysis}
 
 We identified processes that introduce errors in both PreFreeSurfer and 
 FreeSurfer pipelines. The result of our experiment is described in the 
 following paragraphs.
 
-\paragraph{PreFreeSurfer.} Among the 117 data files produced by 
+\subsubsection{PreFreeSurfer pipeline} 
+
+Among the 117 data files produced by 
 PreFreeSurfer, 21 did not have any error for any subject, 92 had errors 
 for all subjects and 4 had errors for 3 subjects only. 
 
@@ -600,7 +610,8 @@ errors.
 \begin{figure}[H]
 \centering
   \includegraphics[scale=0.5]{images/pfs_table.png}
-  \caption{Process name along with the pipeline elements that introduce errors.}
+  \caption{Process name along with the pipeline elements that introduce 
+  errors.}
   \label{fig:pfs_table}
 \end{figure}
 
@@ -614,7 +625,9 @@ errors.
 \end{figure}
 
 
-\paragraph{FreeSurfer.} In the second analysis, the result of 
+\subsubsection{FreeSurfer pipeline} 
+
+In the second analysis, the result of 
 PreFreeSurfer is considered as the input files of FreeSurfer pipeline. 
 From the FreeSurfer results, total 61 files were found to be different 
 between CentOS6 and CentOS7. The processes that introduce errors in 
@@ -652,20 +665,22 @@ subject 103818, indicate the processes that remove errors.}
 
 \section{Discussion}
 
-pipeline amplify small numerical differences, they are numerically 
+\note{Pipeline amplify small numerical differences because they are numerically 
 unstable. Furthermore, math libraries evolve over time, leading to 
 different numerical errors. we listed some of the irreproducibility 
 causes of the pipelines as we mentioned in the previous section 
 overally along with exact command arguments.
 
-Mention that this was only possible because the unprocessed data was shared in the first place.
-DICOM to Nifti conversion was out of scope and may introduce other issues.
+Mention that this was only possible because the unprocessed data was 
+shared in the first place. DICOM to Nifti conversion was out of scope 
+and may introduce other issues.}
 
 \section{Conclusion}
 
-Our thechnique is able to characterize the stability of a pipeline's components automatically.
-The numerical instability in the PreFreesurfer HCP pipeline arises mainly from
-linear and non-linear registration processes implemented in FSL FLIRT and FNIRT. 
+\note{Our technique is able to characterize the stability of a pipeline's 
+components automatically. The numerical instability in the 
+PreFreesurfer HCP pipeline arises mainly from linear and non-linear 
+registration processes implemented in FSL FLIRT and FNIRT. 
 
 There are a few ways to impede such instabilities:
 \begin{itemize}
@@ -676,17 +691,11 @@ There are a few ways to impede such instabilities:
 \item Build static executable
 \end{itemize}
 
-The results still suffer from small pertubations literally because of the fact that pipeline are not numerically stable.
-The preferred solution is to detect and fix numerical instability of the pipeline instead of masking the problem.
-These processes need to be reviewed to understand and correct the cause of instabilities. 
-In this correction process, accuracy has to be considered in addition to stability.
-
-\item In the future works we aim to measure the impact of such errors
-on the specific domain of the neuroscience and how show the significant it is.
-
-\item The purpose of the project is generalizing pipelines to get a reproducible execution 
-on every operating system instead of choosing one main OS to.
-
+The results still suffer from small perturbations literally because of 
+the fact that pipeline are not numerically stable. The preferred 
+solution is to detect and fix numerical instability of the pipeline 
+instead of masking the problem. These processes need to be reviewed to 
+understand and correct the cause of instabilities. }
 
 \section{Acknowledgments}
 
