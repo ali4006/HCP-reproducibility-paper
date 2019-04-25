@@ -28,12 +28,9 @@
 \newcommand{\note}[2]{\color{blue}Note: #1\color{black}}
 \newcommand{\reprozip}[0]{ReproZip}
 
-
-\title{NRM-tool (Numerical Reproducibility Measurement): 
-a debugging tool to identify numerical errors 
-and assess reproducibility of pipelines}
-
-  
+ 
+\title{NURM-tool: a quantitative reproducibility measurement tool to 
+identify numerical differences in pipelines}
   
 \begin{document}
 
@@ -56,7 +53,7 @@ completely reproducible. In particular, computational environments
 including different operating systems, hardware categories, and 
 software versions are known to have effects on the results produced by 
 analysis pipelines. These effects are presumably due to the creation, 
-propagation and amplification of small numerical errors across the 
+propagation and amplification of small numerical differences across the 
 pipelines. 
 Although new techniques such as virtualization , version 
 control systems , and provenance management tools provide more reliable 
@@ -65,7 +62,7 @@ findings.
 However, the precise causes of such instabilities and the path along 
 which they propagate in the pipelines are unclear.  We present a 
 technique to identify the processes in the pipeline that create 
-numerical errors along the execution, and we apply this technique to 
+numerical differences along the execution, and we apply this technique to 
 the HCP structural pre-processing pipelines.
 
 \end{abstract}
@@ -93,7 +90,7 @@ runs~\cite{hill2017numerical}. Two files will be considered numerically
 reproducible if they have identical binary contents. Binary comparison 
 is calculated by comparing checksums. It must be pointed that a 
 computation might be reproducible based on Peng's definition, but not 
-be numerically reproducible. For instance, small numerical errors 
+be numerically reproducible. For instance, small numerical differences 
 created during the pipeline execution may hamper numerical 
 reproducibility, but be negligible in the final results.
 
@@ -102,25 +99,25 @@ scientific experiments were not reproducible. Results show that the
 variety of computational infrastructures including workstation types, 
 parallelization methods, operating systems, and analysis packages are 
 known to influence reproducibility because of the creation of small 
-numerical errors~\cite{Gronenschild2012, diethelm2012limits, 
+numerical differences~\cite{Gronenschild2012, diethelm2012limits, 
 Glatard2015, bowring2018exploring}. The propagation and amplification 
-of these tiny errors by analysis pipelines may cause reproducibility 
+of these slight differences by analysis pipelines may cause reproducibility 
 issues. 
 In this case, the analysis pipelines are said to be numerically 
 unstable. Numerical instability is a characteristic of the pipelines 
-which amplify small numerical errors and then hamper the 
+which amplify small numerical differences and then hamper the 
 reproducibility of the analyses depending on the length of the pipeline 
-and magnitude of the errors. In many cases, numerical instability is an 
+and magnitude of the differences. In many cases, numerical instability is an 
 important issue for reproducibility.
  
 In particular, the effect of operating system is quantified 
 in~\cite{Glatard2015, Gronenschild2012} more specifically on some of 
 the main neuroimaging pipelines including FSL, CIVET and Freesurfer 
-pipelines. The results of comparisons indicate a significant errors 
+pipelines. The results of comparisons indicate a significant differences 
 between analysis results of the same experiment on different operating 
-system. It should be noted that \emph{error} is defined as the binary 
-differences between results of two analyses in this paper, which is 
-calculated by the checksum method. 
+system. \note{It should be noted that the binary 
+differences are measured between results of two analyses in this paper, which is 
+calculated by the checksum method. }
 The operating system is not the only part of the computational 
 environment that may hamper reproducibility. Many other computational 
 factors including hardware configuration, software version, and 
@@ -132,24 +129,24 @@ containerization techniques to encapsulate software/hardware
 dependencies, provenance capturing tools, and version control systems. 
 However, a comprehensive solution requires to fix the numerical 
 instabilities. For this purpose, we introduce a Numerical 
-Reproducibility Measurement (NRM) tool to identify the processes in 
-pipeline that create numerical errors across different runs. In this 
+Reproducibility Measurement (NURM) tool to identify the processes in 
+pipeline that create numerical differences across several runs. In this 
 paper, the execution results of pipelines across different operating 
 systems are considered to find out the cause of the irreproducibility 
 using an interposition techniques.
 
-The reminder of this paper describe the NRM-tool in different parts as 
+The reminder of this paper describe the NURM-tool in different parts as 
 the way of capturing provenance information and their representation, 
 the influence of different type of subjects, and how to classify 
-processes and characterize errors. We describe the HCP preprocessing 
+processes and characterize differences. We describe the HCP preprocessing 
 pipelines as a popular neuroimaging pipelines to test and apply the 
-NRM-tool on. Finally, we report the experimental results, the processes 
-that are responsible for the errors in the pipelines.
+NURM-tool on. Finally, we report the experimental results, the processes 
+that are responsible for the differences in the pipelines.
 
 
 \section{Tool description}
 
-We present a Numerical Reproducibility Measurement tool (NRM-tool) to 
+We present a Numerical Reproducibility Measurement tool (NURM-tool) to 
 measure numerical reproducibility of the pipelines across operating 
 systems automatically (see Figure~\ref{fig:overview}). We build the 
 containerized version of pipelines for each operating system using 
@@ -163,14 +160,14 @@ Boutiques descriptor specifies the parameters and implementation of the
 experiment, and the invocation schema describes the parameter values 
 such as input/output data path.
 
-NRM-tool produces the error JSON schema in which recognizes output files 
+NURM-tool produces the error JSON schema in which recognizes output files 
 with errors using the checksum comparison of the results. 
 We consider that a file contains errors if 
 its binary comparison is different, otherwise file has no error. Also, 
 we use \reprozip tool to capture the provenance information. 
 Subsequently, using a iterative approach, we classify processes into 
 different categories based on the state of read/write files 
-with/without error. NRM-tool identifies relevant processes in the 
+with/without error. NURM-tool identifies relevant processes in the 
 pipeline creating, propagating, or removing errors. We will explain 
 each steps in detail in the following sections.
 
@@ -194,13 +191,13 @@ information on all the processes which are created by the
 files opened by each process (in read, write or execution mode), 
 including the result files and the temporary files.
 
-NRM-tool reconstructs the tree of processes starting from the first process 
+NURM-tool reconstructs the tree of processes starting from the first process 
 created by the pipeline and identifying its child processes as the ones 
 that were created through \texttt{clone()} or \texttt{fork()}. It 
 creates a process graph from this tree by adding edges corresponding to 
 file dependencies between processes. A file dependency is defined 
 between processes A and B if a file written by A is read by B. 
-Figure~\ref{fig:simple_script} shows an example of a process graph 
+Figure~\ref{fig:simple_script} shows an example of a process tree 
 constructed for the simple bash script illustrated in 
 Algorithm~\ref{algo:sample-script} from the brain extraction procedure.
 
@@ -233,7 +230,7 @@ echo "Voxels / Volum in binarized brain mask:"
 \begin{figure}
 \centering
   \includegraphics[scale=0.3]{images/simple_graph}
-  \caption{Process graph constructed from an example brain extraction
+  \caption{Process tree constructed from an example brain extraction
 	script. Every node in the graph is labeled using (1) a process id 
 	created by our reconstruction, (2) the name of the executable run 
 	by the process. Processes that read or write temporary files are 
@@ -246,23 +243,52 @@ echo "Voxels / Volum in binarized brain mask:"
 
 \subsection{Subject type}
 
-Depending on the variety of computing environments, the produced 
-process graph can be different. In particular, different analysis 
-software package produce different process graphs for the similar 
-experiments because of following different methods. We used a fixed 
-analysis software package in different conditions, however, we found 
-that different subjects may produce a different process graph. Among 
-our dataset, we identified 4 types of subjects with different numbers 
-of T1w and T2w images. 
+Depending on the variety of computing environments, different  
+process tree can be produced. In particular, different analysis 
+software package can construct different process trees for the 
+similar experiments because of following different methods. We used a 
+fixed analysis software package in different conditions, however, we 
+found that different subjects may produce a different process trees. 
 
-In addition, we verified that the process graphs were identical for all 
-subjects of the same type in different versions of CentOS operating 
-system. The remainder of the analysis is done separately for each 
-subject type.
+The challenging problem is that of comparing various process trees with 
+different topological structures from different subjects. To address 
+this issue, we categorize subjects into different types based on the 
+distances, topologically differences, between corresponding process 
+trees. 
+We cluster subjects into various types using the bottom-up 
+hierarchical clustering approach. This approach groups together the 
+subjects with similar distance, less than a threshold. 
+
+We use the tree edit distance~\cite{zhang1989simple} method to measure 
+the distance between labeled trees. The distance between two labeled 
+trees is defined as the minimum weighted number of edit operations that 
+it takes to transform one tree to another. There are three edit 
+operations that can be used to transform a tree including modify, 
+remove, and insert. Modifying node \textit{n} means changing the label 
+on \textit{n}. Removing a node \textit{n} means making the children of 
+\textit{n} become the children of the parent of \textit{n} and then 
+deleting \textit{n}. Inserting is the the complement of remove, this 
+means that inserting \textit{n} as the child of \textit{n}$'$ will make 
+\textit{n} the parent of a consecutive subsequence of the current 
+children of \textit{n}$'$.
+Each operation has an associated cost---insertions and removals each 
+cost 1, and modifications cost either 1 or 2, depending on whether or 
+not you consider a modification to essentially be just a removal 
+followed by an insertion.
+
+The clustering algorithm starts by finding the two subjects that are 
+closest to each other on the basis of edit distance method and form the 
+first cluster between these two subjects. The next step join this 
+cluster to the next nearest cluster or subject which in turn results in 
+another cluster. This process continues until all the subjects are 
+joined together to form one big cluster or terminates when the distances 
+are less than the threshold. The threshold is defined as the minimum 
+distance required to separate clusters. 
+
 
 \subsection{Graph analysis}
 
-NRM-tool classifies the processes into four 
+NURM-tool classifies the processes into four 
 categories based on the process graph and the error JSON file 
 mentioned in the previous sections:
 \begin{enumerate}
@@ -418,8 +444,185 @@ are transparent.
 
 
 \section{Experiments}
+
 \subsection{HCP pipelines and datasets}
+
+The Human Connectome Project (HCP)~\cite{glasser2013minimal} developed 
+a set of pipelines to help extraction of structural, functional or 
+diffusion MRI data across a large set of high resolution MR images. 
+These pre-processing pipelines create results that are available in 
+standard volume and combined surface and volume spaces which makes it 
+easier for researchers to compare the images across the neuroimaging 
+spectrum. 
+
+We focused on HCP structural pre-processing pipelines to (1)quantify 
+the effect of OS on HCP pre-processing pipelines (2) identify the 
+process(es) in the pipelines that are responsible for such effects.
+
+The structural pre-processing pipelines consists of PreFreeSurfer, 
+FreeSurfer and PostFreeSurfer. In this paper, 
+we analyzed PreFreeSurfer pipeline which consist of various steps 
+including correction of MR 
+gradient nonlinearity distortions, align the T1w and T2w images using 
+FSL FLIRT, Align native space to MNI template using ACPC and FSL FLIRT, 
+brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w 
+to T1w using FLIRT's BBR, perform a bias field correction, and register 
+the subject's native structural space to MNI space.  
+
+We randomly selected 10 subjects from the HCP data release S500 which 
+are described in table~\ref{table:data}.
+
+%\begin{figure}
+%\centering
+%  \includegraphics[width=\columnwidth]{images/overview.png}
+%  \caption{An overview of the proposed technique.}
+%  \label{fig:overview}
+%\end{figure}
+
+
+\begin{table}
+\centering
+\begin{threeparttable}
+\caption{An overview of the HCP data (Humman Connectome DB).}
+
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Subject & Release & Acquisition & Gender & Age      & Subj\_Type   \\ \midrule
+103515  & Q1      & Q02         & F      & 26-30    & type1         \\
+105216  & Q3      & Q03         & M      & 26-30    & type4         \\
+103414  & Q2      & Q02         & F      & 22-25    & type1         \\
+125525  & Q1      & Q01         & F      & 31-35    & type1         \\
+142828  & Q1      & Q01         & M      & 31-35    & type1         \\
+129533  & Q3      & Q04         & F      & 31-35    & type1         \\
+103818  & Q1      & Q01         & F      & 31-35    & type3         \\
+133928  & Q2      & Q03         & M      & 26-30    & type3         \\
+148032  & Q3      & Q03         & F      & 31-35    & type2         \\
+139637  & Q2      & Q03         & F      & 31-35    & type1         \\ \bottomrule
+\end{tabular}
+\begin{tablenotes}
+      \small
+      \item *Subj\_Type refers to the graph topology type of the subjects.
+\end{tablenotes}
+\end{threeparttable}
+\label{table:data}
+\end{table}
+
+\note{Among our dataset, we identified 4 types of subjects with 
+different numbers of T1w and T2w images. In addition, we verified that 
+the process graphs were identical for all subjects of the same type in 
+different versions of CentOS operating system. The remainder of the 
+analysis is done separately for each subject type.}
+
 \subsection{Results}
+
+We executed the pipelines using Docker containers to simplify the 
+deployment of different operating system versions on execution 
+platforms. The Docker images were built for the HCP PreFreeSurfer 
+pipeline v3.19.0 in 
+CentOS 6.8 and CentOS 7.2. Docker images are available on DockerHub for 
+reuse \url{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}. 
+We collected the provenance trace (tree of executed processes and files 
+accessed in read or write mode) for each type of 
+subjects(Table~\ref{table:data}) using system-call interception as 
+provided by the \reprozip tool~\cite{Chirigati2016}.
+
+Two types of errors can occur in the subjects due to the 
+errors in the operating systems. One is inter-OS error caused by the 
+operating system library updates and the other type, intra-OS errors 
+occurs as a result of the pseudo-random processes used in the 
+pipelines. An example of a pseudo-random process function is, a random 
+number generator that would get initialized using a seed state. the 
+proposed method can be used to identify both kind of errors. The files 
+that are common to all the subjects only are taken into consideration 
+for comparison. The first step is identification of files with 
+differences in their checksums. This is identified using the checksums 
+that are recorded after the processing. Intra-OS errors are identified 
+using the run-number added as the suffix for the conditions. For 
+example, the two batches of subjects processed under the same condition 
+(CentOS6) are stored as run-1 and run-2. The files belonging to the 
+subjects stored under the above mentioned conditions are treated as 
+intra-OS runs.
+
+
+\subsubsection{Inter-OS binary differences}
+
+
+In the previous study~\cite{Scaria2017}, we showed that pre-processing 
+pipelines of the Human Connectome Project~\cite{Glasser2013} were 
+sensitive to operating system variation so that Figure 
+\ref{fig:tissue_class} illustrates the binarized errors after brain 
+tissue segmentation process in FreeSurfer. In addition, 
+Figure~\ref{fig:fnirt_result} shows the same errors occurred in 
+non-linear registration process between CentOS6 and CentOS7 in PreFreeSurfer. 
+
+\begin{figure}
+%  \includegraphics{brain\_classification}
+\centering
+  \includegraphics[width=\columnwidth]{images/brain_classification.png} 
+  \caption{Binarized error between brain segmentation results from 
+  FreeSurfer, subject 105216 (CentOS6 vs. CentOS7)~\cite{Scaria2017}.
+    } 
+  \label{fig:tissue_class}
+\end{figure}
+
+\begin{figure}
+\centering
+  \includegraphics[width=\columnwidth]{images/fnirt_result.png} 
+  \caption{Absolute errors between FNIRT results from PreFreeSurfer 
+  (T2w\_acpc\_to\_MNI\_nonli.nii.gz), subject 104820 (CentOS6 vs. 
+  CentOS7)~\cite{Scaria2017}. } 
+  \label{fig:fnirt_result}
+\end{figure}
+
+\subsubsection{PreFreeSurfer pipeline analysis} 
+
+We identified processes that introduce errors in PreFreeSurfer 
+pipeline. Among the 117 data files produced by PreFreeSurfer, 21 did 
+not have any error for any subject, 92 had errors for all subjects and 
+4 had errors for 3 subjects only. 
+
+Figure \ref{fig:complete-graph} shows the annotated provenance graph 
+of the PreFreeSurfer pipeline executed on CentOS6 and CentOS7. Each 
+node in the graph represent an executed process in the pipeline. 
+Processes that created errors are shown in red, processes that removed 
+errors are in blue, and other processes are in green.  Squares denote 
+processes for which the classification is uncertain, due to temporary 
+files that were removed during the execution. Black edges link 
+sub-processes to their parents while dashed edges denote file 
+dependencies between processes (green edges: files with no errors; red 
+edges: files with errors; yellow edges: temporary files).
+
+The processes that introduce errors in PreFreeSurfer along with the 
+number of occurrences are depicted in Figures~\ref{fig:pfs_table, 
+fig:pfs_chart} including linear registration with “\emph{FLIRT}” (in 
+ACPC Alignment, BrainExtraction, DistortionCorrection, 
+AtlasRegistration), non-linear registration with “\emph{FNIRT}” (in 
+BrainExtraction and AltasRegistration), image warping with 
+“\emph{new\_invwarp}” (in BrainExtraction and AtlasRegistration).  In 
+addition, errors were observed in image mean and standard-deviation 
+computations with “\emph{fslstats}” (in BiasFieldCorrection), and in 
+masked image extrapolation with “\emph{fslmaths}” (in 
+BiasFieldCorrection).  Besides, transformation format conversion with 
+“\emph{convertwarp}” (in DistortionCorrection) was able to remove 
+errors.
+
+\begin{figure}
+\centering
+  \includegraphics[width=\columnwidth]{images/pfs_table.png}
+  \caption{Process name along with the pipeline elements that introduce 
+  errors.}
+  \label{fig:pfs_table}
+\end{figure}
+
+\begin{figure}
+\centering
+  \includegraphics[width=\columnwidth]{images/pfs_chart.png} \caption{Number 
+  of occurrences of errors in PreFreeSurfer on subject 103515, red and 
+  blue bars indicate the processes which create and remove errors 
+  respectively.} 
+  \label{fig:pfs_chart}
+\end{figure}
+
 
 \section{Discussion}
 
@@ -455,9 +658,18 @@ solution is to detect and fix numerical instability of the pipeline
 instead of masking the problem. These processes need to be reviewed to 
 understand and correct the cause of instabilities. }
 
+
+
 \section{Acknowledgments}
 
 CBRAIN team. Compute Canada(Calcul Quebec).
+
+\begin{figure}
+  \includegraphics[width=1\textwidth]{images/graph}
+  \caption{A complete process graph from the PreFreesurfer pipeline.
+Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
+  \label{fig:complete-graph}
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{biblio}
