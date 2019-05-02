@@ -113,11 +113,10 @@ important issue for reproducibility.
 In particular, the effect of operating system is quantified 
 in~\cite{Glatard2015, Gronenschild2012} more specifically on some of 
 the main neuroimaging pipelines including FSL, CIVET and Freesurfer 
-pipelines. The results of comparisons indicate a significant differences 
-between analysis results of the same experiment on different operating 
-system. \note{It should be noted that the binary 
-differences are measured between results of two analyses in this paper, which is 
-calculated by the checksum method. }
+pipelines. 
+The binary differences are measured by the checksum method between 
+results of the same analyses on different operating system, which indicate 
+a significant disparity. 
 The operating system is not the only part of the computational 
 environment that may hamper reproducibility. Many other computational 
 factors including hardware configuration, software version, and 
@@ -146,10 +145,10 @@ that are responsible for the differences in the pipelines.
 
 \section{Tool description}
 
-We present a Numerical Reproducibility Measurement tool (NURM-tool) to 
+We present NURM-tool to automatically
 measure numerical reproducibility of the pipelines across operating 
-systems automatically (see Figure~\ref{fig:overview}). We build the 
-containerized version of pipelines for each operating system using 
+systems (see Figure~\ref{fig:overview}). We build the 
+containerized version of the pipelines for each operating system using 
 docker technology which encapsulated whole the pipeline dependencies. 
 The docker images consists of an specific computing environment such as 
 operating system version, hardware configuration, software version, 
@@ -160,16 +159,21 @@ Boutiques descriptor specifies the parameters and implementation of the
 experiment, and the invocation schema describes the parameter values 
 such as input/output data path.
 
-NURM-tool produces the error JSON schema in which recognizes output files 
-with errors using the checksum comparison of the results. 
-We consider that a file contains errors if 
-its binary comparison is different, otherwise file has no error. Also, 
+As shown in the left side of Figure~\ref{fig:overview}, NURM-tool clusters 
+the input subjects into various types based on the similarity of their 
+process trees which are achieved by \reprozip tool. The right side of this figure 
+shows the iterative classification of the process based on the binary 
+comparison of the outputs from various conditions.
+NURM-tool produces the \textit{difference} JSON schema in which 
+recognizes output files with differences using the checksum comparison 
+of the results. We consider that a file contains difference if only 
+its binary comparison shows difference. Also, 
 we use \reprozip tool to capture the provenance information. 
 Subsequently, using a iterative approach, we classify processes into 
-different categories based on the state of read/write files 
-with/without error. NURM-tool identifies relevant processes in the 
-pipeline creating, propagating, or removing errors. We will explain 
-each steps in detail in the following sections.
+different categories regarding the state of read/write files 
+with/without differences. NURM-tool identifies relevant processes in the 
+pipeline creating, propagating, or removing differences. 
+All the steps are explained in detail in the following sections.
 
 \begin{figure}
 \centering
@@ -245,19 +249,16 @@ echo "Voxels / Volum in binarized brain mask:"
 
 Depending on the variety of computing environments, different  
 process tree can be produced. In particular, different analysis 
-software package can construct different process trees for the 
+software package can construct different process tree for the 
 similar experiments because of following different methods. We used a 
 fixed analysis software package in different conditions, however, we 
-found that different subjects may produce a different process trees. 
+found that different subjects may produce a different process tree. 
 
 The challenging problem is that of comparing various process trees with 
 different topological structures from different subjects. To address 
 this issue, we categorize subjects into different types based on the 
 distances, topologically differences, between corresponding process 
 trees. 
-We cluster subjects into various types using the bottom-up 
-hierarchical clustering approach. This approach groups together the 
-subjects with similar distance, less than a threshold. 
 
 We use the tree edit distance~\cite{zhang1989simple} method to measure 
 the distance between labeled trees. The distance between two labeled 
@@ -276,9 +277,42 @@ cost 1, and modifications cost either 1 or 2, depending on whether or
 not you consider a modification to essentially be just a removal 
 followed by an insertion.
 
+We cluster subjects into various types using the bottom-up hierarchical 
+clustering approach implemented in \textit{scipy} python package (see 
+Algorithm~\ref{also:hclustering}). This approach groups together the 
+subjects with similar distance, less than a threshold. 
+
+\begin{algorithm}[h!]
+\caption{Hierarchical clustering algorithm}
+\label{algo:hclustering}
+\begin{algorithmic}
+
+  \State /* Input: a list of n trees; \texttt{T = [t${_1}$, t${_2}$,...,t${_n}$]}
+  \State /* Output: a list of clusters; \texttt{C = [c${_1}$,c${_2}$,...,c${_k}$]}
+  \For{\texttt{i=1} in \texttt{n}}
+  \State \texttt{C${_i}$} = \texttt{T${_i}$} 
+  \State \texttt{\# Create a cluster for each tree in input list; \texttt{agglomerative approach}}
+  \EndFor
+  \While{\texttt{len(C)} > \texttt{1}}  
+  \For{\texttt{i=1} to \texttt{n}}
+  \For{\texttt{j=i+1} to \texttt{n}}
+  \State \texttt{D${_{ij}}$} = argmin\{\texttt{edit\_distance(C${_i}$, C${_j}$)}\}
+  \State \texttt{\# Select two nearest clusters based on \texttt{nearest\_neighbors} method}
+  \EndFor
+  \EndFor
+  \If{\texttt{D${_{ij}}$} > \texttt{thre}}
+  \State Return \texttt{C}
+  \Else {\State Merge \texttt{C${_i}$ and C${_j}$}}
+  \EndIf
+  \EndWhile
+%  \State Function edit\_distance (C${_1}$, C${_2}$)
+%  \State EndFunction
+\end{algorithmic}
+\end{algorithm}
+
 The clustering algorithm starts by finding the two subjects that are 
 closest to each other on the basis of edit distance method and form the 
-first cluster between these two subjects. The next step join this 
+new cluster between these two subjects. The next step join this 
 cluster to the next nearest cluster or subject which in turn results in 
 another cluster. This process continues until all the subjects are 
 joined together to form one big cluster or terminates when the distances 
@@ -286,21 +320,22 @@ are less than the threshold. The threshold is defined as the minimum
 distance required to separate clusters. 
 
 
-\subsection{Graph analysis}
+\subsection{Tree analysis}
 
 NURM-tool classifies the processes into four 
-categories based on the process graph and the error JSON file 
+categories based on the process tree and the \textit{difference} JSON file 
 mentioned in the previous sections:
 \begin{enumerate}
-\item Processes that read files that do not have errors and write files 
-that do not have errors are \emph{transparent} (Figure~\ref{fig:processes}.a).
+\item Processes that read and write files that do not have differences 
+are \emph{transparent} (Figure~\ref{fig:processes}.a).
 \item Processes that read files 
-that do not have any error but write files that have errors 
-\emph{create} errors in the pipeline (Figure~\ref{fig:processes}.b).
+that do not have any differences but write files that have differences 
+\emph{create} differences in the pipeline (Figure~\ref{fig:processes}.b).
 \item Processes that read files 
-that have errors and write files that do not have errors \emph{remove} 
-errors from the pipeline (Figure~\ref{fig:processes}.c).
-\item Processes that read files that have errors and write files that also have errors are 
+that have differences and write files that do not have differences \emph{remove} 
+differences from the pipeline (Figure~\ref{fig:processes}.c).
+\item Processes that read files that have differences and write files that 
+also have differences are 
 \emph{unknown} (Figure~\ref{fig:processes}.d).
 \end{enumerate}
 
@@ -314,13 +349,13 @@ errors from the pipeline (Figure~\ref{fig:processes}.c).
     \hfill
     \begin{subfigure}{0.4\linewidth}
     \includegraphics[scale=0.34]{images/red.png}
-    \caption{Creates error}
+    \caption{Creates differences}
     \label{fig:red}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.4\linewidth}
     \includegraphics[scale=0.34]{images/blue.png}
-    \caption{Removes error}
+    \caption{Removes differences}
     \label{fig:blue}
     \end{subfigure}
     \hfill
@@ -364,7 +399,7 @@ a wrapper that first calls $P_{i}$ and then backs up F to a read-only
 directory. Thus, multiple versions of F are saved and used in the 
 analysis. 
 
-Furthermore, cycles may be present in the process graph in case a file 
+Furthermore, cycles may be present in the process tree in case a file 
 was written by more than one process. We remove such cycles by removing 
 file edges between processes A and B when A's process creation 
 timestamp is posterior to B's or when A=B. Indeed, such edges cannot 
@@ -374,19 +409,19 @@ tested).
 
 \subsubsection{Unknown process} 
 Another challenge is to classify processes that 
-read files that have errors and write files that also have errors. In 
+read files that have differences and write files that also have differences. In 
 such situations, it is not possible to determine from the pipeline 
-results whether the process created errors, removed some errors, or was 
+results whether the process created differences, removed some differences, or was 
 transparent. We label such processes \emph{unknown}.
 To address this issue, we developed an iterative approach that 
 consists of the following steps: 
 
 \begin{enumerate}
   \item Run the pipeline in conditions 1 and 2; classify the
-    processes as \emph{transparent}, \emph{create errors},
-    \emph{remove errors} or \emph{unknown}.
+    processes as \emph{transparent}, \emph{create differences},
+    \emph{remove differences} or \emph{unknown}.
   \item If there are \emph{unknown} processes then: replace each 
-  process P that create errors by a process Q that copies the results 
+  process P that create differences by a process Q that copies the results 
   produced by process P in condition 1 to the pipeline output in 
   condition 2. 
   \item Repeat steps 1 and 2 until there is no \emph{unknown} process left.
@@ -395,9 +430,9 @@ consists of the following steps:
 The replacement of process P at step 2 is done by replacing P with a 
 custom script produced by step 1. This custom script copies the results 
 obtained in condition 1 if it is invoked with the arguments of a 
-process that created errors, and calls P's original executable 
+process that created differences, and calls P's original executable 
 otherwise. The replacement is done through the PATH variable, as 
-before. This algorithm converges to a process graph without any 
+before. This algorithm converges to a process tree without any 
 \emph{unknown} process after a finite number of iterations.
 
 \begin{figure}
@@ -409,28 +444,28 @@ before. This algorithm converges to a process graph without any
 
 Figure~\ref{fig:iterations} illustrates our iterative classification 
 process for the example in Figure~\ref{fig:simple_script}. At every 
-step, processes that created errors are shown in red, processes that 
-removed errors are in blue, processes that propagated errors are in 
+step, processes that created differences are shown in red, processes that 
+removed differences are in blue, processes that propagated differences are in 
 yellow, and other processes (transparent processes) are in green. As in 
 Figure~\ref{fig:simple_script}, plain black edges represent the process 
 tree and dashed edges represent file dependencies: green edges 
-represent files with no errors, while red edges represent files with 
-errors. Temporary files are not represented because they have been 
+represent files with no differences, while red edges represent files with 
+differences. Temporary files are not represented because they have been 
 backed up as previously described.
 
 The three steps in Figure~\ref{fig:iterations} correspond to the 
 iterations of the classification algorithm. At step one, \texttt{2\#bet2} 
-is classified as error creator (red) as it produced files with errors 
-from files without error. \texttt{3\#fslstats} is classified as error 
-remover (blue) as it produced files without errors from files with 
-errors. \texttt{4\#fslmaths} and \texttt{5\#fslstats} are classified as 
-unknown (yellow) as they produce files with errors from files with 
-errors.
+is classified as difference creator (red) as it produced files with differences 
+from files without differences. \texttt{3\#fslstats} is classified as difference  
+remover (blue) as it produced files without differences from files with 
+differences. \texttt{4\#fslmaths} and \texttt{5\#fslstats} are classified as 
+unknown (yellow) as they produce files with differences from files with 
+differences.
 
 At step 2, the files produced by \texttt{2\#bet2} in the tested 
 condition are replaced with the files produced by \texttt{2\#bet2} in 
 the other condition. \texttt{3\#fslstats} is now classified as 
-transparent, \texttt{4\#fslmaths} is now classified as error creator 
+transparent, \texttt{4\#fslmaths} is now classified as difference creator 
 and \texttt{5\#fslstats} is still unknown.
 
 At step 3, the files produced by \texttt{4\#fslmaths} in the tested 
@@ -438,8 +473,8 @@ condition are replaced with the files produced by \texttt{4\#fslmaths}
 in the other condition. \texttt{5\#fslstats} is now transparent.
  
 As a result of those 3 steps, the final process classification is: 
-\texttt{2\#bet2} and \texttt{4\#fslmath} are error creators (red), 
-\texttt{3\#fslstats} is error remover (blue) and the other processes 
+\texttt{2\#bet2} and \texttt{4\#fslmath} are difference creators (red), 
+\texttt{3\#fslstats} is difference remover (blue) and the other processes 
 are transparent.
 
 
@@ -469,8 +504,14 @@ brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w
 to T1w using FLIRT's BBR, perform a bias field correction, and register 
 the subject's native structural space to MNI space.  
 
-We randomly selected 10 subjects from the HCP data release S500 which 
-are described in table~\ref{table:data}.
+We randomly selected 100 subjects from the HCP data release S500 and then 
+using the NURM-tool we cluster them into different groups. 
+Figure~\ref{fig:subj-clusters} shows the result of data clustering. 
+Among our dataset, we identified 4 types of subjects with 
+different topology of process trees. In addition, we verified that 
+the process trees were identical for all subjects of the same type in 
+different versions of CentOS operating system. The remainder of the 
+analysis is done separately for each subject type.
 
 %\begin{figure}
 %\centering
@@ -480,38 +521,34 @@ are described in table~\ref{table:data}.
 %\end{figure}
 
 
-\begin{table}
-\centering
-\begin{threeparttable}
-\caption{An overview of the HCP data (Humman Connectome DB).}
+%\begin{table}
+%\centering
+%\begin{threeparttable}
+%\caption{An overview of the HCP data (Humman Connectome DB).}
+%
+%\begin{tabular}{@{}llllll@{}}
+%\toprule
+%Subject & Release & Acquisition & Gender & Age      & Subj\_Type   \\ \midrule
+%103515  & Q1      & Q02         & F      & 26-30    & type1         \\
+%105216  & Q3      & Q03         & M      & 26-30    & type4         \\
+%103414  & Q2      & Q02         & F      & 22-25    & type1         \\
+%125525  & Q1      & Q01         & F      & 31-35    & type1         \\
+%142828  & Q1      & Q01         & M      & 31-35    & type1         \\
+%129533  & Q3      & Q04         & F      & 31-35    & type1         \\
+%103818  & Q1      & Q01         & F      & 31-35    & type3         \\
+%133928  & Q2      & Q03         & M      & 26-30    & type3         \\
+%148032  & Q3      & Q03         & F      & 31-35    & type2         \\
+%139637  & Q2      & Q03         & F      & 31-35    & type1         \\ \bottomrule
+%\end{tabular}
+%\begin{tablenotes}
+%      \small
+%      \item *Subj\_Type refers to the tree topology type of the subjects.
+%\end{tablenotes}
+%\end{threeparttable}
+%\label{table:data}
+%\end{table}
 
-\begin{tabular}{@{}llllll@{}}
-\toprule
-Subject & Release & Acquisition & Gender & Age      & Subj\_Type   \\ \midrule
-103515  & Q1      & Q02         & F      & 26-30    & type1         \\
-105216  & Q3      & Q03         & M      & 26-30    & type4         \\
-103414  & Q2      & Q02         & F      & 22-25    & type1         \\
-125525  & Q1      & Q01         & F      & 31-35    & type1         \\
-142828  & Q1      & Q01         & M      & 31-35    & type1         \\
-129533  & Q3      & Q04         & F      & 31-35    & type1         \\
-103818  & Q1      & Q01         & F      & 31-35    & type3         \\
-133928  & Q2      & Q03         & M      & 26-30    & type3         \\
-148032  & Q3      & Q03         & F      & 31-35    & type2         \\
-139637  & Q2      & Q03         & F      & 31-35    & type1         \\ \bottomrule
-\end{tabular}
-\begin{tablenotes}
-      \small
-      \item *Subj\_Type refers to the graph topology type of the subjects.
-\end{tablenotes}
-\end{threeparttable}
-\label{table:data}
-\end{table}
 
-\note{Among our dataset, we identified 4 types of subjects with 
-different numbers of T1w and T2w images. In addition, we verified that 
-the process graphs were identical for all subjects of the same type in 
-different versions of CentOS operating system. The remainder of the 
-analysis is done separately for each subject type.}
 
 \subsection{Results}
 
@@ -659,16 +696,27 @@ instead of masking the problem. These processes need to be reviewed to
 understand and correct the cause of instabilities. }
 
 
-
 \section{Acknowledgments}
 
-CBRAIN team. Compute Canada(Calcul Quebec).
+Data were provided by the Human Connectome Project, WU-Minn 
+Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil; 
+1U54MH091657) funded by the 16 NIH Institutes and Centers that support 
+the NIH Blueprint for Neuroscience Research; and by the McDonnell 
+Center for Systems Neuroscience at Washington University.
+
+\note{CBRAIN team. Compute Canada(Calcul Quebec).}
 
 \begin{figure}
   \includegraphics[width=1\textwidth]{images/graph}
   \caption{A complete process graph from the PreFreesurfer pipeline.
 Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
   \label{fig:complete-graph}
+\end{figure}
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{images/hclusters}
+  \caption{Different data types clustered among 100 subjects.}
+  \label{fig:subj-clusters}
 \end{figure}
 
 \bibliographystyle{plain}
