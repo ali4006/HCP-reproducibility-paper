@@ -47,23 +47,22 @@ identify numerical differences in pipelines}
 
 \maketitle
 
-\begin{abstract}
+\begin{abstract} 
+
 Many experiments show that computational analysis results are still not 
-completely reproducible. In particular, computational environments 
-including different operating systems, hardware categories, and 
-software versions are known to have effects on the results produced by 
-analysis pipelines. These effects are presumably due to the creation, 
-propagation and amplification of small numerical differences across the 
-pipelines. 
-Although new techniques such as virtualization , version 
-control systems , and provenance management tools provide more reliable 
+completely reproducible. Computational environments including different 
+operating systems, hardware categories, and software versions are known 
+to have effects on the results produced by analysis pipelines. These 
+effects are presumably due to the creation, propagation and 
+amplification of small numerical differences across the pipelines. 
+Although new techniques such as virtualization, version control 
+systems, and provenance management tools provide more reliable 
 environment and significantly improve the reproducibility of scientific 
-findings. 
-However, the precise causes of such instabilities and the path along 
-which they propagate in the pipelines are unclear.  We present a 
-technique to identify the processes in the pipeline that create 
-numerical differences along the execution, and we apply this technique to 
-the HCP structural pre-processing pipelines.
+findings. However, the precise causes of such instabilities and the 
+path along which they propagate in the pipelines are unclear.  We 
+present a technique to identify the processes in the pipeline that 
+create numerical differences along the execution, and we apply this 
+technique to the HCP structural pre-processing pipelines.
 
 \end{abstract}
 
@@ -78,53 +77,49 @@ results that are consistent with the original
 work~\cite{plesser2018reproducibility}. Research findings are expected 
 to be reproducible so that their authenticity and reliability can be 
 evaluated. 
-There are different definitions for the term reproducibility, we follow 
-Peng's definition~\cite{peng2011reproducible} in which reproducibility 
-is defined as the ability to regenerate the same results as the 
-original findings when the experiment is reanalyzed given exactly the 
-same analytic methods, software package, parameters, and data. 
+
+Reproducibility is defined as the ability to regenerate the same 
+results as the original findings when the experiment is reanalyzed by 
+exactly the same analytic methods, software package, parameters, and 
+data~\cite{peng2011reproducible}. 
 
 In addition, numerical reproducibility is defined as the ability to 
 regenerate bit for bit identical results from multiple 
-runs~\cite{hill2017numerical}. Two files will be considered numerically 
-reproducible if they have identical binary contents. Binary comparison 
-is calculated by comparing checksums. It must be pointed that a 
-computation might be reproducible based on Peng's definition, but not 
+runs~\cite{hill2017numerical}. This Numerical reproducibility can be 
+checked by comparing the binary content of the results which is 
+computed by the checksum method.
+Regarding these definitions, it must be pointed that a
+computation might be reproducible, but not 
 be numerically reproducible. For instance, small numerical differences 
 created during the pipeline execution may hamper numerical 
 reproducibility, but be negligible in the final results.
 
 Recently, scientists began to realize that the results of many 
-scientific experiments were not reproducible. Results show that the 
-variety of computational infrastructures including workstation types, 
-parallelization methods, operating systems, and analysis packages are 
-known to influence reproducibility because of the creation of small 
-numerical differences~\cite{Gronenschild2012, diethelm2012limits, 
-Glatard2015, bowring2018exploring}. The propagation and amplification 
-of these slight differences by analysis pipelines may cause reproducibility 
-issues. 
-In this case, the analysis pipelines are said to be numerically 
-unstable. Numerical instability is a characteristic of the pipelines 
-which amplify small numerical differences and then hamper the 
-reproducibility of the analyses depending on the length of the pipeline 
-and magnitude of the differences. In many cases, numerical instability is an 
-important issue for reproducibility.
- 
+scientific experiments were not reproducible. According to the previous 
+studies, variety of computational infrastructures including workstation 
+types, parallelization methods, operating systems, and analysis 
+packages are known to influence reproducibility~\cite{Gronenschild2012, 
+diethelm2012limits, Glatard2015, bowring2019exploring}.
+
 In particular, the effect of operating system is quantified 
-in~\cite{Glatard2015, Gronenschild2012} more specifically on some of 
-the main neuroimaging pipelines including FSL, CIVET and Freesurfer 
-pipelines. 
+in~\cite{Glatard2015, Gronenschild2012} specially on some of the main 
+neuroimaging pipelines including FSL, CIVET and Freesurfer pipelines. 
 The binary differences are measured by the checksum method between 
-results of the same analyses on different operating system, which indicate 
-a significant disparity. 
-The operating system is not the only part of the computational 
-environment that may hamper reproducibility. Many other computational 
-factors including hardware configuration, software version, and 
-parallelization techniques are reported as the main influential 
-computing infrastructure on reproducibility. 
+results of the same analyses on different operating systems, which 
+indicate a significant disparity. 
+
+This irreproducibility issues are reported as the result of the 
+creation, propagation, and amplification of small numerical 
+differences~\cite{Gronenschild2012, diethelm2012limits, Glatard2015, 
+bowring2019exploring}. In this case, the analysis pipelines are said to 
+be numerically unstable. Numerical instability is a characteristic of 
+the pipelines which amplify small numerical differences and then hamper 
+the reproducibility of the analyses depending on the length of the 
+pipeline and magnitude of the differences. In many cases, numerical 
+instability is an important issue for reproducibility.
 
 There are different solutions to make reproducible analysis including 
-containerization techniques to encapsulate software/hardware 
+containerization techniques that encapsulate software/hardware 
 dependencies, provenance capturing tools, and version control systems. 
 However, a comprehensive solution requires to fix the numerical 
 instabilities. For this purpose, we introduce a Numerical 
@@ -132,22 +127,23 @@ Reproducibility Measurement (NURM) tool to identify the processes in
 pipeline that create numerical differences across several runs. In this 
 paper, the execution results of pipelines across different operating 
 systems are considered to find out the cause of the irreproducibility 
-using an interposition techniques.
+using the interposition techniques.
 
-The reminder of this paper describe the NURM-tool in different parts as 
-the way of capturing provenance information and their representation, 
-the influence of different type of subjects, and how to classify 
-processes and characterize differences. We describe the HCP preprocessing 
-pipelines as a popular neuroimaging pipelines to test and apply the 
-NURM-tool on. Finally, we report the experimental results, the processes 
-that are responsible for the differences in the pipelines.
+The remainder of this paper describes the NURM-tool in different parts 
+including the way of capturing and representation of the provenance 
+information, the method of clustering of different subject types, and 
+process classification to characterize differences. We describe the HCP 
+preprocessing pipelines as a popular neuroimaging project to test the 
+NURM-tool and evaluate its functionality. Finally, we reported the 
+experimental results which describe the processes that are responsible 
+for the differences in the pipelines.
 
 
 \section{Tool description}
 
-We present NURM-tool to automatically
-measure numerical reproducibility of the pipelines across operating 
-systems (see Figure~\ref{fig:overview}). We build the 
+We present NURM-tool to automatically measure numerical reproducibility 
+of the pipelines across operating systems (see 
+Figures~\ref{fig:overview-cluster}, \ref{fig:overview-classify}). We build the 
 containerized version of the pipelines for each operating system using 
 docker technology which encapsulated whole the pipeline dependencies. 
 The docker images consists of an specific computing environment such as 
@@ -159,28 +155,54 @@ Boutiques descriptor specifies the parameters and implementation of the
 experiment, and the invocation schema describes the parameter values 
 such as input/output data path.
 
-As shown in the left side of Figure~\ref{fig:overview}, NURM-tool clusters 
-the input subjects into various types based on the similarity of their 
-process trees which are achieved by \reprozip tool. The right side of this figure 
-shows the iterative classification of the process based on the binary 
-comparison of the outputs from various conditions.
-NURM-tool produces the \textit{difference} JSON schema in which 
-recognizes output files with differences using the checksum comparison 
-of the results. We consider that a file contains difference if only 
-its binary comparison shows difference. Also, 
-we use \reprozip tool to capture the provenance information. 
-Subsequently, using a iterative approach, we classify processes into 
-different categories regarding the state of read/write files 
-with/without differences. NURM-tool identifies relevant processes in the 
-pipeline creating, propagating, or removing differences. 
-All the steps are explained in detail in the following sections.
+As shown in Figure~\ref{fig:overview-cluster}, NURM-tool clusters the 
+input subjects into various types based on the similarity of their 
+process trees which are achieved by \reprozip tool. 
+Figure~\ref{fig:overview-classify} shows the iterative classification 
+of the process based on the binary comparison of the outputs from 
+various conditions. NURM-tool produces the \textit{difference} JSON 
+schema in which recognizes output files with differences using the 
+checksum comparison of the results. We consider that a file contains 
+difference if only its binary comparison shows difference. Also, we use 
+\reprozip tool to capture the provenance information. Subsequently, 
+using a iterative approach, we classify processes into different 
+categories regarding the state of read/write files with/without 
+differences. NURM-tool identifies relevant processes in the pipeline 
+creating, propagating, or removing differences. All the steps are 
+explained in detail in the following sections.
+
 
 \begin{figure}
-\centering
-  \includegraphics[width=\columnwidth]{images/overview.png}
-  \caption{An overview of the proposed technique.}
-  \label{fig:overview}
+  \centering
+  \includegraphics[width=.7\columnwidth]{images/Slide1}
+  \caption{An overview of the subject type clustering method.}
+  \label{fig:overview-cluster}
 \end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.75\columnwidth]{images/Slide2}
+  \caption{An overview of the process classification method.}
+  \label{fig:overview-classify}
+\end{figure}
+
+
+%\begin{figure*}
+%\centering
+%    \begin{subfigure}{\columnwidth}
+%        \includegraphics[width=\textwidth]{images/Slide1.png}
+%        \caption{Subject clustering}
+%        \label{fig:green}
+%    \end{subfigure}
+%\hfill%\hfil
+%    \begin{subfigure}{\columnwidth}
+%    \includegraphics[width=\textwidth]{images/Slide2.png}
+%    \caption{Process classification}
+%    \label{fig:red}
+%\end{subfigure}
+%    \caption{An overview of the proposed technique.}
+%    \label{fig:processes}
+%\end{figure*}
 
 
 \subsection{Provenance capture and representation}
@@ -190,19 +212,19 @@ the tree of processes executed by the pipeline and (2) the list of
 files read and written by each process. This information is collected 
 by system call interceptions, through the \texttt{ptrace} Unix system 
 call, and stored in a \texttt{SQLite} database. The database stores 
-information on all the processes which are created by the 
+information of all the processes which are created by the 
 \texttt{clone()} or \texttt{fork()} system calls. It also records the 
 files opened by each process (in read, write or execution mode), 
 including the result files and the temporary files.
 
-NURM-tool reconstructs the tree of processes starting from the first process 
-created by the pipeline and identifying its child processes as the ones 
-that were created through \texttt{clone()} or \texttt{fork()}. It 
-creates a process graph from this tree by adding edges corresponding to 
-file dependencies between processes. A file dependency is defined 
-between processes A and B if a file written by A is read by B. 
-Figure~\ref{fig:simple_script} shows an example of a process tree 
-constructed for the simple bash script illustrated in 
+NURM-tool reconstructs the tree of processes starting from the first 
+process created by the pipeline and through identifying its child 
+processes as the ones that were created through \texttt{clone()} or 
+\texttt{fork()}. It creates a process graph from this tree by adding 
+edges corresponding to file dependencies between processes. A file 
+dependency is defined between processes A and B if a file written by A 
+is read by B. Figure~\ref{fig:simple_script} shows an example of a 
+process tree constructed for the simple bash script illustrated in 
 Algorithm~\ref{algo:sample-script} from the brain extraction procedure.
 
 
@@ -233,7 +255,7 @@ echo "Voxels / Volum in binarized brain mask:"
 
 \begin{figure}
 \centering
-  \includegraphics[scale=0.3]{images/simple_graph}
+  \includegraphics[scale=0.25]{images/simple_graph}
   \caption{Process tree constructed from an example brain extraction
 	script. Every node in the graph is labeled using (1) a process id 
 	created by our reconstruction, (2) the name of the executable run 
@@ -247,43 +269,46 @@ echo "Voxels / Volum in binarized brain mask:"
 
 \subsection{Subject type}
 
-Depending on the variety of computing environments, different  
-process tree can be produced. In particular, different analysis 
-software package can construct different process tree for the 
-similar experiments because of following different methods. We used a 
-fixed analysis software package in different conditions, however, we 
-found that different subjects may produce a different process tree. 
+Depending on the variety of computing environments, in particular, 
+different analysis software packages, different process trees can be 
+constructed for the same experiment. It was expected to achieve the 
+same process trees since we used the same computing environments 
+specially the same analysis software package in different conditions. 
+However, we found that different subjects may result in different 
+process trees. 
 
-The challenging problem is that of comparing various process trees with 
-different topological structures from different subjects. To address 
-this issue, we categorize subjects into different types based on the 
-distances, topologically differences, between corresponding process 
-trees. 
+Therefore, all subjects should be grouped into different types based on 
+the topological structure of the process trees.
+To this order, the distance between trees, topological differences, 
+need to be calculated.
 
-We use the tree edit distance~\cite{zhang1989simple} method to measure 
+We used the tree edit distance~\cite{zhang1989simple} method to measure 
 the distance between labeled trees. The distance between two labeled 
 trees is defined as the minimum weighted number of edit operations that 
 it takes to transform one tree to another. There are three edit 
 operations that can be used to transform a tree including modify, 
 remove, and insert. Modifying node \textit{n} means changing the label 
-on \textit{n}. Removing a node \textit{n} means making the children of 
-\textit{n} become the children of the parent of \textit{n} and then 
-deleting \textit{n}. Inserting is the the complement of remove, this 
+on \textit{n}. Removing node \textit{n} means making the children of 
+\textit{n} become the children of its parent and then 
+deleting it. Inserting is the complement of remove; this 
 means that inserting \textit{n} as the child of \textit{n}$'$ will make 
 \textit{n} the parent of a consecutive subsequence of the current 
 children of \textit{n}$'$.
 Each operation has an associated cost---insertions and removals each 
-cost 1, and modifications cost either 1 or 2, depending on whether or 
-not you consider a modification to essentially be just a removal 
-followed by an insertion.
+cost 1, and modifications cost either 1 or 2, depending on whether 
+you consider a modification to essentially be just a removal 
+or followed by an insertion.
 
-We cluster subjects into various types using the bottom-up hierarchical 
+We clustered subjects into various types using the bottom-up hierarchical 
 clustering approach implemented in \textit{scipy} python package (see 
-Algorithm~\ref{also:hclustering}). This approach groups together the 
+Algorithm~\ref{algo:hclustering}). This approach groups together the 
 subjects with similar distance, less than a threshold. 
 
+% \texttt{agglomerative approach}
+%  based on \texttt{nearest\_neighbors} method
+  
 \begin{algorithm}[h!]
-\caption{Hierarchical clustering algorithm}
+\caption{Hierarchical clustering algorithm from \textit{scipy}}
 \label{algo:hclustering}
 \begin{algorithmic}
 
@@ -291,18 +316,21 @@ subjects with similar distance, less than a threshold.
   \State /* Output: a list of clusters; \texttt{C = [c${_1}$,c${_2}$,...,c${_k}$]}
   \For{\texttt{i=1} in \texttt{n}}
   \State \texttt{C${_i}$} = \texttt{T${_i}$} 
-  \State \texttt{\# Create a cluster for each tree in input list; \texttt{agglomerative approach}}
+  \State \texttt{\# Create a cluster for each tree in input list;}
   \EndFor
   \While{\texttt{len(C)} > \texttt{1}}  
   \For{\texttt{i=1} to \texttt{n}}
   \For{\texttt{j=i+1} to \texttt{n}}
-  \State \texttt{D${_{ij}}$} = argmin\{\texttt{edit\_distance(C${_i}$, C${_j}$)}\}
-  \State \texttt{\# Select two nearest clusters based on \texttt{nearest\_neighbors} method}
+  \State \texttt{D${_{ij}}$} = \texttt{edit\_distance(C${_i}$, C${_j}$)}
+  \State \texttt{\# Select two nearest clusters;}
   \EndFor
   \EndFor
-  \If{\texttt{D${_{ij}}$} > \texttt{thre}}
+  \State \texttt{d\_min${_{ij}}$} = \texttt{MIN(D)}
+  \If{\texttt{d\_min${_{ij}}$} > \texttt{thre}}
   \State Return \texttt{C}
-  \Else {\State Merge \texttt{C${_i}$ and C${_j}$}}
+  \Else {
+  \State \texttt{C${_i}$} = Merge(\texttt{C${_i}$ and C${_j}$})
+  \State Remove \texttt{C${_j}$}}
   \EndIf
   \EndWhile
 %  \State Function edit\_distance (C${_1}$, C${_2}$)
@@ -310,14 +338,14 @@ subjects with similar distance, less than a threshold.
 \end{algorithmic}
 \end{algorithm}
 
-The clustering algorithm starts by finding the two subjects that are 
-closest to each other on the basis of edit distance method and form the 
-new cluster between these two subjects. The next step join this 
-cluster to the next nearest cluster or subject which in turn results in 
-another cluster. This process continues until all the subjects are 
-joined together to form one big cluster or terminates when the distances 
-are less than the threshold. The threshold is defined as the minimum 
-distance required to separate clusters. 
+The clustering algorithm starts by finding two closest subjects to each 
+other on the basis of edit distance method and form a new cluster 
+between them. In the next iteration, this cluster aggregates with the 
+next nearest cluster or subject and turns to another cluster. This 
+process continues until all the subjects are aggregated to form one big 
+cluster or the distances are less than an specified threshold. The 
+threshold is defined as the minimum distance required to separate 
+clusters. 
 
 
 \subsection{Tree analysis}
@@ -706,18 +734,22 @@ Center for Systems Neuroscience at Washington University.
 
 \note{CBRAIN team. Compute Canada(Calcul Quebec).}
 
-\begin{figure}
-  \includegraphics[width=1\textwidth]{images/graph}
+\begin{figure*}
+\centering
+  \includegraphics[width=.9\textwidth]{images/graph}
   \caption{A complete process graph from the PreFreesurfer pipeline.
 Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
   \label{fig:complete-graph}
-\end{figure}
+\end{figure*}
 
-\begin{figure}
-  \includegraphics[width=\textwidth]{images/hclusters}
+\begin{figure*}
+\centering
+  \includegraphics[width=.8\textwidth]{images/hclusters}
   \caption{Different data types clustered among 100 subjects.}
   \label{fig:subj-clusters}
-\end{figure}
+\end{figure*}
+
+
 
 \bibliographystyle{plain}
 \bibliography{biblio}
