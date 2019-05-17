@@ -23,14 +23,18 @@
 \usepackage{makecell}
 \usepackage[flushleft]{threeparttable}
 
+\usepackage{subcaption}
+\usepackage{xspace}
+
 %%%% Commands %%%%
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 \newcommand{\note}[2]{\color{blue}Note: #1\color{black}}
-\newcommand{\reprozip}[0]{ReproZip}
+\newcommand{\reprozip}[0]{ReproZip\xspace}
+\newcommand{\tristan}[1]{\color{blue}\textbf{From Tristan:}#1\color{black}}
 
  
-\title{NURM-tool: a quantitative reproducibility measurement tool to 
-identify numerical differences in pipelines}
+\title{NURM: a tool to 
+locate numerical differences in pipelines}
   
 \begin{document}
 
@@ -141,69 +145,44 @@ for the differences in the pipelines.
 
 \section{Tool description}
 
-We present NURM-tool to automatically measure numerical reproducibility 
-of the pipelines across operating systems (see 
-Figures~\ref{fig:overview-cluster}, \ref{fig:overview-classify}). We build the 
-containerized version of the pipelines for each operating system using 
-docker technology which encapsulated whole the pipeline dependencies. 
-The docker images consists of an specific computing environment such as 
-operating system version, hardware configuration, software version, 
-etc. Furthermore, to simplify computational reproducibility of the 
-analysis, we execute docker images using Boutiques framework based on 
-the command-line descriptions~\cite{glatard2017boutiques}. The 
-Boutiques descriptor specifies the parameters and implementation of the 
-experiment, and the invocation schema describes the parameter values 
-such as input/output data path.
-
-As shown in Figure~\ref{fig:overview-cluster}, NURM-tool clusters the 
-input subjects into various types based on the similarity of their 
-process trees which are achieved by \reprozip tool. 
-Figure~\ref{fig:overview-classify} shows the iterative classification 
-of the process based on the binary comparison of the outputs from 
-various conditions. NURM-tool produces the \textit{difference} JSON 
-schema in which recognizes output files with differences using the 
-checksum comparison of the results. We consider that a file contains 
-difference if only its binary comparison shows difference. Also, we use 
-\reprozip tool to capture the provenance information. Subsequently, 
-using a iterative approach, we classify processes into different 
-categories regarding the state of read/write files with/without 
-differences. NURM-tool identifies relevant processes in the pipeline 
-creating, propagating, or removing differences. All the steps are 
-explained in detail in the following sections.
-
-
+Figure~\ref{fig:overview} shows an overview of our method.
+For each tested condition, the
+pipeline is containerized using Docker, and its interface is
+described using Boutiques~\cite{glatard2017boutiques}. \reprozip
+is added to the container images for provenance tracking. Our tool first
+clusters the subjects based on the similarity of their process trees
+produced by \reprozip (Fig.~\ref{fig:overview-cluster}). This results in a
+reduced set of representative process trees to evaluate. The processes in
+each representative process tree are labeled \tristan{Replace
+``classification'' by ``labelling'' everyrwhere} from potential differences
+found in their outputs produced in the tested conditions (Fig.~\ref{fig:overview-classify}).
+To do that, a difference file is first produced that contains all the
+files with differences across conditions
+(Fig.~\ref{fig:overview-classify} - (A)\tristan{Add labels to the figure}).
+Differences are identified simply by comparing file checksums. Using the
+difference file, we then classify processes in 4 categories (Fig.~\ref{fig:overview-classify} - (B)) depending
+whether they create differences (represented in red), remove differences
+(blue), neither create nor remove differences (green), or have uncertain
+behavior (yellow). When processes with an uncertain behavior are found, the
+pipeline in condition 2 is modified (as explained later) and re-executed. This
+procedure iterates until all processes are classified. 
 \begin{figure}
   \centering
-  \includegraphics[width=.7\columnwidth]{images/Slide1}
-  \caption{An overview of the subject type clustering method.}
-  \label{fig:overview-cluster}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=.75\columnwidth]{images/Slide2}
-  \caption{An overview of the process classification method.}
-  \label{fig:overview-classify}
-\end{figure}
-
-
-%\begin{figure*}
-%\centering
-%    \begin{subfigure}{\columnwidth}
-%        \includegraphics[width=\textwidth]{images/Slide1.png}
-%        \caption{Subject clustering}
-%        \label{fig:green}
-%    \end{subfigure}
-%\hfill%\hfil
-%    \begin{subfigure}{\columnwidth}
-%    \includegraphics[width=\textwidth]{images/Slide2.png}
-%    \caption{Process classification}
-%    \label{fig:red}
-%\end{subfigure}
-%    \caption{An overview of the proposed technique.}
-%    \label{fig:processes}
-%\end{figure*}
-
+  \begin{subfigure}{\columnwidth}
+    \centering
+    \includegraphics[width=.7\columnwidth]{images/Slide1}
+    \caption{Subject clustering.}
+    \label{fig:overview-cluster}
+  \end{subfigure}
+   \begin{subfigure}{\columnwidth}
+    \centering
+     \includegraphics[width=.75\columnwidth]{images/Slide2}
+     \caption{Process classification.}
+     \label{fig:overview-classify}
+   \end{subfigure}
+   \caption{Method overview}
+   \label{fig:overview}
+  \end{figure}
 
 \subsection{Provenance capture and representation}
 
