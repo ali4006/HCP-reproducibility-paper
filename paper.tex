@@ -136,7 +136,7 @@ using the interposition techniques.
 The remainder of this paper describes the NURM-tool in different parts 
 including the way of capturing and representation of the provenance 
 information, the method of clustering of different subject types, and 
-process classification to characterize differences. We describe the HCP 
+process labelling to characterize differences. We describe the HCP 
 preprocessing pipelines as a popular neuroimaging project to test the 
 NURM-tool and evaluate its functionality. Finally, we reported the 
 experimental results which describe the processes that are responsible 
@@ -145,27 +145,33 @@ for the differences in the pipelines.
 \tristan{define subjects, explain neuroimaging, bring context.}
 \section{Tool description}
 
-Figure~\ref{fig:overview} shows an overview of our method.
-For each tested condition, the
-pipeline is containerized using Docker, and its interface is
-described using Boutiques~\cite{glatard2017boutiques}. \reprozip
-is added to the container images for provenance tracking. Our tool first
-clusters the subjects based on the similarity of their process trees
-produced by \reprozip (Fig.~\ref{fig:overview-cluster}). This results in a
-reduced set of representative process trees to evaluate. The processes in
-each representative process tree are labeled \tristan{Replace
-``classification'' by ``labelling'' everyrwhere} from potential differences
-found in their outputs produced in the tested conditions (Fig.~\ref{fig:overview-classify}).
-To do that, a difference file is first produced that contains all the
-files with differences across conditions
-(Fig.~\ref{fig:overview-classify} - (A)\tristan{Add labels to the figure}).
-Differences are identified simply by comparing file checksums. Using the
-difference file, we then label processes in 4 categories (Fig.~\ref{fig:overview-classify} - (B)) depending
-whether they create differences (represented in red), remove differences
-(blue), neither create nor remove differences (green), or have uncertain
-behavior (yellow). When processes with an uncertain behavior are found, the
-pipeline in condition 2 is modified (as explained later) and re-executed. This
-procedure iterates until all processes are labeled. 
+Figure~\ref{fig:overview} shows an overview of our method. For each 
+tested condition, the pipeline is containerized using Docker, and its 
+interface is described using Boutiques~\cite{glatard2017boutiques}. 
+\reprozip is added to the container images for provenance tracking. Our 
+tool first clusters the subjects based on the similarity of their 
+process trees produced by \reprozip (Fig.~\ref{fig:overview-cluster}). 
+This results in a reduced set of representative process trees to 
+evaluate. The processes in each representative process tree are labeled 
+from potential differences found in their outputs produced in the 
+tested conditions (Fig.~\ref{fig:overview-classify}). To do that, a 
+difference file is first produced that contains all the files with 
+differences across conditions (Fig.~\ref{fig:overview-classify} - (A)). 
+Differences are identified simply by comparing file checksums. 
+Using difference file and process tree, we first capture temporary and 
+overwritten files in condition 1. In addition, we set various 
+breakpoints in the pipeline in condition 2 to check the output files 
+produced by each process immediately after running. We then label processes in 4 
+categories (Fig.~\ref{fig:overview-classify} - (B)) depending whether 
+they create differences (represented in red), remove differences 
+(blue), neither create nor remove differences (green), or have 
+uncertain behavior (yellow). When processes that create differences are 
+found, their written files in condition 2 are replaced (as explained 
+later) and then re-labelling processes. This procedure 
+continues until the end of the pipeline execution when all processes 
+are labeled correctly. 
+
+
 \begin{figure}
   \centering
   \begin{subfigure}{\columnwidth}
@@ -176,8 +182,8 @@ procedure iterates until all processes are labeled.
   \end{subfigure}
    \begin{subfigure}{\columnwidth}
     \centering
-     \includegraphics[width=.75\columnwidth]{images/Slide2}
-     \caption{Process classification.}
+     \includegraphics[width=1\columnwidth]{images/Slide2}
+     \caption{Process labelling.}
      \label{fig:overview-classify}
    \end{subfigure}
    \caption{Method overview}
@@ -352,7 +358,7 @@ clusters.
 
 \subsection{Tree analysis}
 
-NURM-tool classifies the processes into four 
+NURM-tool labels the processes into four 
 categories based on the process tree and the \textit{difference} JSON file 
 mentioned in the previous sections:
 \begin{enumerate}
@@ -401,13 +407,13 @@ also have differences are
     \label{fig:processes}
 \end{figure}
 
-There are some issues that should be addressed to classify process 
+There are some issues that should be addressed to label process 
 properly, including capturing temporary files that have been removed 
 during the execution, capturing files written by multiple processes, 
 and unknown process.
 
 \subsubsection{Capture temporary files} 
-The classification of processes that read or 
+The labelling of processes that read or 
 write temporary files is uncertain when these files are deleted during 
 the execution. To address this issue, we replace every process P that 
 writes temporary files with a modification of P that first calls P and 
@@ -420,7 +426,7 @@ the subsequent steps of the pipeline, by definition.
 
 \subsubsection{Capture multiple write files} 
 Files written by multiple processes also lead 
-to unknown classification labels. To address this issue for a file F 
+to unknown labels. To address this issue for a file F 
 written by processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
 (1) check that processes in \textbf{P} do not write concurrently to F, 
 (2) we establish an order on \textbf{P} based on the creation timestamp 
@@ -437,42 +443,59 @@ happen in practice unless A and B were running concurrently, which we
 assume is not the case (we also checked that on the workflow we 
 tested). 
 
+
+we first capture temporary and overwritten files in condition 1
+we set various 
+breakpoints in the pipeline in condition 2 to check the output files 
+produced by each process after running. We then label processes in 4 
+categories. When processes that create differences are 
+found, their written files in condition 2 are replaced (as explained 
+later) and then re-label processes. This procedure (stop/resume) 
+continues until the end of the pipeline execution when all processes 
+are labeled correctly. 
+
+
 \subsubsection{Unknown process} 
-Another challenge is to classify processes that 
-read files that have differences and write files that also have differences. In 
-such situations, it is not possible to determine from the pipeline 
-results whether the process created differences, removed some differences, or was 
-transparent. We label such processes \emph{unknown}.
-To address this issue, we developed an iterative approach that 
-consists of the following steps: 
+
+Another challenge is to label processes that read files that have 
+differences and write files that also have differences. In such 
+situations, it is not possible to determine from the pipeline results 
+whether the process created differences, removed some differences, or 
+was transparent. We label such processes \emph{unknown}.
+To address this issue, we first set various breakpoints in the pipeline 
+in condition 2. Breakpoints are set by replacing all the pipeline 
+processes with a custom script. This custom script labels each process 
+as \emph{transparent}, \emph{create differences}, \emph{remove 
+differences} or \emph{unknown} immediately after running original executable. 
+The replacement is done through the PATH variable, as before. Moreover, 
+this custom script copies the results obtained from the same process in 
+condition 1 to the pipeline output in condition 2 if it is invoked with 
+the arguments of a process that created differences. 
+We developed an incremental approach that consists of the following steps: 
 
 \begin{enumerate}
-  \item Run the pipeline in conditions 1 and 2; classify the
-    processes as \emph{transparent}, \emph{create differences},
-    \emph{remove differences} or \emph{unknown}.
-  \item If there are \emph{unknown} processes then: replace each 
-  process P that create differences by a process Q that copies the results 
-  produced by process P in condition 1 to the pipeline output in 
-  condition 2. 
-  \item Repeat steps 1 and 2 until there is no \emph{unknown} process left.
+  \item Run the pipeline in conditions 2; after running each process 
+  label it as \emph{transparent}, \emph{create differences} or
+  \emph{remove differences}.
+  
+  \item If there is \emph{create differences} processes then: 
+  copies the results produced by the same process in condition 1 to the 
+  pipeline output in condition 2. 
+  
+  \item Continue steps 1 and 2 until the end of the pipeline execution.
 \end{enumerate}
 
-The replacement of process P at step 2 is done by replacing P with a 
-custom script produced by step 1. This custom script copies the results 
-obtained in condition 1 if it is invoked with the arguments of a 
-process that created differences, and calls P's original executable 
-otherwise. The replacement is done through the PATH variable, as 
-before. This algorithm converges to a process tree without any 
-\emph{unknown} process after a finite number of iterations.
+This algorithm converges to a process tree without any 
+\emph{unknown} process at the end of the pipeline execution.
 
 \begin{figure}
   \centering
   \includegraphics[width=\columnwidth]{images/iterative_modif}
-  \caption{iteration of proposed modification.}
+  \caption{A simple example of steps of the proposed approach.}
   \label{fig:iterations}
 \end{figure}
 
-Figure~\ref{fig:iterations} illustrates our iterative classification 
+Figure~\ref{fig:iterations} illustrates our incremental labelling 
 process for the example in Figure~\ref{fig:simple_script}. At every 
 step, processes that created differences are shown in red, processes that 
 removed differences are in blue, processes that propagated differences are in 
@@ -484,7 +507,7 @@ differences. Temporary files are not represented because they have been
 backed up as previously described.
 
 The three steps in Figure~\ref{fig:iterations} correspond to the 
-iterations of the classification algorithm. At step one, \texttt{2\#bet2} 
+steps of the labelling algorithm. At step one, \texttt{2\#bet2} 
 is classified as difference creator (red) as it produced files with differences 
 from files without differences. \texttt{3\#fslstats} is classified as difference  
 remover (blue) as it produced files without differences from files with 
@@ -502,7 +525,7 @@ At step 3, the files produced by \texttt{4\#fslmaths} in the tested
 condition are replaced with the files produced by \texttt{4\#fslmaths} 
 in the other condition. \texttt{5\#fslstats} is now transparent.
  
-As a result of those 3 steps, the final process classification is: 
+As a result of those 3 steps, the final process labelling is: 
 \texttt{2\#bet2} and \texttt{4\#fslmath} are difference creators (red), 
 \texttt{3\#fslstats} is difference remover (blue) and the other processes 
 are transparent.
@@ -588,10 +611,6 @@ platforms. The Docker images were built for the HCP PreFreeSurfer
 pipeline v3.19.0 in 
 CentOS 6.8 and CentOS 7.2. Docker images are available on DockerHub for 
 reuse \url{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}. 
-We collected the provenance trace (tree of executed processes and files 
-accessed in read or write mode) for each type of 
-subjects(Table~\ref{table:data}) using system-call interception as 
-provided by the \reprozip tool~\cite{Chirigati2016}.
 
 Two types of errors can occur in the subjects due to the 
 errors in the operating systems. One is inter-OS error caused by the 
@@ -653,7 +672,7 @@ of the PreFreeSurfer pipeline executed on CentOS6 and CentOS7. Each
 node in the graph represent an executed process in the pipeline. 
 Processes that created errors are shown in red, processes that removed 
 errors are in blue, and other processes are in green.  Squares denote 
-processes for which the classification is uncertain, due to temporary 
+processes for which the labelling is uncertain, due to temporary 
 files that were removed during the execution. Black edges link 
 sub-processes to their parents while dashed edges denote file 
 dependencies between processes (green edges: files with no errors; red 
