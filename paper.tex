@@ -266,7 +266,7 @@ echo "Voxels / Volume in binarized brain mask:"
   \label{fig:simple_script}
 \end{figure}
 
-\subsection{Subject types}
+\subsection{Subject clustering}
 
 Different subjects may lead to different process trees and graphs, due to
 variations that may be coming from differences in data types or
@@ -306,7 +306,7 @@ any two subjects in a cluster is lower than a threshold parameter.
   \State \texttt{\# Select the two nearest clusters}
   \For{\texttt{i=1} to \texttt{n}}
   \For{\texttt{j=i+1} to \texttt{len(C)}}
-  \State \texttt{D[i][j]} = \texttt{edit\_distance(C[i], C[j])}
+  \State \texttt{D[i][j]} = \texttt{edit\_distance(C[i], C[j])} \tristan{how do you define the distance between two clusters?}
     \EndFor
   \EndFor
   \State \texttt{i, j} = $\argmin \left\{ \texttt{D[i][j]}, \ \texttt{i, j} \in \llbracket 1, \texttt{len(C)}\rrbracket^2 \right\}$
@@ -324,26 +324,23 @@ any two subjects in a cluster is lower than a threshold parameter.
 \end{algorithmic}
 \end{algorithm}
 
- 
-
+\tristan{how do you choose the representative process graph in each cluster?}
 
 \subsection{Tree analysis}
 
-NURM-tool labels the processes into four 
-categories based on the process tree and the \textit{difference} JSON file 
-mentioned in the previous sections:
+We label in four categories the processes of the representative graph of each subject:
 \begin{enumerate}
-\item Processes that read and write files that do not have differences 
-are \emph{transparent} (Figure~\ref{fig:processes}.a).
+\item Processes that read files that do not have differences and write files that do not have differences 
+are labeled \emph{transparent} (Figure~\ref{fig:processes}.a).
 \item Processes that read files 
-that do not have any differences but write files that have differences 
-\emph{create} differences in the pipeline (Figure~\ref{fig:processes}.b).
+that do not have differences but write files that have differences 
+\emph{create} differences (Figure~\ref{fig:processes}.b).
 \item Processes that read files 
 that have differences and write files that do not have differences \emph{remove} 
-differences from the pipeline (Figure~\ref{fig:processes}.c).
+differences (Figure~\ref{fig:processes}.c).
 \item Processes that read files that have differences and write files that 
-also have differences are 
-\emph{unknown} (Figure~\ref{fig:processes}.d).
+also have differences are called
+\emph{undetermined} (Figure~\ref{fig:processes}.d).
 \end{enumerate}
 
 \begin{figure}%\centering
@@ -368,7 +365,7 @@ also have differences are
     \hfill
     \begin{subfigure}{0.4\linewidth}
     \includegraphics[scale=0.34]{images/yellow.png}
-    \caption{Unknown}
+    \caption{Undetermined}
     \label{fig:yellow}
 \end{subfigure}
     \caption{Different type of classified process based on the input/output files.
@@ -378,24 +375,29 @@ also have differences are
     \label{fig:processes}
 \end{figure}
 
-There are some issues that should be addressed to label process 
-properly, including capturing temporary files that have been removed 
-during the execution, capturing files written by multiple processes, 
-and unknown process.
+Undetermined processes are due to temporary files, and files that were
+written by more than a single process. In both situations, breakpoints must
+be added to the pipeline to capture intermediary file states and label
+undetermined processes.
 
-\subsubsection{Capture temporary files} 
+\subsubsection{Capturing temporary files} 
+
 The labelling of processes that read or 
-write temporary files is uncertain when these files are deleted during 
-the execution. To address this issue, we replace every process P that 
-writes temporary files with a modification of P that first calls P and 
-then backs up all its output files to a read-only directory. This 
-replacement is done by modifying the Unix PATH variable to point to a 
-directory containing the modified versions of the processes. This 
+write temporary files is undetermined because these files are deleted during 
+the execution. To address this issue, we replace in Condition 1 every process P that 
+writes temporary files with a modification of P that first calls P and then
+backs up all its output files to a read-only directory. This replacement is
+done by modifying the PATH environment variable to point to a directory
+containing a modified version of the executable called by the process. The
+modified executable will run the original executable and then backup its
+output files. \tristan{Add an example modified script (listing), and replace input checks on file names by checksums.}
+This 
 solution does not cover the temporary files that are removed by P 
-itself; this is not a problem since these files do not play any role in 
-the subsequent steps of the pipeline, by definition. 
+itself, but this is not a problem since these files do not play any role in 
+the subsequent steps of the pipeline. 
 
-\subsubsection{Capture multiple write files} 
+\subsubsection{Capturing multiple write files}
+
 Files written by multiple processes also lead 
 to unknown labels. To address this issue for a file F 
 written by processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
