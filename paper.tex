@@ -145,32 +145,30 @@ for the differences in the pipelines.
 \tristan{define subjects, explain neuroimaging, bring context.}
 \section{Tool description}
 
-Figure~\ref{fig:overview} shows an overview of our method. For each 
-tested condition, the pipeline is containerized using Docker, and its 
-interface is described using Boutiques~\cite{glatard2017boutiques}. 
-\reprozip is added to the container images for provenance tracking. Our 
-tool first clusters the subjects based on the similarity of their 
-process trees produced by \reprozip (Fig.~\ref{fig:overview-cluster}). 
-This results in a reduced set of representative process trees to 
-evaluate. The processes in each representative process tree are labeled 
-from potential differences found in their outputs produced in the 
-tested conditions (Fig.~\ref{fig:overview-classify}). To do that, a 
-difference file is first produced that contains all the files with 
-differences across conditions (Fig.~\ref{fig:overview-classify} - (A)). 
-Differences are identified simply by comparing file checksums. 
-Using difference file and process tree, we first capture temporary and 
-overwritten files in condition 1. In addition, we set various 
-breakpoints in the pipeline in condition 2 to check the output files 
-produced by each process immediately after running. We then label processes in 4 
-categories (Fig.~\ref{fig:overview-classify} - (B)) depending whether 
-they create differences (represented in red), remove differences 
-(blue), neither create nor remove differences (green), or have 
-uncertain behavior (yellow). When processes that create differences are 
-found, their written files in condition 2 are replaced (as explained 
-later) and then re-labelling processes. This procedure 
-continues until the end of the pipeline execution when all processes 
-are labeled correctly. 
-
+Figure~\ref{fig:overview} shows an overview of our method \tristan{add reprozip
+tags to 1.b too. Add something to match ``(fixed)'' in 1.b -- cond 2}. For
+each tested condition, the pipeline is containerized with Docker, and its
+interface is described with Boutiques~\cite{glatard2017boutiques}.
+\reprozip~\cite{Chirigati2016} is added to the container images for
+provenance tracking. Our tool first clusters the subjects based on the
+similarity of their process trees produced by \reprozip
+(Fig.~\ref{fig:overview-cluster}) \tristan{``Hclustering'' isn't clear, just
+mention ``clustering''}. This results in a reduced set of representative
+process trees to evaluate. The processes in each representative process
+tree are then labeled from the differences found in their outputs in the
+two tested conditions (Fig.~\ref{fig:overview-classify}). To do that, a
+difference file is first produced that contains all the differences between
+conditions obtained by comparing file checksums
+(Fig.~\ref{fig:overview-classify} - (A)). Using the difference file and the
+process tree in Condition 1, we first identify temporary files and files
+written by more than a single process -- these files result in undetermined
+process labels \tristan{Add label in the Figure. Here and for any other step}.
+We then label processes in 4 categories (Fig.~\ref{fig:overview-classify} -
+(B)) depending whether they create differences (represented in red), remove
+differences (blue), neither create nor remove differences (green), or are
+undetermined (yellow). Process labelling is done in an iterative way,
+through breakpoints and incremental updates in Condition 2, until no
+undetermined process remains.
 
 \begin{figure}
   \centering
@@ -193,7 +191,7 @@ are labeled correctly.
 \subsection{Provenance capture and representation}
 \tristan{All these sections should refer to labels on Figure 1.}
 
-We use \reprozip~\cite{Chirigati2016} to record: (1) 
+We use \reprozip to record: (1) 
 the tree of processes executed by the pipeline and (2) the list of 
 files read and written by each process. This information is collected 
 by \reprozip through the \texttt{ptrace} Unix system 
