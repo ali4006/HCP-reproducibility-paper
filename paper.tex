@@ -142,7 +142,7 @@ NURM-tool and evaluate its functionality. Finally, we reported the
 experimental results which describe the processes that are responsible 
 for the differences in the pipelines.
 
-
+\tristan{define subjects, explain neuroimaging, bring context.}
 \section{Tool description}
 
 Figure~\ref{fig:overview} shows an overview of our method.
@@ -185,68 +185,91 @@ procedure iterates until all processes are labeled.
   \end{figure}
 
 \subsection{Provenance capture and representation}
+\tristan{All these sections should refer to labels on Figure 1.}
 
-We use the \reprozip tool~\cite{Chirigati2016} to record: (1) 
+We use \reprozip~\cite{Chirigati2016} to record: (1) 
 the tree of processes executed by the pipeline and (2) the list of 
 files read and written by each process. This information is collected 
-by system call interceptions, through the \texttt{ptrace} Unix system 
+by \reprozip through the \texttt{ptrace} Unix system 
 call, and stored in a \texttt{SQLite} database. The database stores 
 information of all the processes which are created by the 
 \texttt{clone()} or \texttt{fork()} system calls. It also records the 
 files opened by each process (in read, write or execution mode), 
-including the result files and the temporary files.
+including result files and temporary files.
 
-NURM-tool reconstructs the tree of processes starting from the first 
-process created by the pipeline and through identifying its child 
-processes as the ones that were created through \texttt{clone()} or 
-\texttt{fork()}. It creates a process graph from this tree by adding 
-edges corresponding to file dependencies between processes. A file 
-dependency is defined between processes A and B if a file written by A 
+Our tool reconstructs the tree of processes starting from the first process
+created by the pipeline and traversing the tree through occurrences of
+\texttt{clone()} and \texttt{fork()}. It also creates a process
+\emph{graph} from this tree by adding edges corresponding to file
+dependencies between processes. A file dependency is defined between
+processes A and B if a file written by A 
 is read by B. Figure~\ref{fig:simple_script} shows an example of a 
-process tree constructed for the simple bash script illustrated in 
-Algorithm~\ref{algo:sample-script} from the brain extraction procedure.
-
-
-\begin{algorithm}[h!]
-\caption{Sample script from brain extraction process}
-\label{algo:sample-script}
-\begin{verbatim}
+process tree and graph constructed from the example pipeline in
+Listing~\ref{listing:sample-script}.
+\begin{listing}
+\begin{minted}[frame=single,
+  framesep=3mm,
+  linenos=false,
+  xleftmargin=0pt,
+  tabsize=4]{bash}
 #!/bin/bash
-if [ # !=1 ]
+if [ #$ !=1 ]
 then
     echo "usage: 0 <inputimage.nii.gz>"
     exit 1
 fi
+
+# Parse argument, set file names
 input_image=$1
 bet_output="$(basename ${input_image} 
                        .nii.gz)_brain.nii.gz"
 bet_output_binarized="$(basename ${input_image} 
                        .nii.gz)_brain_bin.nii.gz"
 
+# Run FSL bet, put result ${bet_output}
 bet ${input_image} ${bet_output} > bet_temp.out
 echo "Voxels / Volume in brain mask:"
+# Run FSL stats on ${bet_output}
 fslstats ${bet_output} -V
+# Run FSL maths on ${bet_output}
 fslmaths ${bet_output} ${bet_output_binarized}
-echo "Voxels / Volum in binarized brain mask:"
+echo "Voxels / Volume in binarized brain mask:"
+
 \rm bet_temp.out
-\end{verbatim}
-\end{algorithm}
+\end{minted}
+  \caption{Example pipeline}
+  \label{listing:sample-script}
+\end{listing}
 
 \begin{figure}
 \centering
   \includegraphics[scale=0.25]{images/simple_graph}
-  \caption{Process tree constructed from an example brain extraction
-	script. Every node in the graph is labeled using (1) a process id 
-	created by our reconstruction, (2) the name of the executable run 
-	by the process. Processes that read or write temporary files are 
-	represented with squares; other ones with circles. Plain edges 
-	represent the process tree (\texttt{fork()} or \texttt{clone()} 
-	system calls). Dashed edges represent file dependencies: temporary 
-	files are in yellow and result files are in green.}
+  \caption{Process tree and graph
+  constructed from the example pipeline in
+  Listing~\ref{listing:sample-script}.
+  Processes that read or write
+  temporary files are 
+  represented with squares. Plain edges 
+  represent the process tree (\texttt{fork()} or \texttt{clone()} 
+  system calls). Dashed edges represent file dependencies: temporary 
+  files are in yellow and result files are in green.
+  Every node in the tree is labeled using (1) a process id created by our
+  reconstruction, (2) the name of the executable run by the process.
+  Process 0 is the initial call to the \texttt{bash} interpreter, and
+  processes 1, 3 and 4 are the calls to FSL bet, stats and maths made in
+  Listing~\ref{listing:sample-script}. Process 2 is forked by process 1: it
+  was captured by \reprozip while it did not appear in
+  Listing~\ref{listing:sample-script}. \tristan{The script has only 1 call to fslstats, this should be fixed.}
+}
   \label{fig:simple_script}
 \end{figure}
 
-\subsection{Subject type}
+\subsection{Subject types}
+
+Different subjects may lead to different process trees and graphs, due to
+variations in the processing pipeline. Such variations may be coming from differences
+in data types or cardinality, for instance, some subj 
+
 
 Depending on the variety of computing environments, in particular, 
 different analysis software packages, different process trees can be 
