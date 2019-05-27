@@ -25,6 +25,9 @@
 
 \usepackage{subcaption}
 \usepackage{xspace}
+\usepackage{stmaryrd} % for llbracket and rrbracket
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmin}{argmin}
 
 %%%% Commands %%%%
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
@@ -191,24 +194,19 @@ undetermined process remains.
 \subsection{Provenance capture and representation}
 \tristan{All these sections should refer to labels on Figure 1.}
 
-We use \reprozip to record: (1) 
-the tree of processes executed by the pipeline and (2) the list of 
-files read and written by each process. This information is collected 
-by \reprozip through the \texttt{ptrace} Unix system 
-call, and stored in a \texttt{SQLite} database. The database stores 
-information of all the processes which are created by the 
-\texttt{clone()} or \texttt{fork()} system calls. It also records the 
-files opened by each process (in read, write or execution mode), 
-including result files and temporary files.
+We use \reprozip to record: (1) the set of processes created by the
+pipeline, using the \texttt{clone()} or \texttt{fork()} system call, and
+(2) the set of files read, written and executed by each process, including
+temporary files. \reprozip collects this information through the
+\texttt{ptrace()} system call and stores it in a SQLite database.
 
-Our tool reconstructs the tree of processes starting from the first process
-created by the pipeline and traversing the tree through occurrences of
-\texttt{clone()} and \texttt{fork()}. It also creates a process
-\emph{graph} from this tree by adding edges corresponding to file
-dependencies between processes. A file dependency is defined between
-processes A and B if a file written by A 
-is read by B. Figure~\ref{fig:simple_script} shows an example of a 
-process tree and graph constructed from the example pipeline in
+Our tool reconstructs a process tree starting from the first process
+created by the pipeline and traversing processes through \texttt{clone()}
+and \texttt{fork()}. It also creates a process \emph{graph} from this tree
+by adding edges corresponding to file dependencies between processes. A
+file dependency is defined between processes A and B if a file written by A
+is read by B. Figure~\ref{fig:simple_script} shows an example of a process
+tree and graph constructed from the example pipeline in
 Listing~\ref{listing:sample-script}.
 \begin{listing}
 \begin{minted}[frame=single,
@@ -271,72 +269,54 @@ echo "Voxels / Volume in binarized brain mask:"
 \subsection{Subject types}
 
 Different subjects may lead to different process trees and graphs, due to
-variations in the processing pipeline. Such variations may be coming from differences
-in data types or cardinality, for instance, some subj 
+variations that may be coming from differences in data types or
+cardinality. For instance, some images may have been acquired multiple
+times in some subjects. Some of these differences can be neglected, for
+instance when a data decompression step is present at the beginning of the
+execution for some subjects only, and other ones cannot, when different
+processing paths are used in different subjects.
 
+To address this issue, we use the tree edit distance~\cite{zhang1989simple}
+to measure the distance between labeled trees \tristan{how about graphs?
+also, why between \emph{labeled} trees and not just trees?}, defined as the
+minimum weighted \tristan{weighted by what?} number of edit operations
+required to transform one tree into the other one. Three edit operations
+are considered: node label modification, node removal, and node insertion.
+Each operation has an associated cost: 1 for insertion and removal, and
+either 1 or 2 for label modification depending on the type of modification. \tristan{Please check my edits.}
 
-Depending on the variety of computing environments, in particular, 
-different analysis software packages, different process trees can be 
-constructed for the same experiment. It was expected to achieve the 
-same process trees since we used the same computing environments 
-specially the same analysis software package in different conditions. 
-However, we found that different subjects may result in different 
-process trees. 
+With this distance, we cluster subjects using agglomerative hierarchical
+clustering as implemented in SciPy~\cite{oliphant2007scipy}
+(Algorithm~\ref{algo:hclustering}). As a result, the distance between
+any two subjects in a cluster is lower than a threshold parameter.
 
-Therefore, all subjects should be grouped into different types based on 
-the topological structure of the process trees.
-To this order, the distance between trees, topological differences, 
-need to be calculated.
-
-We used the tree edit distance~\cite{zhang1989simple} method to measure 
-the distance between labeled trees. The distance between two labeled 
-trees is defined as the minimum weighted number of edit operations that 
-it takes to transform one tree to another. There are three edit 
-operations that can be used to transform a tree including modify, 
-remove, and insert. Modifying node \textit{n} means changing the label 
-on \textit{n}. Removing node \textit{n} means making the children of 
-\textit{n} become the children of its parent and then 
-deleting it. Inserting is the complement of remove; this 
-means that inserting \textit{n} as the child of \textit{n}$'$ will make 
-\textit{n} the parent of a consecutive subsequence of the current 
-children of \textit{n}$'$.
-Each operation has an associated cost---insertions and removals each 
-cost 1, and modifications cost either 1 or 2, depending on whether 
-you consider a modification to essentially be just a removal 
-or followed by an insertion.
-
-We clustered subjects into various types using the bottom-up hierarchical 
-clustering approach implemented in \textit{scipy} python package (see 
-Algorithm~\ref{algo:hclustering}). This approach groups together the 
-subjects with similar distance, less than a threshold. 
-
-% \texttt{agglomerative approach}
-%  based on \texttt{nearest\_neighbors} method
-  
 \begin{algorithm}[h!]
-\caption{Hierarchical clustering algorithm from \textit{scipy}}
+\caption{Hierarchical clustering algorithm from SciPy}
 \label{algo:hclustering}
 \begin{algorithmic}
 
-  \State /* Input: a list of n trees; \texttt{T = [t${_1}$, t${_2}$,...,t${_n}$]}
+  \State /* Input: - a list of n trees; \texttt{T = [t${_1}$, t${_2}$,...,t${_n}$]}
+  \State /*\quad \quad \quad \quad - a distance threshold value; \texttt{threshold}
   \State /* Output: a list of clusters; \texttt{C = [c${_1}$,c${_2}$,...,c${_k}$]}
-  \For{\texttt{i=1} in \texttt{n}}
-  \State \texttt{C${_i}$} = \texttt{T${_i}$} 
   \State \texttt{\# Create a cluster for each tree in input list;}
-  \EndFor
+  \State \texttt{C = [t${_1}$, t${_2}$,...,t${_n}$]}
+  \State \texttt{\# Define a 2 $\times$ 2 array to store distances}
+  \State \texttt{D} = \texttt{array(n, n)}
   \While{\texttt{len(C)} > \texttt{1}}  
+  \State \texttt{\# Select the two nearest clusters}
   \For{\texttt{i=1} to \texttt{n}}
-  \For{\texttt{j=i+1} to \texttt{n}}
-  \State \texttt{D${_{ij}}$} = \texttt{edit\_distance(C${_i}$, C${_j}$)}
-  \State \texttt{\# Select two nearest clusters;}
+  \For{\texttt{j=i+1} to \texttt{len(C)}}
+  \State \texttt{D[i][j]} = \texttt{edit\_distance(C[i], C[j])}
+    \EndFor
   \EndFor
-  \EndFor
-  \State \texttt{d\_min${_{ij}}$} = \texttt{MIN(D)}
-  \If{\texttt{d\_min${_{ij}}$} > \texttt{thre}}
-  \State Return \texttt{C}
-  \Else {
-  \State \texttt{C${_i}$} = Merge(\texttt{C${_i}$ and C${_j}$})
-  \State Remove \texttt{C${_j}$}}
+  \State \texttt{i, j} = $\argmin \left\{ \texttt{D[i][j]}, \ \texttt{i, j} \in \llbracket 1, \texttt{len(C)}\rrbracket^2 \right\}$
+  \If{\texttt{D[i][j]} > \texttt{threshold}}
+  \State \Return \texttt{C}
+  \Else
+  \State \texttt{\# Merge C[j] into C[i]}
+  \State \texttt{C[i]} = \texttt{merge}(\texttt{C[i] and C[j]})
+  \State \texttt{\# Remove C[j] from C}
+  \State \texttt{remove(C[j], C)}
   \EndIf
   \EndWhile
 %  \State Function edit\_distance (C${_1}$, C${_2}$)
@@ -344,14 +324,7 @@ subjects with similar distance, less than a threshold.
 \end{algorithmic}
 \end{algorithm}
 
-The clustering algorithm starts by finding two closest subjects to each 
-other on the basis of edit distance method and form a new cluster 
-between them. In the next iteration, this cluster aggregates with the 
-next nearest cluster or subject and turns to another cluster. This 
-process continues until all the subjects are aggregated to form one big 
-cluster or the distances are less than an specified threshold. The 
-threshold is defined as the minimum distance required to separate 
-clusters. 
+ 
 
 
 \subsection{Tree analysis}
