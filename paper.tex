@@ -326,7 +326,7 @@ any two subjects in a cluster is lower than a threshold parameter.
 
 \tristan{how do you choose the representative process graph in each cluster?}
 
-\subsection{Tree analysis}
+\subsection{Graph analysis}
 
 We label in four categories the processes of the representative graph of each subject:
 \begin{enumerate}
@@ -399,23 +399,21 @@ the subsequent steps of the pipeline.
 \subsubsection{Capturing multiple write files}
 
 Files written by multiple processes also lead 
-to unknown labels. To address this issue for a file F 
-written by processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
+to undetermined labels. For a file F 
+written by all processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
 (1) check that processes in \textbf{P} do not write concurrently to F, 
 (2) we establish an order on \textbf{P} based on the creation timestamp 
-of the processes, (3) we replace ever process $P_{i}$ in \textbf{P} by 
+of the processes, (3) we replace every process $P_{i}$ in \textbf{P} by 
 a wrapper that first calls $P_{i}$ and then backs up F to a read-only 
-directory. Thus, multiple versions of F are saved and used in the 
+directory \tristan{add example of wrapper}. Thus, multiple versions of F are saved and used in the 
 analysis. 
 
-Furthermore, cycles may be present in the process tree in case a file 
+Furthermore, cycles may be present in the process graph in case a file 
 was written by more than one process. We remove such cycles by removing 
 file edges between processes A and B when A's process creation 
 timestamp is posterior to B's or when A=B. Indeed, such edges cannot 
 happen in practice unless A and B were running concurrently, which we 
-assume is not the case (we also checked that on the workflow we 
-tested). 
-
+assume is not the case (the tool checks for that). 
 
 we first capture temporary and overwritten files in condition 1
 we set various 
@@ -425,41 +423,49 @@ categories. When processes that create differences are
 found, their written files in condition 2 are replaced (as explained 
 later) and then re-label processes. This procedure (stop/resume) 
 continues until the end of the pipeline execution when all processes 
-are labeled correctly. 
+are labeled correctly. \tristan{this looks completely out of place}
 
+\tristan{Explain that condition 1 is re-executed after all these modifications are done?}
 
-\subsubsection{Unknown process} 
+\subsubsection{Labelling undetermined processes} 
 
-Another challenge is to label processes that read files that have 
-differences and write files that also have differences. In such 
+Another challenge is to label undetermined processes that read files with 
+differences and write files with differences too. In such 
 situations, it is not possible to determine from the pipeline results 
 whether the process created differences, removed some differences, or 
-was transparent. We label such processes \emph{unknown}.
-To address this issue, we first set various breakpoints in the pipeline 
-in condition 2. Breakpoints are set by replacing all the pipeline 
+was transparent.
+To address this issue, we set breakpoints in the pipeline 
+in Condition 2. Breakpoints are set by replacing all the pipeline 
 processes with a custom script. This custom script labels each process 
 as \emph{transparent}, \emph{create differences}, \emph{remove 
-differences} or \emph{unknown} immediately after running original executable. 
+differences} or \emph{undetermined} immediately after running the original executable. 
 The replacement is done through the PATH variable, as before. Moreover, 
 this custom script copies the results obtained from the same process in 
-condition 1 to the pipeline output in condition 2 if it is invoked with 
+Condition 1 to the pipeline output in Condition 2 if it is invoked with 
 the arguments of a process that created differences. 
 We developed an incremental approach that consists of the following steps: 
 
+\tristan{Not sure that we should call that breakpoints now.}
+
+\tristan{Why do you need to modify condition 2 now, couldn't this be done on codition 1 too?}
+
 \begin{enumerate}
-  \item Run the pipeline in conditions 2; after running each process 
+  \item Run the pipeline in Condition 2; after running each process 
   label it as \emph{transparent}, \emph{create differences} or
   \emph{remove differences}.
   
   \item If there is \emph{create differences} processes then: 
   copies the results produced by the same process in condition 1 to the 
-  pipeline output in condition 2. 
+  pipeline output in Condition 2. 
   
   \item Continue steps 1 and 2 until the end of the pipeline execution.
 \end{enumerate}
 
 This algorithm converges to a process tree without any 
-\emph{unknown} process at the end of the pipeline execution.
+\emph{undetermined} process at the end of the pipeline execution.
+
+\tristan{Now that you're doing this, do you still need subject clustering? It looks like this isn't
+much longer than regular execution.}
 
 \begin{figure}
   \centering
