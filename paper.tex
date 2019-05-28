@@ -299,7 +299,7 @@ any two subjects in a cluster is lower than a threshold parameter.
   \State /*\quad \quad \quad \quad - a distance threshold value; \texttt{threshold}
   \State /* Output: a list of clusters; \texttt{C = [c${_1}$,c${_2}$,...,c${_k}$]}
   \State \texttt{\# Create a cluster for each tree in input list;}
-  \State \texttt{C = [t${_1}$, t${_2}$,...,t${_n}$]}
+  \State \texttt{C = [ [t${_1}$], [t${_2}$], \ldots , [t${_n}$] ]}
   \State \texttt{\# Define a 2 $\times$ 2 array to store distances}
   \State \texttt{D} = \texttt{array(n, n)}
   \While{\texttt{len(C)} > \texttt{1}}  
@@ -475,7 +475,8 @@ much longer than regular execution.}
 \end{figure}
 
 Figure~\ref{fig:iterations} illustrates our incremental labelling 
-process for the example in Figure~\ref{fig:simple_script}. At every 
+process for the example in Figure~\ref{fig:simple_script} \tristan{This is outdated, you should
+update the figure and revise the text accordingly.}. At every 
 step, processes that created differences are shown in red, processes that 
 removed differences are in blue, processes that propagated differences are in 
 yellow, and other processes (transparent processes) are in green. As in 
@@ -512,29 +513,32 @@ are transparent.
 
 \section{Experiments}
 
+\tristan{Add section introduction. Talk about OS}
+
 \subsection{HCP pipelines and datasets}
 
-The Human Connectome Project (HCP)~\cite{glasser2013minimal} developed 
-a set of pipelines to help extraction of structural, functional or 
-diffusion MRI data across a large set of high resolution MR images. 
-These pre-processing pipelines create results that are available in 
-standard volume and combined surface and volume spaces which makes it 
-easier for researchers to compare the images across the neuroimaging 
-spectrum. 
+\tristan{Add introduction on HCP project and data}
 
-We focused on HCP structural pre-processing pipelines to (1)quantify 
-the effect of OS on HCP pre-processing pipelines (2) identify the 
-process(es) in the pipelines that are responsible for such effects.
+The Human Connectome Project (\href{https://www.humanconnectome.org}{HCP})
+developed a set of pre-processing pipelines to process structural,
+functional and diffusion MRI data acquired in the project. We focus on HCP
+pre-processing pipelines for structural data, in particular PreFreesurfer
+and Freesurfer. A detailed description of the analyses done in the
+pipelines is available in~\cite{glasser2013minimal}.
+% IF NEEDED, ADD MORE DETAILS ABOUT WHAT THE PIPELINES DO
+% The structural pre-processing pipelines consists of PreFreeSurfer, 
+% FreeSurfer and PostFreeSurfer. In this paper, 
+% we analyzed PreFreeSurfer pipeline which consist of various steps 
+% including correction of MR 
+% gradient nonlinearity distortions, align the T1w and T2w images using 
+% FSL FLIRT, Align native space to MNI template using ACPC and FSL FLIRT, 
+% brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w 
+% to T1w using FLIRT's BBR, perform a bias field correction, and register 
+% the subject's native structural space to MNI space.
 
-The structural pre-processing pipelines consists of PreFreeSurfer, 
-FreeSurfer and PostFreeSurfer. In this paper, 
-we analyzed PreFreeSurfer pipeline which consist of various steps 
-including correction of MR 
-gradient nonlinearity distortions, align the T1w and T2w images using 
-FSL FLIRT, Align native space to MNI template using ACPC and FSL FLIRT, 
-brain extraction usin FSL FLIRT and FNIRT to MNI template, register T2w 
-to T1w using FLIRT's BBR, perform a bias field correction, and register 
-the subject's native structural space to MNI space.  
+In these experiments, we first quantify the effect of Linux version on
+these pipelines. Then we use our NURM tool to identify the processes in the
+pipelines that are responsible for such effects.
 
 We randomly selected 100 subjects from the HCP data release S500 and then 
 using the NURM-tool we cluster them into different groups. 
