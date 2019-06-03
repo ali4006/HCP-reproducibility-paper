@@ -153,27 +153,27 @@ each tested condition, the pipeline is containerized with Docker, and its
 interface is described with Boutiques~\cite{glatard2017boutiques}.
 \reprozip~\cite{Chirigati2016} is added to one of the container images for
 provenance tracking. 
-Our tool starts by capturing temporary and multi write files in condition 1 
+Our tool starts by capturing temporary and multi write files in Condition 1 
 (Fig.~\ref{fig:overview-capturing}). 
-To do that, the tool first executes pipeline on condition 1 to obtain process graph 
+To do that, the tool first executes pipeline on Condition 1 to obtain process graph 
 (Fig.~\ref{fig:overview-capturing} - (P)) and 
 result files. Subsequently, it generates the list of processes that create these intermediary files. 
-Using this list, the tool modifies docker image in condition 1 and exectutes the pipeline 
+Using this list, the tool modifies docker image in Condition 1 and exectutes the pipeline 
 again through it, which turns to produce results including temporary and overwritten
 files (Fig.~\ref{fig:overview-capturing} - (C1)).
 In the second step, the processes are labeled from 
 the differences found in their outputs in the
 two tested conditions (Fig.~\ref{fig:overview-labelling}). To this order, 
-the tool builds docker image for condition 2 by modifying pipeline processes that 
+the tool builds docker image for Condition 2 by modifying pipeline processes that 
 recognised from 
-the process graph. Then, the modified docker image is executed in condition 2 and 
+the process graph. Then, the modified docker image is executed in Condition 2 and 
 each process is labeled right 
-after the running by comparing checksum of the results obtained in condition 1 
-and output files of the process in condition 2 (Fig.~\ref{fig:overview-labelling} - (D)). 
+after the running by comparing checksum of the results obtained in Condition 1 
+and output files of the process in Condition 2 (Fig.~\ref{fig:overview-labelling} - (D)). 
 We then label processes in 3 categories (Fig.~\ref{fig:overview-labelling} -
 (L)) depending whether they create differences (represented in red) or not (green). 
 Process labelling is done through hooks which are defined during the docker image modifying procedure, 
-and incremental updates in condition 2, 
+and incremental updates in Condition 2, 
 until the end of the pipeline execution.
 
 \begin{figure}
@@ -338,7 +338,7 @@ backs up all its output files to a read-only directory. This replacement is
 done by modifying the PATH environment variable to point to a directory
 containing a modified version of the executable called by the process. The
 modified executable will run the original executable and then backup its
-output files. \tristan{Add an example modified script (listing), and replace input checks on file names by checksums.}
+output files (see Listing~\ref{listing:modify-script}). 
 This 
 solution does not cover the temporary files that are removed by P 
 itself, but this is not a problem since these files do not play any role in 
@@ -353,7 +353,7 @@ written by all processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we
 (2) we establish an order on \textbf{P} based on the creation timestamp 
 of the processes, (3) we replace every process $P_{i}$ in \textbf{P} by 
 a wrapper that first calls $P_{i}$ and then backs up F to a read-only 
-directory \tristan{add example of wrapper}. Thus, multiple versions of F are saved and used in the 
+directory. Thus, multiple versions of F are saved and used in the 
 analysis. 
 
 Furthermore, cycles may be present in the process graph in case a file 
@@ -363,14 +363,93 @@ timestamp is posterior to B's or when A=B. Indeed, such edges cannot
 happen in practice unless A and B were running concurrently, which we 
 assume is not the case (the tool checks for that). 
 
-After that all these modifications are done, we re-execute pipeline in condition 1.
+For example, in the sample pipeline in 
+Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} write a temporary file and 
+also file \emph{T1w\_brain\_bin.nii.gz} is first written by process \texttt{2\#bet2} and 
+then overwritten by process \texttt{3\#fslmaths}. The list of these process are captured in 
+Listing~\ref{listing:json_process}.
+Using this list, we modify relevant processes in Condition 1 and then re-execute pipeline 
+to store them in a backup folder.
 Figure~\ref{fig:overview-capturing} - (C1) shows pipeline results including intermediary files 
-captured as the outputs in condition 1.
+captured as the outputs in Condition 1. 
+
+\begin{listing}
+  \begin{minted}[frame=single,
+    framesep=3mm,
+    linenos=false,
+    xleftmargin=0pt,
+    tabsize=4]{JSON}
+{
+  "multi_write_process": {
+    "fslmaths\00T1w_brain.nii.gz\00T1w_brain_bin.nii.gz":
+    {
+      "files":[
+        "/cond1/subj1/T1w_brain_bin.nii.gz"
+      ],
+      "pid": 78
+    },
+    "bet2\00/cond1/subj1/T1w.nii.gz\00T1w_brain.nii.gz":
+    {
+      "files":[
+        "/cond1/subj1/T1w_brain_bin.nii.gz"
+      ],
+      "pid": 75
+    }
+  },
+  "temp_process": {
+    "bet2\00/cond1/subj1/T1w.nii.gz\00T1w_brain.nii.gz": 
+    {
+      "files": [
+        "/cond1/subj1/temp.tmp"
+      ],
+      "pid": 75
+    } 
+  } 
+}
+
+\end{minted}
+\caption{List of process and their files from the example pipeline in 
+Listing~\ref{listing:sample-script} that should be captured.}
+\label{listing:json_process}
+\end{listing}
+
+\begin{listing}
+\begin{minted}[frame=single,
+  framesep=3mm,
+  linenos=false,
+  xleftmargin=0pt,
+  tabsize=4]{python}
+#!/bin/python
+
+# Execute process in cond2 from backup folder
+p_name = sys.argv[0]
+p_exec_cond2 = op.join('backup_scripts', p_name)
+i = 1
+while i < len(sys.argv):
+    p_exec_cond2 += " " + sys.argv[i]
+    i += 1
+subprocess.Popen(p_exec_cond2, shell=True).communicate()
+
+# Load list of process to be checked
+with open('path/to/p_list/', 'r') as p_list:
+    process_list = json.load(p_list)
+for p_exec_cond1, p_files in process_list.items():
+    # Comparing process exec in two conditions
+    if p_exec_cond1 == p_exec_cond2:
+        # Make backup copy
+        capture_file(p_files, from_cond1, to_backup)
+
+\end{minted}
+  \caption{Modify script.}
+  \label{listing:modify-script}
+\end{listing}
+
+
 
 \subsubsection{Labelling undetermined processes} 
 
-Since all the result files are captured in condition 1, the tool 
-is ready to label the piepeline processes based on the results in condition 2.
+Since all the result files are captured in Condition 1, the tool 
+is ready to label the piepeline processes based on the results in Condition 2.
 However, another challenge is to label undetermined processes that read files with 
 differences and write files with differences too. In such 
 situations, it is not possible to determine from the pipeline results 
@@ -386,7 +465,8 @@ this custom script copies the results obtained from the same process in
 Condition 1 to the pipeline output in Condition 2 if 
 it is invoked with 
 the arguments of a process that created differences. 
-Differences are identified by comparing process name and checksum of the output files.
+Differences are identified by comparing checksum of the output files for 
+the same process in both conditions.
 We developed an incremental approach that consists of the following steps: 
 
 \begin{enumerate}
@@ -427,8 +507,8 @@ as transparent (green) as it produced files without differences.
 At step 2, \texttt{2\#bet2} 
 is labeled as difference creator (red) as it produced files with differences 
 from files without differences. Therefore, the files produced by \texttt{2\#bet2} in  
-condition 2 are replaced with the files produced by \texttt{2\#bet2} in 
-condition 1.
+Condition 2 are replaced with the files produced by \texttt{2\#bet2} in 
+Condition 1.
 At step 3, after running process \texttt{3\#fslstats}, it labeled as 
 transparent as it write files without differences.
 At step 4, process \texttt{4\#fslmaths} is labeled as difference creator 
