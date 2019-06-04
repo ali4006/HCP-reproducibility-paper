@@ -170,7 +170,7 @@ the process graph. Then, the modified docker image is executed in Condition 2 an
 each process is labeled right 
 after the running by comparing checksum of the results obtained in Condition 1 
 and output files of the process in Condition 2 (Fig.~\ref{fig:overview-labelling} - (D)). 
-We then label processes in 3 categories (Fig.~\ref{fig:overview-labelling} -
+We then label processes in 2 categories (Fig.~\ref{fig:overview-labelling} -
 (L)) depending whether they create differences (represented in red) or not (green). 
 Process labelling is done through hooks which are defined during the docker image modifying procedure, 
 and incremental updates in Condition 2, 
@@ -248,7 +248,7 @@ echo "Voxels / Volume in binarized brain mask:"
 
 \begin{figure}
 \centering
-  \includegraphics[scale=0.25]{images/simple_graph}
+  \includegraphics[width=0.3\columnwidth]{images/simple_graph}
   \caption{Process tree and graph
   constructed from the example pipeline in
   Listing~\ref{listing:sample-script}.
@@ -366,7 +366,7 @@ assume is not the case (the tool checks for that).
 For example, in the sample pipeline in 
 Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} write a temporary file and 
 also file \emph{T1w\_brain\_bin.nii.gz} is first written by process \texttt{2\#bet2} and 
-then overwritten by process \texttt{3\#fslmaths}. The list of these process are captured in 
+then overwritten by process \texttt{3\#fslmaths}. The list of these processes are captured in 
 Listing~\ref{listing:json_process}.
 Using this list, we modify relevant processes in Condition 1 and then re-execute pipeline 
 to store them in a backup folder.
@@ -456,7 +456,7 @@ situations, it is not possible to determine from the pipeline results
 whether the process created differences, removed some differences, or 
 was transparent.
 To address this issue, we set hooks in the pipeline 
-in Condition 2. Hooks are set by replacing We identify dall the pipeline 
+in Condition 2. Hooks are set by replacing the pipeline 
 processes with a custom script. This custom script labels each process 
 as \emph{transparent} or \emph{create differences} immediately after running 
 the original executable. 
@@ -516,7 +516,7 @@ as the last process of the pipeline.
 As a result of these 4 steps, the final process labelling is: 
 \texttt{2\#bet2} and \texttt{4\#fslmath} are difference creators (red) 
 and the other processes are transparent.
-It should be noted that process that remove differrences are not recognised 
+It should be noted that processes that remove differrences are not recognised 
 by this method.
 
 \subsection{Subject clustering}
@@ -559,7 +559,7 @@ any two subjects in a cluster is lower than a threshold parameter.
   \State \texttt{\# Select the two nearest clusters}
   \For{\texttt{i=1} to \texttt{n}}
   \For{\texttt{j=i+1} to \texttt{len(C)}}
-  \State \texttt{D[i][j]} = \texttt{edit\_distance(C[i], C[j])} \tristan{how do you define the distance between two clusters?}
+  \State \texttt{D[i][j]} = $\min \left\{ \texttt{edit\_dist(a, b)}: \ \texttt{a} \in \texttt{C[i]}, \texttt{b} \in \texttt{C[j]} \right\}$
     \EndFor
   \EndFor
   \State \texttt{i, j} = $\argmin \left\{ \texttt{D[i][j]}, \ \texttt{i, j} \in \llbracket 1, \texttt{len(C)}\rrbracket^2 \right\}$
