@@ -148,40 +148,50 @@ for the differences in the pipelines.
 \tristan{define subjects, explain neuroimaging, bring context.}
 \section{Tool description}
 
-Figure~\ref{fig:overview} shows an overview of our method. For
-each tested condition, the pipeline is containerized with Docker, and its
-interface is described with Boutiques~\cite{glatard2017boutiques}.
-\reprozip~\cite{Chirigati2016} is added to one of the container images for
-provenance tracking. 
-Our tool starts by capturing temporary and multi write files in Condition 1 
-(Fig.~\ref{fig:overview-capturing}). 
-To do that, the tool first executes pipeline on Condition 1 to obtain process graph 
-(Fig.~\ref{fig:overview-capturing} - (P)) and 
-result files. Subsequently, it generates the list of processes that create these intermediary files. 
-Using this list, the tool modifies docker image in Condition 1 and exectutes the pipeline 
-again through it, which turns to produce results including temporary and overwritten
-files (Fig.~\ref{fig:overview-capturing} - (C1)).
-In the second step, the processes are labeled from 
-the differences found in their outputs in the
-two tested conditions (Fig.~\ref{fig:overview-labelling}). To this order, 
-the tool builds docker image for Condition 2 by modifying pipeline processes that 
-recognised from 
-the process graph. Then, the modified docker image is executed in Condition 2 and 
-each process is labeled right 
-after the running by comparing checksum of the results obtained in Condition 1 
-and output files of the process in Condition 2 (Fig.~\ref{fig:overview-labelling} - (D)). 
-We then label processes in 2 categories (Fig.~\ref{fig:overview-labelling} -
-(L)) depending whether they create differences (represented in red) or not (green). 
-Process labelling is done through hooks which are defined during the docker image modifying procedure, 
-and incremental updates in Condition 2, 
-until the end of the pipeline execution.
+Figure~\ref{fig:overview} shows an overview of our method. For each tested
+condition, Condition 1 and Condition 2, the pipeline is containerized with
+Docker, and its interface is described with
+Boutiques~\cite{glatard2017boutiques}. \reprozip~\cite{Chirigati2016} is
+added to Condition 1 for provenance tracking. Our tool starts by
+identifying temporary files and ``multi-write" files, i.e., files written
+by more than one process (Fig.~\ref{fig:overview-capturing}) \tristan{check if concurrent writes are discussed}. To do that,
+the tool first executes the pipeline in Condition 1, to obtain a process
+graph (Fig.~\ref{fig:overview-capturing} - (P)) and a list of result files.
+The list of processes that create intermediary or multi-write
+files is then generated. Using this list, the tool modifies Docker image in Condition 1 and
+exectutes the pipeline again through it, which turns to produce results
+including temporary and overwritten files
+(Fig.~\ref{fig:overview-capturing} - (C1)). In the second step, the
+processes are labeled from the differences found in their outputs in the
+two tested conditions (Fig.~\ref{fig:overview-labelling}). To this order,
+the tool builds docker image for Condition 2 by modifying pipeline
+processes that recognised from the process graph. Then, the modified docker
+image is executed in Condition 2 and each process is labeled right after
+the running by comparing checksum of the results obtained in Condition 1
+and output files of the process in Condition 2
+(Fig.~\ref{fig:overview-labelling} - (D)). We then label processes in 2
+categories (Fig.~\ref{fig:overview-labelling} - (L)) depending whether they
+create differences (represented in red) or not (green). Process labelling
+is done through hooks which are defined during the docker image modifying
+procedure, and incremental updates in Condition 2, until the end of the
+pipeline execution.
+
+\tristan{Fig 1-a isn't in the git repo while I had asked it before and it is 
+written in the getting started guide anyway. It is annoying to have to ask for these things
+multiple times while I would like to focus on the content. Also, ppt is among the worst formats
+to put in a git repo as it doesn't play well with diffs.}
+
+\tristan{In Fig 1-a, change ``overwritten'' to ``multi-write''.}
+
+\tristan{We should also discuss the cardinality of ``input subject''. Are we talking
+about 1 subject or all subjects?}
 
 \begin{figure}
   \centering
   \begin{subfigure}{\columnwidth}
     \centering
     \includegraphics[width=1\columnwidth]{images/Slide2}
-    \caption{Capturing of temp and multi write files.}
+    \caption{Identification of temporary and multi-write files.}
     \label{fig:overview-capturing}
   \end{subfigure}
    \begin{subfigure}{\columnwidth}
@@ -196,8 +206,8 @@ until the end of the pipeline execution.
 
 \subsection{Provenance capture and representation}
 
-We use \reprozip to create process graph (Fig.~\ref{fig:overview-capturing} - (P)), 
-which records: (1) the set of processes created by the
+We use \reprozip (Fig.~\ref{fig:overview-capturing} - (P))
+to capture: (1) the set of processes created by the
 pipeline, using the \texttt{clone()} or \texttt{fork()} system call, and
 (2) the set of files read, written and executed by each process, including
 temporary files. \reprozip collects this information through the
@@ -205,7 +215,7 @@ temporary files. \reprozip collects this information through the
 
 Our tool reconstructs a process tree starting from the first process
 created by the pipeline and traversing processes through \texttt{clone()}
-and \texttt{fork()}. It also creates a process \emph{graph} from this tree
+and \texttt{fork()} dependencies. Our tool also creates a process \emph{graph} from this tree
 by adding edges corresponding to file dependencies between processes. A
 file dependency is defined between processes A and B if a file written by A
 is read by B. Figure~\ref{fig:simple_script} shows an example of a process
@@ -218,28 +228,32 @@ Listing~\ref{listing:sample-script}.
   xleftmargin=0pt,
   tabsize=4]{bash}
 #!/bin/bash
-if [ #$ !=1 ]
+
+# This script extracts the brain from an input image,
+# measures the volume of the extracted brain,
+# and creates a binarized brain mask.
+
+if [ $# != 1 ]
 then
-    echo "usage: 0 <inputimage.nii.gz>"
+    echo "usage: $0 <inputimage.nii.gz>"
     exit 1
 fi
 
 # Parse argument, set file names
 input_image=$1
-bet_output="$(basename ${input_image} 
-                       .nii.gz)_brain.nii.gz"
-bet_output_binarized="$(basename ${input_image} 
-                       .nii.gz)_brain_bin.nii.gz"
+bet_output=$(basename "${input_image}" \
+                       .nii.gz)_brain.nii.gz
+bet_output_binarized=$(basename "${input_image}" \
+                       .nii.gz)_brain_bin.nii.gz
 
 # Run FSL bet, put result ${bet_output}
-bet ${input_image} ${bet_output} > bet_temp.out
+bet "${input_image}" "${bet_output}" > bet_temp.out
 echo "Voxels / Volume in brain mask:"
 # Run FSL stats on ${bet_output}
-fslstats ${bet_output} -V
+fslstats "${bet_output}" -V
 # Run FSL maths on ${bet_output}
-fslmaths ${bet_output} ${bet_output_binarized}
-echo "Voxels / Volume in binarized brain mask:"
-
+fslmaths "${bet_output}" "${bet_output_binarized}"
+# Remove temporary file
 \rm bet_temp.out
 \end{minted}
   \caption{Example pipeline}
@@ -260,7 +274,7 @@ echo "Voxels / Volume in binarized brain mask:"
   files are in yellow and result files are in green.
   Every node in the tree is labeled using (1) a process id created by our
   reconstruction, (2) the name of the executable run by the process.
-  Process 0 is the initial call to the \texttt{bash} interpreter, and
+  Process 0 is the initial call to the \texttt{sh} interpreter, and
   processes 1, 3 and 4 are the calls to FSL bet, stats and maths made in
   Listing~\ref{listing:sample-script}. Process 2 is forked by process 1: it
   was captured by \reprozip while it did not appear in
@@ -272,24 +286,18 @@ echo "Voxels / Volume in binarized brain mask:"
 
 \subsection{Graph analysis}
 
-We label in two categories the processes of the graph of each subject:
-\begin{enumerate}
-\item Processes that read files that do not have differences and write files that do not have differences 
-are labeled \emph{transparent} (Figure~\ref{fig:processes}.a).
-\item Processes that read files 
-that do not have differences but write files that have differences 
-\emph{create} differences (Figure~\ref{fig:processes}.b).
-\end{enumerate}
-
-In addition, there are two more situations in labelling process as:
-\begin{enumerate}
-\item Processes that read files 
-that have differences and write files that do not have differences \emph{remove} 
-differences (Figure~\ref{fig:processes}.c).
-\item Processes that read files that have differences and write files that 
-also have differences are called
-\emph{undetermined} (Figure~\ref{fig:processes}.d).
-\end{enumerate}
+We label in two categories the processes of the graph of each subject. First,
+processes that read files that do not have differences and write files that
+do not have differences are labeled \emph{transparent}
+(Figure~\ref{fig:green}). Second, processes that read files that do not
+have differences but write files that have differences \emph{create}
+differences (Figure~\ref{fig:red}). In addition, processes that read files
+that have differences and write files that also have differences are called
+\emph{undetermined} (Figure~\ref{fig:yellow}). Processes are also labeled
+undetermined when they read or write temporary files, or produce multi-write
+files. To resolve undetermined processes, hooks must be added to the pipeline to 
+execute these processes on files without differences, and to capture
+intermediary file states.
 
 \begin{figure}%\centering
 \centering
@@ -306,12 +314,6 @@ also have differences are called
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.2\linewidth}
-    \includegraphics[scale=0.3]{images/blue.png}
-    \caption{Removes differences}
-    \label{fig:blue}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.2\linewidth}
     \includegraphics[scale=0.3]{images/yellow.png}
     \caption{Undetermined}
     \label{fig:yellow}
@@ -323,26 +325,52 @@ also have differences are called
     \label{fig:processes}
 \end{figure}
 
-Undetermined processes are due to temporary files, and files that were
-written by more than a single process. In both situations, hooks must
-be added to the pipeline to capture intermediary file states and label
-undetermined processes.
+\tristan{You should use Fig. or Figure consistently}
 
 \subsubsection{Capturing temporary files} 
 
-The labelling of processes that read or 
+The label of processes that read or 
 write temporary files is undetermined because these files are deleted during 
 the execution. To address this issue, we replace in Condition 1 every process P that 
 writes temporary files with a modification of P that first calls P and then
-backs up all its output files to a read-only directory. This replacement is
+saves all its output files to a read-only directory. This replacement is
 done by modifying the PATH environment variable to point to a directory
 containing a modified version of the executable called by the process. The
-modified executable will run the original executable and then backup its
+modified executable will run the original executable and then save its
 output files (see Listing~\ref{listing:modify-script}). 
+\tristan{Add more comments, in particular to explain what the variables represent.}
 This 
 solution does not cover the temporary files that are removed by P 
 itself, but this is not a problem since these files do not play any role in 
 the subsequent steps of the pipeline. 
+\begin{listing}
+  \begin{minted}[frame=single,
+    framesep=3mm,
+    linenos=false,
+    xleftmargin=0pt,
+    tabsize=4]{python}
+  #!/usr/bin/env python
+  import os.path as op
+
+
+  # Execute process in cond2 from backup folder
+  p_name = sys.argv[0]
+  p_exec_cond2 = op.join('backup_scripts', p_name)
+  p_exec_cond2 = p_exec_cond2 + " ".join(sys.argv[1:])
+  subprocess.Popen(p_exec_cond2, shell=True).communicate()
+  
+  # Load list of process to be checked
+  with open('path/to/p_list/', 'r') as p_list:
+      process_list = json.load(p_list)
+
+  if p_exec_cond1 in process_list.keys():
+      # Make backup copy
+      capture_file(p_files, from_cond1, to_backup)
+  
+  \end{minted}
+    \caption{Modified version of the script in Listing~\ref{listing:sample-script} to save temporary files.}
+    \label{listing:modify-script}
+  \end{listing}
 
 \subsubsection{Capturing multiple write files}
 
@@ -352,7 +380,7 @@ written by all processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we
 (1) check that processes in \textbf{P} do not write concurrently to F, 
 (2) we establish an order on \textbf{P} based on the creation timestamp 
 of the processes, (3) we replace every process $P_{i}$ in \textbf{P} by 
-a wrapper that first calls $P_{i}$ and then backs up F to a read-only 
+a wrapper that first calls $P_{i}$ and then saves F to a read-only 
 directory. Thus, multiple versions of F are saved and used in the 
 analysis. 
 
@@ -413,36 +441,7 @@ Listing~\ref{listing:sample-script} that should be captured.}
 \label{listing:json_process}
 \end{listing}
 
-\begin{listing}
-\begin{minted}[frame=single,
-  framesep=3mm,
-  linenos=false,
-  xleftmargin=0pt,
-  tabsize=4]{python}
-#!/bin/python
 
-# Execute process in cond2 from backup folder
-p_name = sys.argv[0]
-p_exec_cond2 = op.join('backup_scripts', p_name)
-i = 1
-while i < len(sys.argv):
-    p_exec_cond2 += " " + sys.argv[i]
-    i += 1
-subprocess.Popen(p_exec_cond2, shell=True).communicate()
-
-# Load list of process to be checked
-with open('path/to/p_list/', 'r') as p_list:
-    process_list = json.load(p_list)
-for p_exec_cond1, p_files in process_list.items():
-    # Comparing process exec in two conditions
-    if p_exec_cond1 == p_exec_cond2:
-        # Make backup copy
-        capture_file(p_files, from_cond1, to_backup)
-
-\end{minted}
-  \caption{Modify script.}
-  \label{listing:modify-script}
-\end{listing}
 
 
 
