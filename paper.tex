@@ -154,59 +154,57 @@ Docker, and its interface is described with
 Boutiques~\cite{glatard2017boutiques}. \reprozip~\cite{Chirigati2016} is
 added to Condition 1 for provenance tracking. Our tool starts by
 identifying temporary files and ``multi-write" files, i.e., files written
-by more than one process (Fig.~\ref{fig:overview-capturing}) \tristan{check if concurrent writes are discussed}. To do that,
+by more than one process (Figure~\ref{fig:overview-capturing}). To do that,
 the tool first executes the pipeline in Condition 1, to obtain a process
-graph (Fig.~\ref{fig:overview-capturing} - (P)) and a list of result files.
+graph (Figure~\ref{fig:overview-capturing} - (1)) and a list of result files.
 The list of processes that create intermediary or multi-write
-files is then generated. Using this list, the tool modifies Docker image in Condition 1 and
+files is then generated (Figure~\ref{fig:overview-capturing} - (2)). 
+Using this list, the tool modifies Docker image in Condition 1 and
 exectutes the pipeline again through it, which turns to produce results
 including temporary and overwritten files
-(Fig.~\ref{fig:overview-capturing} - (C1)). In the second step, the
+(Figure~\ref{fig:overview-capturing} - (3,4)). In the second step, the
 processes are labeled from the differences found in their outputs in the
-two tested conditions (Fig.~\ref{fig:overview-labelling}). To this order,
+two tested conditions (Figure~\ref{fig:overview-labelling}). To this order,
 the tool builds docker image for Condition 2 by modifying pipeline
-processes that recognised from the process graph. Then, the modified docker
+processes (Figure~\ref{fig:overview-labelling} - (1)) that recognised from 
+the process graph. Then, the modified docker
 image is executed in Condition 2 and each process is labeled right after
 the running by comparing checksum of the results obtained in Condition 1
 and output files of the process in Condition 2
-(Fig.~\ref{fig:overview-labelling} - (D)). We then label processes in 2
-categories (Fig.~\ref{fig:overview-labelling} - (L)) depending whether they
-create differences (represented in red) or not (green). Process labelling
+(Figure~\ref{fig:overview-labelling} - (2)). We then label processes in 2
+categories depending whether they
+create differences (represented in red) or not (green). 
+The tool replaces output file with the same file obtained in Condition 1 
+if process creates differences (Figure~~\ref{fig:overview-labelling} - (3)).
+Process labelling
 is done through hooks which are defined during the docker image modifying
 procedure, and incremental updates in Condition 2, until the end of the
 pipeline execution.
-
-\tristan{Fig 1-a isn't in the git repo while I had asked it before and it is 
-written in the getting started guide anyway. It is annoying to have to ask for these things
-multiple times while I would like to focus on the content. Also, ppt is among the worst formats
-to put in a git repo as it doesn't play well with diffs.}
-
-\tristan{In Fig 1-a, change ``overwritten'' to ``multi-write''.}
-
-\tristan{We should also discuss the cardinality of ``input subject''. Are we talking
-about 1 subject or all subjects?}
 
 \begin{figure}
   \centering
   \begin{subfigure}{\columnwidth}
     \centering
-    \includegraphics[width=1\columnwidth]{images/Slide2}
-    \caption{Identification of temporary and multi-write files.}
+    \includegraphics[width=1\columnwidth]{images/fig1-a}
+    \caption{Identification of temporary and multi-write files.
+    (\href{https://docs.google.com/drawings/d/1rsbFwPjNPNMRhXUl4RSK3G0OaiJC7K-buiHN0hPD8eQ/edit?usp=sharing}{Source})}
     \label{fig:overview-capturing}
   \end{subfigure}
    \begin{subfigure}{\columnwidth}
     \centering
-     \includegraphics[width=1\columnwidth]{images/Slide1}
-     \caption{Process labelling.}
+     \includegraphics[width=1\columnwidth]{images/fig1-b}
+     \caption{Labelling process graphs including intermediary files.
+     (\href{https://docs.google.com/drawings/d/1yblYuKWAD18aJe5JxBu2h1EysyoQA3YrsQj-1T3s0l8/edit?usp=sharing}{Source})}
      \label{fig:overview-labelling}
    \end{subfigure}
-   \caption{Method overview}
+   \caption{An overview of NURM tool in two steps. First capturing intermediary files (a); then
+            labelling process graphs (b).}
    \label{fig:overview}
   \end{figure}
 
 \subsection{Provenance capture and representation}
 
-We use \reprozip (Fig.~\ref{fig:overview-capturing} - (P))
+We use \reprozip 
 to capture: (1) the set of processes created by the
 pipeline, using the \texttt{clone()} or \texttt{fork()} system call, and
 (2) the set of files read, written and executed by each process, including
@@ -215,7 +213,8 @@ temporary files. \reprozip collects this information through the
 
 Our tool reconstructs a process tree starting from the first process
 created by the pipeline and traversing processes through \texttt{clone()}
-and \texttt{fork()} dependencies. Our tool also creates a process \emph{graph} from this tree
+and \texttt{fork()} dependencies. Our tool also creates a process \emph{graph} 
+(Figure~\ref{fig:overview-capturing} - (1)) from this tree
 by adding edges corresponding to file dependencies between processes. A
 file dependency is defined between processes A and B if a file written by A
 is read by B. Figure~\ref{fig:simple_script} shows an example of a process
@@ -325,8 +324,6 @@ intermediary file states.
     \label{fig:processes}
 \end{figure}
 
-\tristan{You should use Fig. or Figure consistently}
-
 \subsubsection{Capturing temporary files} 
 
 The label of processes that read or 
@@ -338,11 +335,11 @@ done by modifying the PATH environment variable to point to a directory
 containing a modified version of the executable called by the process. The
 modified executable will run the original executable and then save its
 output files (see Listing~\ref{listing:modify-script}). 
-\tristan{Add more comments, in particular to explain what the variables represent.}
 This 
 solution does not cover the temporary files that are removed by P 
 itself, but this is not a problem since these files do not play any role in 
 the subsequent steps of the pipeline. 
+
 \begin{listing}
   \begin{minted}[frame=single,
     framesep=3mm,
@@ -351,28 +348,29 @@ the subsequent steps of the pipeline.
     tabsize=4]{python}
   #!/usr/bin/env python
   import os.path as op
+  import shutil
 
-
-  # Execute process in cond2 from backup folder
-  p_name = sys.argv[0]
-  p_exec_cond2 = op.join('backup_scripts', p_name)
-  p_exec_cond2 = p_exec_cond2 + " ".join(sys.argv[1:])
-  subprocess.Popen(p_exec_cond2, shell=True).communicate()
+  # Run the original executable using the same arguments
+  executed_file = sys.argv[0]
+  exec_argv = op.join('original_scripts', executed_file)
+  exec_argv = exec_argv + " ".join(sys.argv[1:])
+  subprocess.Popen(exec_argv, shell=True).communicate()
   
-  # Load list of process to be checked
+  # Load list of captured process to be checked
   with open('path/to/p_list/', 'r') as p_list:
       process_list = json.load(p_list)
 
-  if p_exec_cond1 in process_list.keys():
-      # Make backup copy
-      capture_file(p_files, from_cond1, to_backup)
+  if exec_argv in process_list.keys():
+      # Save output files to read-only directory
+      p_files = process_list[exec_argv]
+      shutil.copy(p_files, '/read-only/dir')
   
   \end{minted}
-    \caption{Modified version of the script in Listing~\ref{listing:sample-script} to save temporary files.}
+    \caption{Modified version of the script in Listing~\ref{listing:sample-script} to save intermediary files.}
     \label{listing:modify-script}
   \end{listing}
 
-\subsubsection{Capturing multiple write files}
+\subsubsection{Capturing multi-write files}
 
 Files written by multiple processes also lead 
 to undetermined labels. For a file F 
@@ -391,14 +389,14 @@ timestamp is posterior to B's or when A=B. Indeed, such edges cannot
 happen in practice unless A and B were running concurrently, which we 
 assume is not the case (the tool checks for that). 
 
-For example, in the sample pipeline in 
-Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} write a temporary file and 
+As an example of this capturing process, in the sample pipeline in 
+Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} writes a temporary file and 
 also file \emph{T1w\_brain\_bin.nii.gz} is first written by process \texttt{2\#bet2} and 
-then overwritten by process \texttt{3\#fslmaths}. The list of these processes are captured in 
+then overwritten by process \texttt{3\#fslmaths}. The list of these processes is captured in 
 Listing~\ref{listing:json_process}.
 Using this list, we modify relevant processes in Condition 1 and then re-execute pipeline 
-to store them in a backup folder.
-Figure~\ref{fig:overview-capturing} - (C1) shows pipeline results including intermediary files 
+to save them in a backup folder.
+Figure~\ref{fig:overview-capturing} - (4) shows pipeline results including intermediary files 
 captured as the outputs in Condition 1. 
 
 \begin{listing}
@@ -442,17 +440,14 @@ Listing~\ref{listing:sample-script} that should be captured.}
 \end{listing}
 
 
-
-
-
 \subsubsection{Labelling undetermined processes} 
 
 Since all the result files are captured in Condition 1, the tool 
 is ready to label the piepeline processes based on the results in Condition 2.
 However, another challenge is to label undetermined processes that read files with 
-differences and write files with differences too. In such 
-situations, it is not possible to determine from the pipeline results 
-whether the process created differences, removed some differences, or 
+differences and write files with differences too. In this
+situation, it is not possible to determine from the pipeline results 
+whether the process created differences or 
 was transparent.
 To address this issue, we set hooks in the pipeline 
 in Condition 2. Hooks are set by replacing the pipeline 
@@ -462,25 +457,26 @@ the original executable.
 The replacement is done through the PATH variable, as before. Moreover, 
 this custom script copies the results obtained from the same process in 
 Condition 1 to the pipeline output in Condition 2 if 
-it is invoked with 
-the arguments of a process that created differences. 
+it is invoked with the arguments of a process that created differences 
+(Figure~\ref{fig:overview-labelling} - (3)). 
 Differences are identified by comparing checksum of the output files for 
-the same process in both conditions.
+the same process in both conditions (Figure~\ref{fig:overview-labelling} - (2)).
 We developed an incremental approach that consists of the following steps: 
 
 \begin{enumerate}
   \item Start the pipeline execution in Condition 2; 
         after hooking all the processes involved in the pipeline.
   \item Label each process as \emph{transparent} or \emph{create differences} 
-        right after its running (Fig.~\ref{fig:overview-labelling} - (L)).
+        right after its running.
   \item Check if process is \emph{create differences} then: 
-        copies the results produced by the same process in Condition 1 to the 
-        pipeline output in Condition 2 (Fig.~\ref{fig:overview-labelling} - (M)). 
+        copy the results produced by the same process in Condition 1 to the 
+        pipeline output in Condition 2. 
   \item Continue steps 2 and 3 until the end of the pipeline execution.
 \end{enumerate}
 
-This algorithm create a labeled process graph at the end of pipeline execution 
-(Fig.~\ref{fig:overview-labelling} - (LG)).
+This algorithm creates a \emph{labeled process tree} at the end of pipeline execution 
+which highlights processes that create differences.
+(Figure~\ref{fig:overview-labelling} - (4)).
 
 \begin{figure}
   \centering
@@ -497,7 +493,7 @@ Figure~\ref{fig:simple_script}, plain black edges represent the process
 tree and dashed edges represent file dependencies: green edges 
 represent files with no differences, while red edges represent files with 
 differences. Temporary files are not represented because they have been 
-backed up as previously described.
+saved as previously described.
 
 The four steps in Figure~\ref{fig:iterations} correspond to the 
 steps of the labelling algorithm. 
@@ -515,12 +511,11 @@ as the last process of the pipeline.
 As a result of these 4 steps, the final process labelling is: 
 \texttt{2\#bet2} and \texttt{4\#fslmath} are difference creators (red) 
 and the other processes are transparent.
-It should be noted that processes that remove differrences are not recognised 
-by this method.
+
 
 \subsection{Subject clustering}
 
-Different subjects may lead to different process trees and graphs, due to
+Different subjects may lead to different process trees, due to
 variations that may be coming from differences in data types or
 cardinality. For instance, some images may have been acquired multiple
 times in some subjects. Some of these differences can be neglected, for
@@ -528,19 +523,21 @@ instance when a data decompression step is present at the beginning of the
 execution for some subjects only, and other ones cannot, when different
 processing paths are used in different subjects.
 
-To address this issue, we use the tree edit distance~\cite{zhang1989simple}
-to measure the distance between labeled trees \tristan{how about graphs?
-also, why between \emph{labeled} trees and not just trees?}, defined as the
-minimum weighted \tristan{weighted by what?} number of edit operations
-required to transform one tree into the other one. Three edit operations
-are considered: node label modification, node removal, and node insertion.
-Each operation has an associated cost: 1 for insertion and removal, and
-either 1 or 2 for label modification depending on the type of modification. \tristan{Please check my edits.}
-
+We cluster subjects into different types to specify how many different 
+\emph{labeled process tree} are generated. This implies the effect of different 
+subjects on pipeline results. First, we cluster subjects based on their process 
+trees that are labeled by the process name. Then, we cluster subjects in each 
+category after re-labeling the processes that create differences. In this order, 
+the tree edit distance~\cite{zhang1989simple} is used as similarity measure for 
+representing the distance between labeled trees. Tree edit distance  is defined  
+as the minimum number of edit operations which is needed to transform one tree into 
+the other. Three edit operations are considered: node label modification, 
+node removal, and node insertion. Each operation has an associated cost of 1.
 With this distance, we cluster subjects using agglomerative hierarchical
 clustering as implemented in SciPy~\cite{oliphant2007scipy}
 (Algorithm~\ref{algo:hclustering}). As a result, the distance between
 any two subjects in a cluster is lower than a threshold parameter.
+
 
 \begin{algorithm}[h!]
 \caption{Hierarchical clustering algorithm from SciPy}
@@ -576,7 +573,6 @@ any two subjects in a cluster is lower than a threshold parameter.
 \end{algorithmic}
 \end{algorithm}
 
-\tristan{how do you choose the representative process graph in each cluster?}
 
 \section{Experiments}
 
@@ -591,7 +587,7 @@ developed a set of pre-processing pipelines to process structural,
 functional and diffusion MRI data acquired in the project. We focus on HCP
 pre-processing pipelines for structural data, in particular PreFreesurfer
 and Freesurfer. A detailed description of the analyses done in the
-pipelines is available in~\cite{glasser2013minimal}.
+pipelines is available in~\cite{glasser2013}.
 % IF NEEDED, ADD MORE DETAILS ABOUT WHAT THE PIPELINES DO
 % The structural pre-processing pipelines consists of PreFreeSurfer, 
 % FreeSurfer and PostFreeSurfer. In this paper, 
@@ -684,7 +680,7 @@ intra-OS runs.
 
 
 In the previous study~\cite{Scaria2017}, we showed that pre-processing 
-pipelines of the Human Connectome Project~\cite{Glasser2013} were 
+pipelines of the Human Connectome Project~\cite{glasser2013} were 
 sensitive to operating system variation so that Figure 
 \ref{fig:tissue_class} illustrates the binarized errors after brain 
 tissue segmentation process in FreeSurfer. In addition, 
@@ -729,8 +725,8 @@ dependencies between processes (green edges: files with no errors; red
 edges: files with errors; yellow edges: temporary files).
 
 The processes that introduce errors in PreFreeSurfer along with the 
-number of occurrences are depicted in Figures~\ref{fig:pfs_table, 
-fig:pfs_chart} including linear registration with “\emph{FLIRT}” (in 
+number of occurrences are depicted in Figures~\ref{fig:pfs_table} and 
+~\ref{fig:pfs_chart} including linear registration with “\emph{FLIRT}” (in 
 ACPC Alignment, BrainExtraction, DistortionCorrection, 
 AtlasRegistration), non-linear registration with “\emph{FNIRT}” (in 
 BrainExtraction and AltasRegistration), image warping with 
@@ -792,7 +788,12 @@ The results still suffer from small perturbations literally because of
 the fact that pipeline are not numerically stable. The preferred 
 solution is to detect and fix numerical instability of the pipeline 
 instead of masking the problem. These processes need to be reviewed to 
-understand and correct the cause of instabilities. }
+understand and correct the cause of instabilities. 
+
+It should be noted that processes that remove differrences, read files with differences and 
+write files without differences, are not recognised 
+by this method.
+}
 
 
 \section{Acknowledgments}
