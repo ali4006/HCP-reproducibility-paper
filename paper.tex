@@ -614,7 +614,9 @@ The HCP developed a set of pre-processing pipelines to process structural,
 functional and diffusion MRI data acquired in the project. We focus on HCP
 pre-processing pipelines for structural data, particularly PreFreeSurfer
 and FreeSurfer. A detailed description of the analyses done in the
-pipelines is available in~\cite{glasser2013}.
+pipelines is available in~\cite{glasser2013}. \TG{Introduce and present all the
+pipeline components mentioned in the results, such as BrainExtraction, ACPC alignment, \ldots
+The presentation should be at the right level of detail.}
 % IF NEEDED, ADD MORE DETAILS ABOUT WHAT THE PIPELINES DO
 % The structural pre-processing pipelines consists of PreFreeSurfer, 
 % FreeSurfer and PostFreeSurfer. In this paper, 
@@ -668,7 +670,7 @@ pipelines that are responsible for such effects using NURM-tool.
 
 
 
-\subsection{Results}
+\section{Results}
 
 We executed the pipelines using Docker containers to simplify the 
 deployment of different operating system versions on execution 
@@ -676,7 +678,7 @@ platforms. The Docker images were built for the HCP pre-processing
 pipelines v3.19.0 (PreFreeSurfer and FreeSurfer) in 
 CentOS 6.8 and CentOS 7.2. Docker images are available on 
 \href{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}{DockerHub}
-for reuse. 
+for reuse. \TG{Should go to experiments}
 
 Two types of errors can occur in the subjects due to the 
 errors in the operating systems. One is inter-OS error caused by the 
@@ -684,20 +686,20 @@ operating system library updates and the other type, intra-OS errors
 occurs as a result of the pseudo-random processes used in the 
 pipelines. 
 We have initialized random number generators using a seed state 
-to avoid intra-OS errors in our experiments. 
+to avoid intra-OS errors in our experiments \TG{how? where?}. 
 Therefore, NURM-tool is able to identify the process in the pipelines 
-that create differences caused by the inter-OS errors.
-
+that create differences caused by the inter-OS errors. \TG{Change errors to differences.}
+\TG{Check that again, on all subjects.}
 
 \subsubsection{Inter-OS binary differences}
 
-In the previous study~\cite{Scaria2017}, we showed that the HCP pre-processing 
+In a previous study~\cite{Scaria2017}, we showed that the HCP pre-processing 
 pipelines~\cite{glasser2013} were 
-sensitive to operating system variation so that Figure 
+sensitive to operating system variation. Figure 
 \ref{fig:tissue_class} illustrates the binarized differences after brain 
-tissue segmentation process in FreeSurfer. In addition, 
-Figure~\ref{fig:fnirt_result} shows the same differences occurred in 
-non-linear registration process between CentOS6 and CentOS7 in PreFreeSurfer. 
+tissue segmentation in FreeSurfer. In addition, 
+Figure~\ref{fig:fnirt_result} shows the same differences after 
+non-linear in PreFreeSurfer. 
 
 \begin{figure}
 %  \includegraphics{brain\_classification}
@@ -721,11 +723,12 @@ non-linear registration process between CentOS6 and CentOS7 in PreFreeSurfer.
 
 We clustered subjects into different groups using the NURM-tool, 
 after that PreFreeSurfer pipeline has executed on input data.
-Figure~\ref{fig:subj-clusters} shows the result of data clustering. 
+Figure~\ref{fig:subj-clusters} shows the result of data clustering. \TG{Make a table instead of a figure. 
+Mention the threshold and any other clustering parameter.}
 Among our dataset, we identified 4 types of subjects with 
 different topology of \emph{process trees}. In addition, we verified that 
 the \emph{process trees} were identical for all subjects of the same type in 
-different versions of CentOS operating system.
+different versions of CentOS operating system. \TG{Check what these 4 types correspond to}
 
 We identified processes that introduce differences in PreFreeSurfer 
 pipeline. 
