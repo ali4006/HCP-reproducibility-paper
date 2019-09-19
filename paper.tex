@@ -115,12 +115,10 @@ types, parallelization methods, operating systems, and analysis
 packages are known to influence reproducibility~\cite{Gronenschild2012, 
 diethelm2012limits, Glatard2015, bowring2019exploring}.
 
-In particular, the effect of the operating system is quantified 
-in~\cite{Glatard2015, Gronenschild2012} specially on some of the main 
-neuroimaging pipelines including FSL, CIVET and FreeSurfer pipelines. 
-The binary differences are measured by the checksum method between 
-results of the same analyses on different operating systems, which 
-indicate a significant disparity. 
+In particular, the effect of 
+the operating system across some of the main 
+neuroimaging pipelines including FSL, CIVET and FreeSurfer pipelines 
+is studied in~\cite{Glatard2015, Gronenschild2012} that indicates a significant disparity. 
 }
 
 These irreproducibility issues are reported as the result of the 
@@ -588,7 +586,7 @@ may have different labels as processes that create differences.
 
 \section{Experiments}
 
-The variety of computing infrastructures, particularly the operating system, are 
+The variety of computing infrastructures, particularly the operating system, is 
 known to influence the reproducibility of computational pipelines because of the
 creation of small numerical differences. 
 These differences mainly correspond to the mathematical functions implemented 
@@ -597,16 +595,16 @@ For instance, changing the mathematical functions like \emph{expf()} and
 \emph{cosf()} which manipulate the precision of floating-point representations, 
 between \emph{glibc} libraries in different operating systems can produce 
 small numerical differences.
-Furthermore, a similar issue is expected for any operating system which is 
+Besides, a similar issue is expected for any operating system which is 
 based on \emph{glibc}, the GNU C library.
 
 Indeed, the propagation and amplification of these tiny perturbations by analysis 
-may cause reproducibility issues. We focus on the differences 
+may cause a significant reproducibility issue. We focus on the differences 
 created by different version of operating systems in computational pipelines. 
 In particular, NURM-tool is tested on the neuroimaging applications which are 
 predominantly using mathematical libraries.
 
-\subsection{HCP pipelines and datasets}
+\subsection{HCP pipelines and dataset}
 
 We used our tool to evaluate the effect of the operating system on results 
 produced by the pipelines from the Human Connectome Project (\href{https://www.humanconnectome.org}{HCP}).
@@ -624,19 +622,19 @@ functional and diffusion MRI data acquired in the project. We focus on HCP
 pre-processing pipelines for structural data, particularly PreFreeSurfer
 and FreeSurfer. 
 
-According to~\cite{glasser2013}, main steps of the HCP PreFreeSurfer pipeline are:
-(1) Distortion Correction: 
-is the correction of geometric distortions for routine MRI scans 
-to produce an undistorted native structural volume space for each subject.
-(2) Anatomical Average: average same modality images (if more than one is available)
-(3) ACPC (Anterior Commissure, Posterior Commissure) Alignment: 
+According to~\cite{glasser2013}, main sub-pipelines of the HCP PreFreeSurfer are:
+(1) Distortion Correction (DC) 
+to correct the geometric distortions for routine MRI scans 
+and produce an undistorted native structural volume space for each subject,
+(2) Anatomical Average (AAve) to average same modality images (if more than one is available),
+(3) ACPC (Anterior Commissure, Posterior Commissure) Alignment (ACPC-A) 
 is aligning images to the MNI space to have the same orientation as 
-the reference template.
-(4) Brain Extraction: includes a robust initial brain extraction, using FSL's linear (FLIRT) 
-and non-linear (FNIRT) registration. 
-(5) Bias Field Correction: applies intensity inhomogenity correction on the registered images.
-Calculates bias field using square root of the product of T1w and T2w images. 
-(6) Atlas-Registration: register the subject's native structural volume space to MNI space as the last step.
+the reference template,
+(4) Brain Extraction (BExt) includes a robust initial brain extraction, using FSL's linear (FLIRT) 
+and non-linear (FNIRT) registration, 
+(5) Bias Field Correction (BFC) applies intensity inhomogenity correction on the registered images, 
+%Calculates bias field using square root of the product of T1w and T2w images. 
+(6) Atlas-Registration (AR) to register the subject's native structural volume space to MNI space as the last step.
 
 Also, the main goals of HCP FreeSurfer pipeline are:
 (1) improve the robustness of brain extraction,
@@ -645,14 +643,14 @@ Also, the main goals of HCP FreeSurfer pipeline are:
 (4) perform FreeSurfer's standard folding-based surface registration 
 to their surface atlas.
 
-A detailed description of the analyses done in the
+A detailed description of the analyses done in these
 pipelines is available in~\cite{glasser2013}. 
 
 HCP data consists of brain images collected from an individual healthy person, 
-in the age range from 22-35 years~\cite{van2013wu}. Data from 1200 subjects 
+in the age range between 22-35 years~\cite{van2013wu}. Data from 1200 subjects 
 is available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
 Such a directory containing the HCP data is denoted by the term ``subject".
-In this paper, we randomly selected 100 unprocessed subjects from 
+In this paper, we randomly selected 20 unprocessed subjects from 
 the HCP data release S500. All the subjects were scanned using the 3-tesla 
 type of MRI scanners.
 
@@ -691,7 +689,12 @@ are in part of the file data.
 Depending on the file type, we used functions from FreeSurfer software package to determine 
 whether two files differ, including  
 \emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff} for comparing volumes, surface-based files, 
-and lta files (transforms) respectively. Also, text files are compared using a custom function.
+and lta files (transforms) respectively. 
+These functions check data based on the volume dimentions, 
+resolutions, pixel intensities,  
+the number of surface vertices and neighbors, and geometry information. 
+It then returns files differ if there be differences in any of these parameters.
+Also, text files are compared using a custom function that compares the content line by line.
 
 \subsection{Results}
 
@@ -702,15 +705,16 @@ occur as a result of the pseudo-random processes used in the
 pipelines. 
 
 In our experiments, we identified the processes that create differences due to 
-using random variables in the FreeSurfer pipeline. 
+intra-OS differences.  
 For example, process \emph{mris\_curvature}
-computes mean and Gaussian curvatures of a cortical surface using the random variable.
+computes mean and Gaussian curvatures of a cortical surface using 
+the random variable in FreeSurfer.
 To avoid such randomness we 
 initialized random number generators using a seed state in 
 the command line in which pipeline script calls the program.
 This ensures that results are the same from run to run.
-Therefore, NURM-tool can identify the process in the pipelines 
-that create differences caused by the inter-OS differences. 
+Therefore, NURM-tool can identify the processes in the pipelines 
+that create inter-OS differences. 
 
 \subsubsection{Inter-OS binary differences}
 
@@ -718,25 +722,30 @@ In a previous study~\cite{Scaria2017}, we showed that the HCP pre-processing
 pipelines~\cite{glasser2013} were 
 sensitive to operating system variation. 
 
-Figure~\ref{fig:fnirt_result} shows differences in the \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz} files. 
-These files are created as a part of ACPC-Alignment (Step 3 of PreFreeSurfer).
+Figure~\ref{fig:fnirt_result} shows differences in the files 
+that are created as a part of ACPC-Alignment in PreFreeSurfer.
+The square pixels in the brain in the checkerboard images show the differences between results in two OSes. 
 The RMSE (root mean squared error) value of results is 0.029 and the dice coefficient is 0.125.
-The square pixels in the brain in this checkerboard images show the differences between results in two OSes. 
-In the next subsection, we will show that such misalignment is created due to 
+In the next subsection, it is shown that such misalignment is created due to 
 non-linear registration in \emph{FNIRT} process in PreFreeSurfer pipeline.
 
 Furthermore, Figure 
-\ref{fig:tissue_class} illustrates the binarized differences in the \emph{aseg.hires.mgz} files.
-This is the result of brain tissue segmentation across OSes in FreeSurfer pipeline. 
-Each color represents a different structure in the brain.
-The bright spots show relevant pixels in the image which are different.
-The RMSE and the dice coefficient values of results are 0.009 and 0.991 respectively.
+\ref{fig:tissue_class} illustrates the heatmap binarized differences 
+of the brain tissue segmentation across OSes in FreeSurfer pipeline.
+These differences are accumulated from 20 subject results.
+So, the magnitude of differences is in the range of 1-20 as the total number of subjects.
+The darker blue pixels show differences among less subjests and 
+the brighter blue pixels are related to the differences among more subjects.
+
+%The brighter spots show relevant pixels in the segmented image which are different among more subjects.
+%The RMSE and the dice coefficient values of results are 0.009 and 0.991 respectively.
+%Each color represents a different structure in the brain.
 
 
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{images/segmentation.png} 
-    \caption{Differences between FNIRT results from PreFreeSurfer 
+    \caption{Differences between FNIRT results of one subject from PreFreeSurfer 
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
     CentOS7). Right images show the zoomed version part of the images marked 
     by the red rectangle.} 
@@ -747,8 +756,8 @@ The RMSE and the dice coefficient values of results are 0.009 and 0.991 respecti
 %  \includegraphics{brain\_classification}
 \centering
   \includegraphics[width=\columnwidth]{images/brain_classification.png} 
-  \caption{Binarized differences between brain segmentation results from 
-           FreeSurfer (CentOS6 vs. CentOS7).} 
+  \caption{Heatmap binarized differences between brain segmentation results (file \emph{aseg.hires.mgz}) from 
+          20 subjects in FreeSurfer (CentOS6 vs. CentOS7).} 
   \label{fig:tissue_class}
 \end{figure}
 
@@ -756,7 +765,7 @@ The RMSE and the dice coefficient values of results are 0.009 and 0.991 respecti
 \subsubsection{PreFreeSurfer pipeline analysis} 
 
 First, subjects are clustered into different groups using the clustering method as described before.
-We choosed the threshold value of zero for the clustering method. 
+We set the threshold value to zero for the clustering method. 
 This turns to have the subjects with the same topology in each cluster.
 Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 Table~\ref{table:data-clusters} shows the PreFreeSurfer result of subject clustering. 
@@ -791,20 +800,19 @@ type4  & 2                   & [``T2w/T2w2\_gdc.nii.gz"]                        
 \label{table:data-clusters}
 \end{table}
 
-
 Then, we determined the frequency of the processes that create differences in 
 the pipeline in Figure~\ref{fig:pfs_freq}. \emph{FLIRT} is the most frequent 
 process that produces differences.
 Furthermore, the percentage of processes that introduce differences 
-in PreFreeSurfer along with the 
-pipeline elements are depicted in Figure~\ref{fig:pfs_freq} 
+along with the 
+sub-pipelines are depicted in this figure 
 including linear registration with “\emph{FLIRT}” (in 
-ACPC-Alignment, BrainExtraction, DistortionCorrection, 
-AtlasRegistration), non-linear registration with “\emph{FNIRT}” (in 
-BrainExtraction and AltasRegistration), image warping with 
-“\emph{new\_invwarp}” (in BrainExtraction and AtlasRegistration). 
+ACPC-Alignment, Brain Extraction, Distortion Correction, 
+Atlas Registration), non-linear registration with “\emph{FNIRT}” (in 
+Brain Extraction and Altas Registration), image warping with 
+“\emph{new\_invwarp}” (in Brain Extraction and Atlas Registration). 
 Also, differences were observed in image mean and standard-deviation 
-computations in image interpolation with “\emph{fslmaths}” (in AnatomicalAverage). 
+computations in image interpolation with “\emph{fslmaths}” (in Anatomical Average). 
 It can be seen that \emph{fslmaths} and \emph{FLIRT} 
 are the processes that at least have one subprocess to produce differences across all the subjects.
 
@@ -820,60 +828,86 @@ are the processes that at least have one subprocess to produce differences acros
 \begin{figure}
 \centering
   \includegraphics[width=\columnwidth]{images/pfs_heatmap.png}
-  \caption{Colorized processes along with the pipeline elements that introduce 
+  \caption{Heatmap of difference frequency of processes along with the sub-pipelines that introduce 
            differences among 20 subjects. The range between red and green colors show the most and 
-           least frequency of processes respectively. Besides, the number 
-           of occurrences of each processes with differences is represented in the line below the heatmap.}
+           least frequency of processes respectively. Besides, the total number 
+           of occurrences of each processes is represented in the bracket in each cell.}
   \label{fig:pfs_freq}
 \end{figure}
 
 
 \subsubsection{FreeSurfer pipeline analysis} 
 
-We found that inter-OS differences occur if pre-processed data are different in FreeSurfer. 
-Figure~\ref{fig:tissue_class} shows differences that coming from PreFreeSurfer analysis 
-as a result of propagation of differences. 
-NURM tool identified that there are no processs in the pipeline that create differences.
-This is because of using static builds of FreeSurfer which statically linked libraries (embeded libraries in the pipeline).
+We executed FreeSurfer pipeline on both OSes using a fixed input data, result of PreFreeSurfer on Centos 6, 
+to determine the creation of differences. 
+NURM tool identidied \emph{mris\_make\_surfaces} as the only process in the pipeline that create differences.
+This process generates surface files for cortical and white matter surfaces, curvature file for cortical thickness and 
+surface file estimate for layer IV of cortical sheet. 
+In this analysis, the number of process that create differences are dropped becasue of 
+using the static builds of FreeSurfer in which libaries are embeded in the pipeline package.
+
+However, we found that inter-OS differences occur when pre-processed data are different in FreeSurfer. 
+Using the result data from PreFreeSurfer, we executed FreeSurfer pipeline in each operating system separately.
+FreeSurfer pipeline is unstable as it propagates and amplifies differences 
+through the pipeline analysis.
+Figure~\ref{fig:tissue_class} shows inter-OS differences  
+as a result of propagation and amplification of differences. % that coming from PreFreeSurfer outputs. 
 
 
 \section{Discussion}
 
-\note{Pipelines amplify small numerical differences because they are numerically 
-unstable. Furthermore, math libraries evolve over time, leading to 
-different numerical errors. we listed some of the irreproducibility 
-causes of the pipelines as we mentioned in the previous section 
-overally along with exact command arguments.
+We indentified 4 processes that create differences 
+among all 28 distinct processes that are involved in the PreFreeSurfer execution. 
+The numerical instability in the 
+PreFreeSurfer HCP pipeline arises mainly from linear 
+registration processes implemented in FSL \emph{FLIRT}. 
+We can see that \emph{FLIRT} creates differences in almost all the sub-pipelines. 
+Therefore, it is important to more investigate about the registration procedure and find 
+a way to stabilize this process. 
 
-Mention that this was only possible because the unprocessed data was 
-shared in the first place. DICOM to Nifti conversion was out of scope 
-and may introduce other issues.}
+In the second experiment, 
+the analysis results obtained by the pipeline show that inter-OS differences are visually substabtial.
+We see that statically builds of the pipeline improves reproducibility, but 
+it would not improve the numerical stability of the pipeline. 
+FreeSurfer pipeline propagates and amplifies the numerical differences that are created by the 
+differences in the underlying operating system libraries.
+
+In addition to variations of the operating system, there are other factors that may affect 
+the results such as software versions, compilers, hardwares, etc.
+Generally, we can use the Monte Carlo Arithmatic (MCA) to determine the numerical instability of the pipelines.
+This argorithm perturbs every floating-point operation 
+in the analysis based on the random rounding in each run. 
+By this algorithm, NURM tool can easily locates which parts of the analysed source code are to be responsible 
+for floating-point related instabilities.
+
+Although we could identify the processes in the pipeline that create differeces, the functions 
+that amplify these differences should be quantified in the future works.
+For this purpose, we can evaluate the final result after perturbing the identified processes in the pipeline iterratively.
+As a result, the processes that amplify differences would have a significant effect on the results independently.
+
 
 \section{Conclusion}
 
-\note{Our technique is able to characterize the stability of a pipeline's 
-components automatically. The numerical instability in the 
-PreFreeSurfer HCP pipeline arises mainly from linear and non-linear 
-registration processes implemented in FSL FLIRT and FNIRT. 
+Our technique is able to characterize the stability of a pipeline
+automatically. We identified the main causes of the inter-OS differences as (1) the evolution 
+of the math libraries over the time and, (2) the instability of the pipelines. 
+There are two ways to tackle this problem. The easy but less preferred solution is masking the instabilities.
+This can be done by using, (1) single operating system for the processing of subjects, 
+(2) containerizing the pipelines so that the 
+processing is done on a more controlled environment, 
+(3) increasing the numerical precision of the arithmetics, 
+(4) building static executables by removing the host operating system library dependencies. 
+These solutions only makes the problem invisible but the instability still remains.
 
-There are a few ways to impede such instabilities:
-\begin{itemize}
-\item Use a single operating system
-\item Containerize pipelines
-\item Increase numerical precision
-\item Be stricter on truncation and rounding standards (IEEE 754)
-\item Build static executable
-\end{itemize}
-
-The results still suffer from small perturbations literally because of 
-the fact that pipeline are not numerically stable. The preferred 
-solution is to detect and fix numerical instability of the pipeline 
-instead of masking the problem. These processes need to be reviewed to 
-understand and correct the cause of instabilities. 
-}
+The preferred solution is to find the origin of amplification of the differences and 
+then fixing the particular functions/modules in the processing pipelines. 
 
 
 \section{Acknowledgments}
+
+
+\note{
+CBRAIN team. Compute Canada(Calcul Quebec).
 
 Data were provided by the Human Connectome Project, WU-Minn 
 Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil; 
@@ -881,7 +915,7 @@ Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil;
 the NIH Blueprint for Neuroscience Research; and by the McDonnell 
 Center for Systems Neuroscience at Washington University.
 
-\note{CBRAIN team. Compute Canada(Calcul Quebec).}
+}
 
 % \begin{figure*}
 % \centering
