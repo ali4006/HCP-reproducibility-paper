@@ -27,6 +27,7 @@
 \usepackage{xspace}
 \usepackage{stmaryrd} % for llbracket and rrbracket
 \usepackage{amsmath}
+\usepackage{ulem}
 \DeclareMathOperator*{\argmin}{argmin}
 
 %%%% Commands %%%%
@@ -34,6 +35,7 @@
 \newcommand{\note}[2]{\color{blue}Note: #1\color{black}}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{blue}\textbf{From Tristan:}#1\color{black}}
+\newcommand{\english}[1]{\uwave{#1}}
 
  
 \title{NURM: a tool to 
@@ -599,16 +601,26 @@ Besides, a similar issue is expected for any operating system which is
 based on \emph{glibc}, the GNU C library.
 
 Indeed, the propagation and amplification of these tiny perturbations by analysis 
-may cause a significant reproducibility issue. We focus on the differences 
-created by different version of operating systems in computational pipelines. 
+may cause a significant reproducibility issue. \tristan{All the above is introduction and should be moved there.
+The introduction of this experiment section should explain:
+\begin{enumerate}
+  \item What is the goal of the experiment
+  \item What are the expected results 
+  \item Any required context that is specific to the experiment and not described before
+  \item The main components of the section: ``This section describes 
+  the datasets, pipelines, etc used in the experiments."
+\end{enumerate}
+}
+We focus on the differences 
+created by different versions of operating systems in computational pipelines. 
 In particular, NURM-tool is tested on the neuroimaging applications which are 
-predominantly using mathematical libraries.
+predominantly using mathematical libraries. 
 
 \subsection{HCP pipelines and dataset}
 
 We used our tool to evaluate the effect of the operating system on results 
 produced by the pipelines from the Human Connectome Project (\href{https://www.humanconnectome.org}{HCP}).
-The HCP initiative is a significant effort that will acquire and analyze 
+The HCP initiative is a significant effort that will acquire \tristan{check future tense} and analyze 
 brain connectivity data from 1200 healthy adults.
 It enables the neuroscience 
 research community to discover relationships between brain circuits and 
@@ -642,18 +654,22 @@ Also, the main goals of HCP FreeSurfer pipeline are:
 (3) accurately place the surface images with high resolution data,
 (4) perform FreeSurfer's standard folding-based surface registration 
 to their surface atlas.
+\tristan{The two previous paragraphs should focus on a technical description of the pipelines, 
+possibly with a workflow figure, 
+and refer to ref [12] for any image processing detail.}
 
 A detailed description of the analyses done in these
 pipelines is available in~\cite{glasser2013}. 
 
-HCP data consists of brain images collected from an individual healthy person, 
+HCP data consists of brain images collected from an individual healthy human subjects, 
 in the age range between 22-35 years~\cite{van2013wu}. Data from 1200 subjects 
 is available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
 Such a directory containing the HCP data is denoted by the term ``subject".
 In this paper, we randomly selected 20 unprocessed subjects from 
 the HCP data release S500. All the subjects were scanned using the 3-tesla 
 type of MRI scanners.
-
+\tristan{remove details about age range and directory. Instead, explain the type of
+imaging that is available: T1 (multiple instances), DWI, functional.}
 
 \subsection{Processing of data}
 
@@ -673,19 +689,24 @@ Docker images are available on
 \href{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}{DockerHub}
 for reuse.
 
-The data were processed in the order PreFreeSurfer and FreeSurfer. 
-Unprocessed subject data used as the input data for PreFreeSurfer and its output 
-results used as the input data for FreeSurfer analysis in each operating system separately.
-Through all the subjects, first, two runs were made on the same operating systems 
-to be sure that identified differences are not coming from the operations with randomness.
-Then we identified the processes in the pipelines that are responsible for 
-the creation of differences using the NURM-tool.
+The data were processed with PreFreeSurfer and FreeSurfer. 
+\english{Unprocessed subject data used as the input data for PreFreeSurfer and its output 
+results used as the input data for FreeSurfer analysis in each operating system separately}.
+Each subject was processed twice on the same operating system to detect
+variability coming from pseudo-random operations. 
+Then we used NURM-tool to identify the processes in the pipelines that
+created differences.
 
-It should be noted that some files may have the same data but 
-different metadata in headers, including creation time, modification time and date, 
-which turns to non-identical checksums. 
-So, we added some other functions for the file comparison to be sure that differences 
-are in part of the file data. 
+\tristan{This paragraph should be merged with the sentence on pseudo-randomness. 
+Prose should also be simplified and made more direct.}
+Within-OS variability may also be coming from other factors than pseudo-randomness. For instance, 
+metadata may differ due to the presence of timestamps, file paths and other 
+execution-specific information. \tristan{in the tool description, talk about the possibility to add distance functions 
+that are specific to file types and are computed in addition to checksums.}
+To address this issue, we created distance functions \english{for the file comparison to be sure that differences 
+are in part of the file data}. 
+\tristan{summarize the following sentences, keep it high level, and provide a link to the
+metrics file that you used.}
 Depending on the file type, we used functions from FreeSurfer software package to determine 
 whether two files differ, including  
 \emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff} for comparing volumes, surface-based files, 
@@ -698,15 +719,18 @@ Also, text files are compared using a custom function that compares the content 
 
 \subsection{Results}
 
-Two types of differences can occur in the subjects due to the 
-differences in the operating systems. One is inter-OS differences caused by the 
-operating system library updates and the other type, intra-OS differences 
-occur as a result of the pseudo-random processes used in the 
-pipelines. 
+Two types of differences can occur in the subjects due to the differences
+in the operating systems. One is inter-OS differences caused by the
+operating system library updates and the other type, intra-OS differences
+occur as a result of the pseudo-random processes used in the pipelines.
+\tristan{Move this up to intro and/or experiments, replace "inter-" by
+"between-" and "intra-" by "within-"}
+
+\subsubsection{Within-OS binary differences}
 
 In our experiments, we identified the processes that create differences due to 
 intra-OS differences.  
-For example, process \emph{mris\_curvature}
+For example \tristan{list the processes exhaustively}, process \emph{mris\_curvature}
 computes mean and Gaussian curvatures of a cortical surface using 
 the random variable in FreeSurfer.
 To avoid such randomness we 
@@ -714,24 +738,31 @@ initialized random number generators using a seed state in
 the command line in which pipeline script calls the program.
 This ensures that results are the same from run to run.
 Therefore, NURM-tool can identify the processes in the pipelines 
-that create inter-OS differences. 
+that create inter-OS differences. \tristan{sharpen a bit the writing}
 
-\subsubsection{Inter-OS binary differences}
+\subsubsection{Between-OS binary differences}
+
+\tristan{Before showing a particular case, you should describe 
+an overview of the differences:
+\begin{enumerate}
+  \item What is the frequency of binary differences and where do they happen in the pipelines? Do they happen for all subjects?
+  \item What is the magnitude of the differences? Explain the metrics, report them across subjects for different files.
+  \item Give visual examples.
+\end{enumerate}
 
 In a previous study~\cite{Scaria2017}, we showed that the HCP pre-processing 
 pipelines~\cite{glasser2013} were 
-sensitive to operating system variation. 
+sensitive to operating system variation \tristan{this is intro}. 
 
 Figure~\ref{fig:fnirt_result} shows differences in the files 
-that are created as a part of ACPC-Alignment in PreFreeSurfer.
+that are created as a part of ACPC-Alignment in PreFreeSurfer. \tristan{add link to gif animation}
 The square pixels in the brain in the checkerboard images show the differences between results in two OSes. 
 The RMSE (root mean squared error) value of results is 0.029 and the dice coefficient is 0.125.
-In the next subsection, it is shown that such misalignment is created due to 
-non-linear registration in \emph{FNIRT} process in PreFreeSurfer pipeline.
 
 Furthermore, Figure 
-\ref{fig:tissue_class} illustrates the heatmap binarized differences 
-of the brain tissue segmentation across OSes in FreeSurfer pipeline.
+\ref{fig:tissue_class} illustrates the sum of binarized differences 
+of the brain tissue segmentation across OSes in FreeSurfer pipeline, for the 20 subjects \tristan{add a color 
+scale to the figure}.
 These differences are accumulated from 20 subject results.
 So, the magnitude of differences is in the range of 1-20 as the total number of subjects.
 The darker blue pixels show differences among less subjests and 
