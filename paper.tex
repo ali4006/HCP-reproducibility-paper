@@ -662,7 +662,7 @@ the HCP data release S500. All the subjects were scanned using the 3-tesla
 type of MRI scanners.
 
 
-\subsection{Processing of data}
+\subsection{Data processing}
 
 We executed the pipelines using Docker containers to simplify the 
 deployment of different operating system versions on execution 
@@ -708,31 +708,29 @@ Also, we used the nearest neighbor algorithm to calculate the distance between c
 
 \subsubsection{Within-OS differences}
 
-In our experiments, we identified two processes that create differences due to 
-within-OS differences.  
-Registration process with \emph{mri\_segreg} and process \emph{mris\_curvature} that 
-computes mean and Gaussian curvatures of a cortical surface using 
-the random variable in FreeSurfer.
-To avoid such pseudo-randomness, we 
-initialized random number generators using a seed state in 
-the command line in which pipeline script calls the process.
-In this way, NURM-tool identifies the processes in the pipelines 
-that create between-OS differences. 
+We didn't observe any within-OS difference in PreFreeSurfer, however, we
+ identified two FreeSurfer processes leading to within-OS differences due
+ to the use of pseudo-random numbers: image registration with
+ \emph{mri\_segreg}, and cortical surface curvature
+ estimations with \emph{mris\_curvature}. To address this issue, we fixed
+ the seed used by the pseudo-random number generator, through an option of
+ the FreeSurfer tools. In this way, our analysis can focus on between-OS
+ differences. 
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
 
-Table~\ref{table:data-clusters} shows the PreFreeSurfer result of subject clustering. 
-Among our dataset, we identified four types of subjects with 
-the different topology of \emph{process trees}. 
-Differences correspond to the data processing that leads to producing a disparate output file(s).
-For example, subject type 3 missed output file \emph{T1w2\_gdc.nii.gz} after processing 
-in comparison with subject type 1.
-Besides, we verified that 
-the \emph{process trees} were identical for all subjects of the same type in 
-different versions of CentOS.
+We identified four types of subjects with different PreFreeSurfer process
+trees (Table~\ref{table:data-clusters}). Differences between subject types
+are coming from different  numbers of T1 and T2 images in the raw data:
+subjects of type 1 have 2 T1 images and 2 T2 images, while subjects of type
+4 only have 1 T1 image and 1 T2 image. \tristan{check that} This leads to
+different sets of output files. We verified that the process trees were
+identical for all subjects of the same type in different versions of
+CentOS.
 
 \begin{table}
+\label{table:data-clusters}
 \centering
 \begin{threeparttable}
 \caption{Clustering of 20 input subjects.}
@@ -751,11 +749,10 @@ type4  & 2                   & [``T2w/T2w2\_gdc.nii.gz"]                        
      \item *Type refers to the topology type of the \emph{process tree} of subjects.
 \end{tablenotes}
 \end{threeparttable}
-\label{table:data-clusters}
 \end{table}
 
 The frequency of the processes that create differences in 
-the pipeline among 20 subjects is determined in Figure~\ref{fig:pfs_freq}. 
+the pipeline is shown in Figure~\ref{fig:pfs_freq}. 
 \emph{FLIRT} is the most frequent process that produces differences.
 Furthermore, the percentage of processes that introduce differences 
 along with the 
