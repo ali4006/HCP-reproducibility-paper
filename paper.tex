@@ -716,7 +716,7 @@ are coming from different  numbers of T1 and T2 images in the raw data:
 subjects of type 1 have 2 T1 images and 2 T2 images, while subjects of type
 2 only have 1 T1 image and 1 T2 image. This leads to
 different sets of output files. We verified that the process trees were
-identical for all subjects of the same type in different versions of
+identical for all subjects of the same type, for both versions of
 CentOS.
 
 \begin{table}
@@ -740,16 +740,15 @@ type4  & 2                   & [``T2w"]                                         
 \end{threeparttable}
 \end{table}
 
-Figure~\ref{fig:pfs_freq} shows the frequency of the processes that create differences 
-in the pipeline (the number in the bracket).
-Furthermore, this figure represents the percentage of the processes that introduce 
-differences along with the sub-pipelines, including linear registration 
-with “\emph{FLIRT}” (in ACPC-Alignment, Brain Extraction, Distortion Correction, 
-Atlas Registration), non-linear registration with “\emph{FNIRT}” (in Brain Extraction 
-and Altas Registration), image warping with “\emph{new\_invwarp}” (in Brain Extraction 
+Figure~\ref{fig:pfs_freq} shows the frequency at which  processes create differences 
+in the pipeline, and how differences are distribute among sub-pipelines.
+Differences were observed in linear registration 
+with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, 
+Atlas Registration), in non-linear registration with FSL FNIRT (in Brain Extraction 
+and Altas Registration), and in image warping with FSL \emph{new\_invwarp} (in Brain Extraction 
 and Atlas Registration). 
-Besides, differences were observed in image mean and standard-deviation 
-computations in image interpolation with “\emph{fslmaths}” (in Anatomical Average). 
+Differences were also observed in image mean 
+computations with FSL maths  (in Anatomical Average). 
 
 Results show that \emph{FLIRT} is the most frequent process that produces 
 differences in ACPC-Alignment across all the subjects, Distortion Correction 
