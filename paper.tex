@@ -727,11 +727,14 @@ CentOS.
 
 \begin{tabular}{@{}llllll@{}}
 \toprule
-Type   & Number of Subjects  & Missing File(s)                                    \\ \midrule
-type1  & 9                   & None                                               \\
-type2  & 7                   & [``T1w", ``T2w"]                                   \\
-type3  & 2                   & [``T1w"]                                           \\
-type4  & 2                   & [``T2w"]                                           \\ \bottomrule
+Type   & Number of Subjects  & Available Modalities                                         \\ \midrule
+type1  & 9                   & [``T1w\_MPR1", ``T1w\_MPR2",                     \\
+&  &                            ``T2w\_SPC1", ``T2w\_SPC2"]     \\
+type2  & 8                   & [``T1w\_MPR1", ``T2w\_SPC1"]                                 \\
+type3  & 1                   & [``T1w\_MPR1", ``T2w\_SPC1",   \\
+&  &                            ``T2w\_SPC2"]                   \\
+type4  & 2                   & [``T1w\_MPR1", ``T1w\_MPR2",   \\
+&  &                            ``T2w\_SPC1"]                   \\ \bottomrule
 \end{tabular}
 \begin{tablenotes}
      \small
@@ -760,10 +763,17 @@ creates differences in all 11 subjects in which it has appeared.
 \begin{figure}
 \centering
   \includegraphics[width=\columnwidth]{images/pfs_heatmap.png}
-  \caption{Heatmap of difference frequency of processes along with the sub-pipelines that introduce 
-           differences among 20 subjects. The range between red and green colors show the most and 
-           least frequency of processes respectively. Besides, the total number 
-           of occurrences of each processes is represented in the bracket in each cell.}
+  \caption{Heatmap frequency of processes along with the sub-pipelines that introduce 
+           differences among 20 subjects. The range between red and green colors shows the most and 
+           least frequency of processes, respectively. 
+           Each cell describes the frequency of the specific process in the sub-pipelines.        
+           Each cell may split into multiple sub-cells when the specific process 
+           called by different options (distinct process).
+           Annotations represent `N [M] x Y" in which N is the percentage of the distinct process 
+           that creates differences out of all M times that is occurred in that sub-pipeline. 
+           Also, times Y shows the number of the distinct process with the same distribution.
+           For example, the cell of process FLIRT in sub-pipeline AAve shows 10 distinct processes  
+           with the frequency of 10 that introduce no differences.}
   \label{fig:pfs_freq}
 \end{figure}
 
@@ -783,8 +793,8 @@ Each rectangle includes the replaced pixels with different intensity values betw
     CentOS7). Right images show the zoomed version part of the images marked 
     by the red rectangle.
     Here is 
-    \href{https://raw.githubusercontent.com/ali4006/HCP-reproducibility-paper/master/images/brain_classification.gif}{the link}
-    to the gif animation of the same images.
+    \href{https://raw.githubusercontent.com/ali4006/HCP-reproducibility-paper/master/images/brain_classification.gif}
+    {the link} to the gif animation of the same images.
 } 
     \label{fig:fnirt_result}
 \end{figure}
@@ -816,9 +826,13 @@ The magnitude of differences is in the range of 1-20 as the total number of subj
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
-  \includegraphics[width=\columnwidth]{images/brain_classification.png} 
+  \includegraphics[width=\columnwidth]{images/brain_classification_mni.png} 
   \caption{Heatmap binarized differences between brain segmentation results (file \emph{aseg.hires.mgz}) from 
-          20 subjects in FreeSurfer (CentOS6 vs. CentOS7).} 
+          20 subjects in FreeSurfer (CentOS6 vs. CentOS7).
+          We calculated some statistics of the differences based on the dice value of the segmented regions.
+          Here is 
+          \href{https://encsconcordiaca-my.sharepoint.com/:x:/g/personal/m_alari_encs_concordia_ca/EfNB-QMcivhIv6j0r9weffwBCHujf8RbaKjiYalIFa8cbQ?e=hyvQSU}
+          {the link} to the excel file.} 
   \label{fig:tissue_class}
 \end{figure}
 
@@ -851,9 +865,6 @@ for the floating-point related instabilities.
 
 Although we identify the processes in the pipeline that create differences, 
 the amplification of these differences should be quantified in the future works.
-For this purpose, we can evaluate the final result after perturbing the identified 
-processes in the pipeline iteratively.
-As a result, the processes that amplify differences would have a significant effect on the results.
 
 
 \section{Conclusion}
