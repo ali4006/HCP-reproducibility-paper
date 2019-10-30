@@ -28,7 +28,10 @@
 \usepackage{stmaryrd} % for llbracket and rrbracket
 \usepackage{amsmath}
 \usepackage{ulem}
+\usepackage{pifont}
 \DeclareMathOperator*{\argmin}{argmin}
+
+
 
 %%%% Commands %%%%
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
@@ -103,9 +106,12 @@ studies, the variety of computing infrastructures including workstation
 types, parallelization methods, operating systems, and analysis 
 packages are known to influence the reproducibility of the analyses~\cite{Gronenschild2012, 
 diethelm2012limits, Glatard2015, bowring2019exploring}.
+These irreproducibility issues are reported as the result of the 
+creation, propagation, and amplification of small numerical 
+differences.
 
-In particular, the studies on the effect of the operating system on the results show that 
-computational pipelines create small numerical differences~\cite{Glatard2015, Scaria2017}.
+In particular, the effect of the operating systems on  
+computational pipelines shows the creation of small numerical differences~\cite{Glatard2015, Scaria2017}.
 These differences mainly correspond to the mathematical functions implemented 
 in different operating system libraries.
 For instance, changing the mathematical functions like \emph{expf()} and 
@@ -115,31 +121,24 @@ small numerical differences.
 Besides, a similar issue is expected for any operating system which is 
 based on \emph{glibc}, the GNU C library.
 
-These irreproducibility issues are reported as the result of the 
-creation, propagation, and amplification of small numerical 
-differences~\cite{Gronenschild2012, diethelm2012limits, Glatard2015, 
-bowring2019exploring}. In this case, the analysis pipelines are said to 
-be numerically unstable. Numerical instability is a characteristic of 
-the pipelines which amplify small numerical differences and then hamper 
-the reproducibility of the analyses depending on the length of the 
-pipeline and magnitude of the differences. In many cases, numerical 
-instability is an essential issue for reproducibility.
-
-There are different solutions to improve the reproducibility of the analysis, 
-including containerization techniques that encapsulate software/hardware 
-dependencies, provenance capturing tools, and version control systems. 
-However, a comprehensive solution requires to fix the numerical 
-instabilities instead of masking the issue. For this purpose, we introduce 
-the Numerical Reproducibility Measurement (NURM) tool to identify the processes in 
-the pipeline that create numerical differences across several runs. 
-Furthermore, we can fix the instability of the identified processes 
-in the next steps.
+There are different approaches to improve the reproducibility of the analysis, 
+including containerization techniques that encapsulate software/hardware dependencies, 
+provenance capturing tools, and version control systems. 
+However, a comprehensive solution requires to fix the numerical instabilities instead of 
+masking the problem. For this purpose, bagging is one solution that has been used to 
+stabilize motion estimation analysis in fMRI~\cite{Glatard2018hbm}. 
+Bootstrap aggregation reduces the instabilities, but it needs expensive computations.
+As the second solution, a debugging tool can help to identify and 
+fix the instabilities in the pipeline. Therefore, we introduce 
+the Numerical Reproducibility Measurement (NURM) tool to identify 
+the processes in the pipeline that create numerical differences across different conditions. 
+Furthermore, we can stabilize the identified processes in the next steps.
 
 The remainder of this paper describes the NURM-tool in different parts 
 including the way of capturing and representation of the provenance 
 information, the method of clustering of different subject types, and 
 process labelling to characterize differences. We describe the HCP 
-preprocessing pipelines as a popular neuroimaging project to test the 
+pre-processing pipelines as a popular neuroimaging project to test the 
 NURM-tool and evaluate its functionality. Finally, we reported the 
 experimental results which describe the processes that are responsible 
 for the differences in the pipelines.
@@ -268,7 +267,7 @@ fslmaths "${bet_output}" "${bet_output_binarized}"
   represented with squares. Plain edges 
   represent the process tree (\texttt{fork()} or \texttt{clone()} 
   system calls). Dashed edges represent file dependencies: temporary 
-  files are in yellow and result files are in green.
+  files are in purple and result files are in black.
   Every node in the tree is labeled using (1) a process id created by our
   reconstruction, (2) the name of the executable run by the process.
   Process 0 is the initial call to the \texttt{sh} interpreter, and
@@ -290,7 +289,7 @@ do not have differences are labeled \emph{transparent}
 have differences but write files that have differences \emph{create}
 differences (Figure~\ref{fig:red}). In addition, processes that read files
 that have differences and write files that also have differences are called
-\emph{undetermined} (Figure~\ref{fig:yellow}). Processes are also labeled
+\emph{undetermined} (Figure~\ref{fig:grey}). Processes are also labeled
 undetermined when they read or write temporary files, or produce multi-write
 files. To resolve undetermined processes, hooks must be added to the pipeline to 
 execute these processes on files without differences, and to capture
@@ -298,27 +297,29 @@ intermediary file states.
 
 \begin{figure}%\centering
 \centering
-    \begin{subfigure}{0.2\linewidth}
-        \includegraphics[scale=0.3]{images/green.png}
+    \begin{subfigure}{0.3\linewidth}
+      \centering
+        \includegraphics[scale=0.36]{images/green.png}
         \caption{Transparent}
         \label{fig:green}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.2\linewidth}
-    \includegraphics[scale=0.3]{images/red.png}
+    \begin{subfigure}{0.35\linewidth}
+      \centering
+    \includegraphics[scale=0.36]{images/red.png}
     \caption{Creates differences}
     \label{fig:red}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.2\linewidth}
-    \includegraphics[scale=0.3]{images/yellow.png}
+    \begin{subfigure}{0.3\linewidth}
+      \centering
+    \includegraphics[scale=0.36]{images/grey.png}
     \caption{Undetermined}
-    \label{fig:yellow}
+    \label{fig:grey}
 \end{subfigure}
     \caption{Different type of labeled process based on the input/output files.
   Dashed edges refer to the file dependencies between processes A and B 
-  if a file written by A is read by B. Solid black edges refer to the 
-  relationship between parent and child processes.}
+  if a file written by A is read by B.}
     \label{fig:processes}
 \end{figure}
 
@@ -351,17 +352,18 @@ the subsequent steps of the pipeline.
 
   # Run the original executable using the same arguments
   executed_file = sys.argv[0]
-  exec_argv = op.join('original_scripts', executed_file)
-  exec_argv = exec_argv + " ".join(map(pipes.quote, sys.argv[1:]))
-  subprocess.Popen(exec_argv, shell=True).communicate()
+  exec_proc = op.join('original_scripts', executed_file)
+  exec_argv = " ".join(map(pipes.quote, sys.argv[1:]))
+  exec_cmd = exec_proc + exec_argv
+  subprocess.Popen(exec_cmd, shell=True).communicate()
   
   # Load list of captured process to be checked
   with open('path/to/p_list/', 'r') as p_list:
       process_list = json.load(p_list)
 
-  if exec_argv in process_list.keys():
+  if exec_cmd in process_list.keys():
       # Save output files to read-only directory
-      p_files = process_list[exec_argv]
+      p_files = process_list[exec_cmd]
       shutil.copy(p_files, '/read-only/dir')
   
   \end{minted}
@@ -461,7 +463,7 @@ it is invoked with the arguments of a process that created differences
 Differences are identified by comparing checksum of the output files for 
 the same process in both conditions (Figure~\ref{fig:overview-labelling} - (2)).
 In addition, the distance functions that are specific to file types can be added 
-to our tool to ensure that differences belong to the file data part.
+to our tool to measure differences more precisely. 
 We developed an incremental approach that consists of the following steps: 
 
 \begin{enumerate}
@@ -630,26 +632,27 @@ Also, the sequence of the main sub-pipelines in FreeSurfer includes
 A detailed description of the analyses done in these
 pipelines is available in~\cite{glasser2013}. 
 
-Furthermore, the average time per subject taken for PreFreeSurfer processing is 2.2 hours, 
-and FreeSurfer processing is 8.3 hours (20 runs), 
-and the average output file size of PreFreeSurfer processing is 2.7 GB, 
-and FreeSurfer processing is 4.1 GB (20 subjects).
+Furthermore, the average time per subject taken for PreFreeSurfer processing is $\approx$ 2.2 hours, 
+and FreeSurfer processing is $\approx$ 8.3 hours (20 runs), 
+and the average output file size of 20 subjects in PreFreeSurfer is $\approx$ 2.7 GB, 
+and FreeSurfer is $\approx$ 4.1 GB.
 
 HCP data collected from different types of imaging techniques, including 
 structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
 The structural images include T1-weighted (T1w) and T2-weighted (T2w) images which 
 help in the diagnosis of the brain injury.
+The images are indexed with a suffix if several scans of the same modality were acquired.
+For example, some data may include two T1w images with low and high resolutions.
 The functional images, including task-based fMRI and resting-state scans, 
 enable the measurement of functional activations within brain areas. 
 Diffusion imaging is another kind of MRI technique, which measures 
 the anatomical connectivity between regions.
-See~\cite{van2013wu} for a discussion of these various terms.
+See~\cite{van2013wu} for a discussion of these various modalities.
 
 Data from 1200 subjects 
 is available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
-In this paper, we randomly selected 20 unprocessed subjects from 
-the HCP data release S500. All the subjects were scanned using the 3-tesla 
-type of MRI scanners.
+In this paper, we randomly selected 20 unprocessed subjects 
+containing the 3-tesla type of MRI scanners from the HCP data release S500.
 
 
 \subsection{Data processing}
@@ -703,9 +706,9 @@ identified two FreeSurfer processes leading to within-OS differences due
 to the use of pseudo-random numbers: image registration with
 \emph{mri\_segreg}, and cortical surface curvature
 estimations with \emph{mris\_curvature}. To address this issue, we fixed
-the seed used by the pseudo-random number generator, through an option of
-the FreeSurfer tools. In this way, our analysis can focus on between-OS
-differences. 
+the seed used by the pseudo-random number generator, through defining 
+option ``--seed'' in the command-line of the processes.
+Our analysis can focus on between-OS differences. 
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
@@ -725,16 +728,16 @@ CentOS.
 \caption{Clustering of 20 input subjects.}
 \label{table:data-clusters}
 
-\begin{tabular}{@{}llllll@{}}
+\begin{tabular}{cccccc}
 \toprule
-Type   & Number of Subjects  & Available Modalities                                         \\ \midrule
-type1  & 9                   & [``T1w\_MPR1", ``T1w\_MPR2",                     \\
-&  &                            ``T2w\_SPC1", ``T2w\_SPC2"]     \\
-type2  & 8                   & [``T1w\_MPR1", ``T2w\_SPC1"]                                 \\
-type3  & 1                   & [``T1w\_MPR1", ``T2w\_SPC1",   \\
-&  &                            ``T2w\_SPC2"]                   \\
-type4  & 2                   & [``T1w\_MPR1", ``T1w\_MPR2",   \\
-&  &                            ``T2w\_SPC1"]                   \\ \bottomrule
+       &                        &  \multicolumn{4}{c}{Available Modalities}    \\ 
+\cmidrule(lr){3-6}       
+Type   &   \makecell{Number of \\ Subjects}   &  T1w\_1          & T1w\_2      & T2w\_1          & T2w\_2        \\ \midrule
+1      &               9                      &   \ding{51}      &   \ding{51} &   \ding{51}     &   \ding{51}   \\ 
+2      &               8                      &   \ding{51}      &             &   \ding{51}     &               \\ 
+3      &               1                      &   \ding{51}      &             &   \ding{51}     &   \ding{51}   \\ 
+4      &               2                      &   \ding{51}      &   \ding{51} &   \ding{51}     &               \\ 
+\bottomrule
 \end{tabular}
 \begin{tablenotes}
      \small
@@ -743,57 +746,66 @@ type4  & 2                   & [``T1w\_MPR1", ``T1w\_MPR2",   \\
 \end{threeparttable}
 \end{table}
 
+
 Figure~\ref{fig:pfs_freq} shows the frequency at which  processes create differences 
-in the pipeline, and how differences are distribute among sub-pipelines.
+in the pipeline, and how differences are distributed among sub-pipelines.
 Differences were observed in linear registration 
 with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, 
 Atlas Registration), in non-linear registration with FSL FNIRT (in Brain Extraction 
 and Altas Registration), and in image warping with FSL \emph{new\_invwarp} (in Brain Extraction 
-and Atlas Registration). 
-Differences were also observed in image mean 
+and Atlas Registration). Differences were also observed in image mean 
 computations with FSL maths  (in Anatomical Average). 
 
-Results show that \emph{FLIRT} is the most frequent process that produces 
-differences in ACPC-Alignment across all the subjects, Distortion Correction 
-in 95\% of the subjects, and Atlas Registration in 85\% of the subjects. 
-In addition, there is a \emph{fslmaths} process in Anatomical Average that 
-creates differences in all 11 subjects in which it has appeared.
+Results show the variability between processes when 
+the same tool behaves differently in different process instances. For example, 
+FLIRT tool always produces files without differences in \emph{AAve} sub-pipeline but 
+mostly creates different files in \emph{AAli} sub-pipeline.
 
+Furthermore, different frequencies show the variability between subjects.
+Results show that the same process can be reproducible for some subjects but not for others. 
+Between subject differences can be a result of different subject types. 
+The similar findings in the other studies show that the subject 
+is an important factor in reproducibility~\cite{bowring2019exploring}.
 
+% make figure in two columns use {figure*}
 \begin{figure}
 \centering
-  \includegraphics[width=\columnwidth]{images/pfs_heatmap.png}
+  \includegraphics[width=\columnwidth,height=4cm]{images/pfs_heatmap.png}
   \caption{Heatmap frequency of processes along with the sub-pipelines that introduce 
-           differences among 20 subjects. The range between red and green colors shows the most and 
-           least frequency of processes, respectively. 
-           Each cell describes the frequency of the specific process in the sub-pipelines.        
-           Each cell may split into multiple sub-cells when the specific process 
-           called by different options (distinct process).
-           Annotations represent `N [M] x Y" in which N is the percentage of the distinct process 
-           that creates differences out of all M times that is occurred in that sub-pipeline. 
-           Also, times Y shows the number of the distinct process with the same distribution.
-           For example, the cell of process FLIRT in sub-pipeline AAve shows 10 distinct processes  
-           with the frequency of 10 that introduce no differences.}
+           differences among 20 subjects. 
+           Each column represents the pipeline tool, and each row shows the sub-pipeline.
+           Each cell may contain several process instances of a tool in a sub-pipeline.
+           Annotations describe the frequency distribution of the instances as ``N [M] x Y" 
+           in which N is the percentage of the process 
+           that creates differences out of all M times that is occurred in the sub-pipeline. 
+           Also, times Y shows the number of instances with the same distribution.
+           For example, the cell of FLIRT tool in sub-pipeline AAve shows 10 process instances  
+           with the frequency of 10 that introduce no differences.
+           The range between red and green colors shows the highest and lowest 
+           proportion of occurrences of the processes with differences.
+           Also, grey cells indicate that the pipeline tool is not executed in the sub-pipeline.}
   \label{fig:pfs_freq}
 \end{figure}
 
-To visually represent the magnitude of variations, we created checkerboard 
-images from the image results of one subject in two OSes. Figure~\ref{fig:fnirt_result} 
+
+Figure~\ref{fig:fnirt_result} 
 shows the checkerboard images from the results of ACPC-Alignment in PreFreeSurfer. 
 Each rectangle includes the replaced pixels with different intensity values between images.
+The misaligned regions visually represent significant differences in the alignment 
+procedure.
 
 %Alternating rectangular regions between two images, creating a characteristic 
 %checkerboard-like pattern of varying magnitudes.
 
 \begin{figure}
   \centering
-    \includegraphics[width=\columnwidth]{images/segmentation.png} 
+    \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
     \caption{Differences between FNIRT results of one subject from PreFreeSurfer 
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
-    CentOS7). Right images show the zoomed version part of the images marked 
-    by the red rectangle.
+    CentOS7). Sagittal (top) and axial (bottom) views of the brain in dimension of X=130, Y=155, Z=130.
+    Right images show the zoomed version part of the images marked by the red rectangle.
     Here is 
-    \href{https://raw.githubusercontent.com/ali4006/HCP-reproducibility-paper/master/images/brain_classification.gif}
+    \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
     {the link} to the gif animation of the same images.
 } 
     \label{fig:fnirt_result}
@@ -802,39 +814,55 @@ Each rectangle includes the replaced pixels with different intensity values betw
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
-In the first test, the results of PreFreeSurfer on CentOS 6
-feed to the FreeSurfer pipeline on both OSes. 
-We fixed input data to determine whether the pipeline creates differences.
-We processed 20 subjects using FreeSurfer.
 NURM-tool identified \emph{mris\_make\_surfaces} as the only process in 
-the pipeline that creates differences among 10 subjects.
+the pipeline that creates differences in 10 subjects among 20 subjects.
 This process generates surface files for cortical and white matter surfaces 
-(see~\cite{fischl2012freesurfer} for more detail of the process). 
+(see~\cite{fischl2012freesurfer} for more detail). 
 Also, FreeSurfer did not introduce any differences in 10 subjects. 
 
-Results show that the static builds of FreeSurfer in which uses the embedded libraries, 
+Results show that the static builds of FreeSurfer in which uses the embedded libraries 
 significantly avoids the creation of differences.
 However, we found that between-OS differences occur when pre-processed data are different in FreeSurfer. 
-For this purpose, in the second test, the results of PreFreeSurfer feed to the FreeSurfer 
-pipeline on each operating system separately.
-Figure~\ref{fig:tissue_class} shows between-OS differences  
-as a result of propagation and amplification of differences in FreeSurfer. % that coming from PreFreeSurfer outputs. 
-This figure illustrates the sum of binarized differences 
+FreeSurfer may not introduce differences, but it propagates and amplifies 
+the current differences that appeared in PreFreeSurfer results across the operating systems.
+
+Figure~\ref{fig:tissue_class} illustrates the sum of binarized differences 
 from 20 subject results of the brain tissue segmentation across OSes.
-The magnitude of differences is in the range of 1-20 as the total number of subjects.
+This figure shows between-OS differences  
+as a result of the propagation and amplification of differences in FreeSurfer. 
+Differences are mostly localized at the interfaces between tissues.
+
+Furthermore, Figure~\ref{fig:scatter_plot} plots the mean of Dice coefficients 
+for the 45 segmented regions obtained on two operating systems.
+High Dice coefficients (more than 0.95) in most of the regions indicate minor differences.
+Dice values can be very low , down to 0.5, in particular in small structures 
+such as the vessels and lateral ventricles.
+
 
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
-  \includegraphics[width=\columnwidth]{images/brain_classification_mni.png} 
+  \includegraphics[width=\columnwidth]{images/brain_segmentation_mni.png} 
   \caption{Heatmap binarized differences between brain segmentation results (file \emph{aseg.hires.mgz}) from 
-          20 subjects in FreeSurfer (CentOS6 vs. CentOS7).
-          We calculated some statistics of the differences based on the dice value of the segmented regions.
+          20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
+          All binarized differences were resampled to the default MNI152 volume template.
           Here is 
-          \href{https://encsconcordiaca-my.sharepoint.com/:x:/g/personal/m_alari_encs_concordia_ca/EfNB-QMcivhIv6j0r9weffwBCHujf8RbaKjiYalIFa8cbQ?e=hyvQSU}
-          {the link} to the excel file.} 
+          \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
+          {the link} to the gif animation from a single subject.} 
   \label{fig:tissue_class}
 \end{figure}
+
+
+\begin{figure}
+  \centering
+    \includegraphics[width=\columnwidth]{images/scatter_plot.png} 
+    \caption{The scatter plot of the mean of Dice coefficients between segmented regions 
+            from 20 subjetcs in FreeSurfer (CentOS6 vs. CentOS7). 
+            The complete Dice coefficient values are 
+            \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/data/dice_values.csv}
+            {available}.} 
+    \label{fig:scatter_plot}
+  \end{figure}
 
 
 \section{Discussion}
@@ -866,6 +894,9 @@ for the floating-point related instabilities.
 Although we identify the processes in the pipeline that create differences, 
 the amplification of these differences should be quantified in the future works.
 
+\note{FREESURFER RESULTS: 
+These are consistant results to the paper~\cite{Glatard2015}, as it is shown the propaggation of differences in cortical thickness extraction analysis.
+The magnitude of differences from the operating system changes is out of our expectaion}
 
 \section{Conclusion}
 
