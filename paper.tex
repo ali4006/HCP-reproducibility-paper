@@ -764,13 +764,15 @@ mostly creates different files in \emph{AAli} sub-pipeline.
 Furthermore, different frequencies show the variability between subjects.
 Results show that the same process can be reproducible for some subjects but not for others. 
 Between subject differences can be a result of different subject types. 
-The similar findings in the other studies show that the subject 
-is an important factor in reproducibility~\cite{bowring2019exploring}.
+For instance, the subjects contain two T1 images need more calculations 
+to produce an average image between them.
+The similar findings in another study~\cite{bowring2019exploring} were reported 
+the effect of subject type on reproducibility.
 
 % make figure in two columns use {figure*}
-\begin{figure}
+\begin{figure*}
 \centering
-  \includegraphics[width=\columnwidth,height=4cm]{images/pfs_heatmap.png}
+  \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
   \caption{Heatmap frequency of processes along with the sub-pipelines that introduce 
            differences among 20 subjects. 
            Each column represents the pipeline tool, and each row shows the sub-pipeline.
@@ -785,7 +787,7 @@ is an important factor in reproducibility~\cite{bowring2019exploring}.
            proportion of occurrences of the processes with differences.
            Also, grey cells indicate that the pipeline tool is not executed in the sub-pipeline.}
   \label{fig:pfs_freq}
-\end{figure}
+\end{figure*}
 
 
 Figure~\ref{fig:fnirt_result} 
@@ -802,11 +804,9 @@ procedure.
     \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
     \caption{Differences between FNIRT results of one subject from PreFreeSurfer 
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
-    CentOS7). Sagittal (top) and axial (bottom) views of the brain in dimension of X=130, Y=155, Z=130.
-    Right images show the zoomed version part of the images marked by the red rectangle.
-    Here is 
+    CentOS7). Sagittal (left) and coronal (right) views of the brain are in dimension of X=130, Y=155, Z=130.
     \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
-    {the link} to the gif animation of the same images.
+    {the link} to the animated version of alignment results shows the better visualization of differences.
 } 
     \label{fig:fnirt_result}
 \end{figure}
@@ -831,11 +831,13 @@ from 20 subject results of the brain tissue segmentation across OSes.
 This figure shows between-OS differences  
 as a result of the propagation and amplification of differences in FreeSurfer. 
 Differences are mostly localized at the interfaces between tissues.
+In our dataset, we found subjects with the min and max Dice coefficient 
+values of 0.89 and 0.96 respectively.
 
-Furthermore, Figure~\ref{fig:scatter_plot} plots the mean of Dice coefficients 
-for the 45 segmented regions obtained on two operating systems.
+Furthermore, Figure~\ref{fig:scatter_plot} plots the Dice coefficients 
+for the 44 segmented regions obtained on the two operating systems.
 High Dice coefficients (more than 0.95) in most of the regions indicate minor differences.
-Dice values can be very low , down to 0.5, in particular in small structures 
+Dice values can be very low, down to 0.5, in particular in small structures 
 such as the vessels and lateral ventricles.
 
 
@@ -846,23 +848,25 @@ such as the vessels and lateral ventricles.
   \caption{Heatmap binarized differences between brain segmentation results (file \emph{aseg.hires.mgz}) from 
           20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
           All binarized differences were resampled to the default MNI152 volume template.
-          Here is 
           \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
-          {the link} to the gif animation from a single subject.} 
+          {The link} to the animated version of segmentation results of one subject represents the significance of differences.} 
   \label{fig:tissue_class}
 \end{figure}
 
 
-\begin{figure}
+\begin{figure*}
   \centering
-    \includegraphics[width=\columnwidth]{images/scatter_plot.png} 
-    \caption{The scatter plot of the mean of Dice coefficients between segmented regions 
-            from 20 subjetcs in FreeSurfer (CentOS6 vs. CentOS7). 
-            The complete Dice coefficient values are 
+    \includegraphics[width=\textwidth]{images/scatter_plot.png} 
+    \caption{The scatter plots of the Dice coefficients between segmented regions 
+            from 20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
+            The x-axes are the average number of voxels in each region.
+            Regions are divided into four sub-plots from the smallest regions in the top-left plot 
+            to the largest ones in the bottom-right plot.
+            The complete table of Dice coefficient values is 
             \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/data/dice_values.csv}
             {available}.} 
     \label{fig:scatter_plot}
-  \end{figure}
+  \end{figure*}
 
 
 \section{Discussion}
@@ -873,30 +877,32 @@ The numerical instability in the
 PreFreeSurfer HCP pipeline arises mainly from linear 
 registration processes implemented in FSL \emph{FLIRT}. 
 We can see that \emph{FLIRT} creates differences in almost all the sub-pipelines. 
-Therefore, it is important to investigate the registration procedure and find 
-a way to stabilize this process. 
+We monitored the library system calls using \emph{ltrace} to check that registration processes
+use the same libraries. There were no differences in the library dependencies used by 
+the tool in two operating systems, but we found a different number of calls to the \emph{glibc}.
+More investigations need to stabilize registration processes.
+
 
 In the second experiment, 
 the analysis results obtained by the pipeline show that between-OS differences are visually substantial.
-We see that statically builds of the pipeline improves reproducibility, but 
-it would not improve the numerical stability of the pipeline. 
+The statically builds of the pipeline would not improve the numerical stability of the pipeline. 
 FreeSurfer pipeline propagates and amplifies the numerical differences that are created by the 
 differences in the underlying operating system libraries.
+These results are consistent with the findings in the paper~\cite{Glatard2015}, 
+as it has confirmed the propagation of differences in cortical thickness extraction analysis using FreeSurfer.
 
-In addition to variations of the operating system, other factors exist which may influence 
-the reproducibility of the analyses such as software versions, compilers, hardware, etc.
-Generally, we can use the Monte Carlo Arithmetic (MCA) to determine the numerical stability of the pipelines.
-This algorithm perturbs every floating-point operation 
-in the analysis based on the random rounding in each run. 
-By this algorithm, NURM-tool can easily locate which parts of the analyzed source code are responsible 
-for the floating-point related instabilities.
+We obtained results between-OS versions; further investigations could be done over the OS families (e.g., Linux VS. Windows).
+In addition to variations of the operating system, numerical instability of the pipelines have been 
+explored when varying software, hardware and implementation details, or by adding negligible perturbations.
+In the field of numerical analysis, we can investigate these issue using the Monte Carlo Arithmetic (MCA), 
+a method instrumenting floating-point operations based on the random rounding algorithms at a target precision.
+By this algorithm, we can locate the instabilities for the given pipeline, tool, or operations.
 
 Although we identify the processes in the pipeline that create differences, 
 the amplification of these differences should be quantified in the future works.
+We can use distance-preserving hashes rather than MD5 checksums or metrics specific to the file type like Dice coefficient 
+for the registration processes to measure the magnitude of differences. 
 
-\note{FREESURFER RESULTS: 
-These are consistant results to the paper~\cite{Glatard2015}, as it is shown the propaggation of differences in cortical thickness extraction analysis.
-The magnitude of differences from the operating system changes is out of our expectaion}
 
 \section{Conclusion}
 
@@ -911,8 +917,11 @@ processing is done on a more controlled environment,
 (4) building static executables by removing the host operating system library dependencies. 
 These solutions only make the problem invisible, but the pipelines are stiil unstable.
 
-The preferred solution is to find the origin of amplification of the differences and 
+\note{The preferred solution is to find the origin of amplification of the differences and 
 then fixing the particular functions/modules in the processing pipelines. 
+Bagging is a fundamental technique toward reducing the instability of the analysis.
+Therefore, we can use bagging for the parts in the pipeline that amplify differences, 
+but it still is computationaly expensive. }
 
 
 \section{Acknowledgments}
