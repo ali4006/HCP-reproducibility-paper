@@ -699,17 +699,23 @@ file paths, and other execution-specific information.
 To ensure that differences belong to the file data part, 
 we added distance functions specific to the file types.
 These functions are \emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff} 
-for comparing volumes, surface-based files, 
+from FreeSurfer tool for comparing volumes, surface-based files, 
 and lta files (transforms) respectively. 
 These functions compare files based on the image dimensions, 
 pixel intensities, the number of vertices, and geometry information
 (see~\cite{fischl2012freesurfer} for more details). 
+Moreover, we used the Dice coefficient metric to evaluate the similarity of 
+the image segmentation results, which is defined by
+\[DICE=\frac{2(|X|\cap|Y|)}{|X|+|Y|}\]
+The coefficient between 0 to 1, 1 means that two images are totally identical, while if 
+X and Y have no voxels in common, it is equal to 0. 
 
 Furthermore, we clustered subjects into different type using 
 the clustering method as described before.
 We set the threshold value to zero for the clustering method. 
 This turns to cluster the subjects with the same topology into the same type.
 Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
+
 
 \subsection{Results}
 
@@ -820,7 +826,7 @@ procedure.
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
     CentOS7). Sagittal (left) and coronal (right) views of the brain are in dimension of X=130, Y=155, Z=130.
     \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
-    {the link} to the animated version of alignment results shows the better visualization of differences.
+    {The link} to the animated version of alignment results shows the better visualization of differences.
 } 
     \label{fig:fnirt_result}
 \end{figure}
@@ -846,13 +852,21 @@ This figure shows between-OS differences
 as a result of the propagation and amplification of differences in FreeSurfer. 
 Differences are mostly localized at the interfaces between tissues.
 In our dataset, we found subjects with the min and max Dice coefficient 
-values of 0.89 and 0.96 respectively.
+values of 0.89 and 0.96, respectively.
 
 Furthermore, Figure~\ref{fig:scatter_plot} plots the Dice coefficients 
 for the 44 segmented regions obtained on the two operating systems.
 High Dice coefficients (more than 0.95) in most of the regions indicate minor differences.
 Dice values can be very low, down to 0.5, in particular in small structures 
 such as the vessels and lateral ventricles.
+
+We formulated the linear regression model for the Dice and region size variables as:
+\[D=1 + T\epsilon ;    T=\frac{-1}{\overline{R}}\]
+It is easier to obtain high overlaps with large regions, 
+while smaller regions are harder to be similarly segmented.
+We obtained the epsilon value of $\approx$ 8.3 voxels ($\approx$ 3mm) which indicate the minimum number
+of voxels in each region that needs to be segmented.
+
 
 
 \begin{figure}
@@ -873,9 +887,10 @@ such as the vessels and lateral ventricles.
     \includegraphics[width=\textwidth]{images/scatter_plot.png} 
     \caption{The scatter plots of the Dice coefficients between segmented regions 
             from 20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
-            The x-axes are the average number of voxels in each region.
-            Regions are divided into four sub-plots from the smallest regions in the top-left plot 
-            to the largest ones in the bottom-right plot.
+            The x-axes are the number of voxels in each region.
+            Right plot shows an overview of similarities between all regions and 
+            left plot represents a closer view of differences between 
+            regions smaller than $10^4$ voxels.
             The complete table of Dice coefficient values is 
             \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/data/dice_values.csv}
             {available}.} 
@@ -896,61 +911,64 @@ use the same libraries. There were no differences in the library dependencies us
 the tool in two operating systems, but we found a different number of calls to the \emph{glibc}.
 More investigations need to stabilize registration processes.
 
-
 In the second experiment, 
-the analysis results obtained by the pipeline show that between-OS differences are visually substantial.
-The statically builds of the pipeline would not improve the numerical stability of the pipeline. 
+the analyses obtained by the FreeSurfer show substantial between-OS differences.
+These results show the sensitivity of the segmentation process to the 
+size of regions, however, it might be also sensitive to the location and shape of 
+the segmented regions.
+We demonstrate that statically builds of the pipeline would not improve the numerical stability of the pipeline. 
 FreeSurfer pipeline propagates and amplifies the numerical differences that are created by the 
 differences in the underlying operating system libraries.
 These results are consistent with the findings in the paper~\cite{Glatard2015}, 
 as it has confirmed the propagation of differences in cortical thickness extraction analysis using FreeSurfer.
 
-We obtained results between-OS versions; further investigations could be done over the OS families (e.g., Linux VS. Windows).
+We obtained results between OS versions; further investigations could be done over the OS families (e.g., Linux VS. Windows).
 In addition to variations of the operating system, numerical instability of the pipelines have been 
-explored when varying software, hardware and implementation details, or by adding negligible perturbations.
+explored when varying software, hardware and implementation details, or even by adding negligible 
+perturbations like one voxel noise in the input dataset.
 In the field of numerical analysis, we can investigate these issue using the Monte Carlo Arithmetic (MCA), 
 a method instrumenting floating-point operations based on the random rounding algorithms at a target precision.
-By this algorithm, we can locate the instabilities for the given pipeline, tool, or operations.
+By this algorithm, we can locate the instabilities for the given pipelines, tools, or operations.
 
+We demonstrate that computational models in neuroimaging are sensitive to numerical instabilities. 
 Although we identify the processes in the pipeline that create differences, 
 the amplification of these differences should be quantified in the future works.
-We can use distance-preserving hashes rather than MD5 checksums or metrics specific to the file type like Dice coefficient 
-for the registration processes to measure the magnitude of differences. 
+We can use distance-preserving hashes rather than MD5 checksums or metrics specific to the file type like the Dice coefficient 
+for the registration and segmentation processes to measure the magnitude of differences. 
 
 
 \section{Conclusion}
 
 Our technique can characterize the stability of the pipelines
-automatically. We identified the main causes of the between-OS differences as (1) the evolution 
-of the math libraries over time and, (2) the instability of the pipelines. 
+automatically. We identified the leading causes of the between-OS differences as (1) the evolution 
+of the math libraries over time and (2) the instability of the pipelines. 
 There are two ways to tackle this problem. The easy but less preferred solution is masking the instabilities.
 This can be done by using, (1) single operating system for the processing of subjects, 
 (2) containerizing the pipelines so that the 
 processing is done on a more controlled environment, 
 (3) increasing the numerical precision of the arithmetics, 
 (4) building static executables by removing the host operating system library dependencies. 
-These solutions only make the problem invisible, but the pipelines are stiil unstable.
+These solutions only make the problem invisible, but the pipelines are still unstable.
 
-\note{The preferred solution is to find the origin of amplification of the differences and 
+\note{The preferred solution is to find the origin of amplification of differences and 
 then fixing the particular functions/modules in the processing pipelines. 
 Bagging is a fundamental technique toward reducing the instability of the analysis.
 Therefore, we can use bagging for the parts in the pipeline that amplify differences, 
-but it still is computationaly expensive. }
+but it still is computationally expensive. }
+
 
 
 \section{Acknowledgments}
 
-
-\note{
-CBRAIN team. Compute Canada(Calcul Quebec).
-
-Data were provided by the Human Connectome Project, WU-Minn 
+This research was enabled in part by support provided by 
+Calcul Quebec (http://www.calculquebec.ca) and 
+Compute Canada (http://www.computecanada.ca).
+Also, data were provided by the Human Connectome Project, WU-Minn 
 Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil; 
 1U54MH091657) funded by the 16 NIH Institutes and Centers that support 
 the NIH Blueprint for Neuroscience Research; and by the McDonnell 
 Center for Systems Neuroscience at Washington University.
 
-}
 
 % \begin{figure*}
 % \centering
