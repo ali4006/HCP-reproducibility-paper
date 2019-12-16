@@ -41,12 +41,10 @@
 \newcommand{\english}[1]{\uwave{#1}}
 
  
-\title{NURM: file-based localization of numerical /differences/ without instrumentation}
-  
+\title{File-based localization of numerical perturbations in data analysis pipelines}
 \begin{document}
 
 \author[1]{Ali Salari}
-\author[1]{Lalet Scaria}
 \author[2,3]{Gregory Kiar}
 \author[2]{Lindsay Lewis}
 \author[2,3]{Alan C. Evans}
@@ -60,102 +58,145 @@
 
 \begin{abstract} 
 
-Many experiments show that computational analysis results are still not 
-completely reproducible. Computational environments including different 
-operating systems, hardware categories, and software versions are known 
-to have effects on the results produced by analysis pipelines. These 
-effects are presumably due to the creation, propagation and 
-amplification of small numerical differences across the pipelines. 
-Although new techniques such as virtualization, version control 
-systems, and provenance management tools provide a more reliable 
-environment and significantly improve the reproducibility of scientific 
-findings. However, the precise causes of such instabilities and the 
-path along which they propagate in the pipelines are unclear.  We 
-present a technique to identify the processes in the pipeline that 
-create numerical differences along with the execution, and we apply this 
-technique to the HCP structural pre-processing pipelines.
+Operating systems and other computational factors are known to have an
+effect on the results produced by neuroimaging pipelines, presumably due to
+the creation, propagation and amplification of numerical errors along data
+analysis pipelines. However, the precise causes of such instabilities and
+the path along which they propagate in the pipelines are unclear, while
+this process could play a major role in the current reproducibility crisis.
+We present a technique to identify the computational processes in a
+pipeline that create numerical differences when executed in different
+computational conditions. Our technique leverages system-call interception to reconstruct
+processing and file graphs without pipeline instrumentation. Applying our tool to
+the structural pre-processing pipelines released by the Human Connectome
+Project, we find that linear and non-linear registration are the cause of
+most numerical instabilities in such pipelines, which confirms previous
+findings. 
 
 \end{abstract}
 
 \begin{keywords}
-Reproducibility; Numerical Instability; Neuroimaging.
+Computational reproducibility; Numerical instability; Neuroimaging.
 \end{keywords}
+
 
 \section{Introduction}
 
 % Reproducibility: crisis, numerical stability
 % Containerization isn't the solution
 
-% Complex neuroimaging pipelines
+Numerical stability is believed to play a central role in the differences
+observed in data analysis pipelines across computational infrastructures.
+Variability resulting from operating system upgrades, parallelization, or
+even minor data perturbations may originate in errors that accumulate in
+numerical computations, with important consequences on the reproducibility
+of data analysis results. However, it remains challenging to identify the
+exact elements in a complex pipeline that are prone to numerical instability,
+leaving pipeline developers and users with the daunting task to manually
+compare results obtained in different conditions. 
+
 In neuroimaging, our primary application field, data analyses often consist
-of computational pipelines aggregating heterogeneous codes to implement a
-specific function. For instance ... 
+of hundreds of computational processes, sometimes coming from multiple
+toolboxes, that are aggregated to perform a specific function. For
+instance, the fMRIprep pipeline~\cite{esteban2019fmriprep} assembles software blocks
+from FSL, AFNI, Freesurfer and ANTs to provide a state-of-the art
+functional MRI processing tool with minimal user input. Another example are the pipelines of the Human
+Connectome Project~\cite{glasser2013} that combine tools from FSL and Freesurfer to pre-process
+structural, functional and diffusion data from their
+open dataset. In both cases, the pipelines leverage toolboxes that are
+widely trusted in the community. At the same time, substantial results
+variations have been observed in these toolboxes resulting from minor data
+or infrastructure perturbations~\cite{Glatard2015, Gronenschild2012, Lewis2017-ll}, which suggests that further investigation of their
+numerical conditioning is required. For such complex pipelines, a
+lightweight solution has to be found to perform such evaluations with
+limited code instrumentation.
 
-% Verificarlo and MCA, require recompilation
-Numerical instabilities originate in the limited \todo{precision} of floating-point representations. 
-Traditionnaly, it has been evaluated through 
+Numerical evaluations are traditionnally performed using techniques such as
+interval arithmetics~\cite{hickey2001interval} that require complete code re-writes and are
+therefore barely applicable to complex pipelines. Recently, Monte-Carlo
+Arithmetic~\cite{Parker1997-qq, Denis2016-wo} provided a practical way to
+evaluate the uncertainty of numerical results without the need to rewrite
+the application in a different paradigm. By perturbating floating-point
+computations, it introduces a controllable amount of noise in the
+pipelines, effectively sampling results from a random distribution. While
+this technique is very appealing, it suffers from two main issues that make
+it impractical at the scale of a complete pipeline. First, it requires that
+all software components be recompiled for MCA instrumentation, which is not
+always feasible. Second, it multiplies the execution time by a factor of 10
+to 100, which is impractical when executions already take a few hours to
+complete. 
 
-% -> File-based analysis of pipelines without instrumentation
-% Reprozip
+We present Spot, a tool to identify the source of numerical differences in
+complex pipelines without instrumentation. Using system-call interception
+through the Reprozip tool~\cite{chirigati2016reprozip}, Spot traverses graphs of processes and
+intermediary files to pinpoint the pipeline components that are unstable
+across execution conditions. When differences start accumulating,
+effectively masking any further instability, it restores clean data copies
+through a set of wrapper scripts. Wrapper scripts are also used to restore
+temporary data that might have been deleted during the execution, and to
+disambiguate files that have been written by multiple processes. The remainder of this paper 
+presents the design of our tool, and its 
+application to pre-processing pipelines of the HCP project. 
 
-Reproducibility is a crucial element of the scientific works, 
-as it enables researchers to evaluate authenticity and reliability 
-of the findings~\cite{plesser2018reproducibility}.
-Reproducibility is defined as the ability to regenerate the same 
-results as the original findings when the experiment is reanalyzed by 
-the same analytic methods, software package, parameters, and 
-data~\cite{peng2011reproducible}. 
-In addition, numerical reproducibility is defined as the ability to 
-regenerate bit for bit identical results from multiple 
-runs~\cite{hill2017numerical}. 
-We considered the numerical reproducibility in our experiments by comparing 
-the binary content of the results using the checksum method.
 
-Recently, validation of the reproducibility has been widely investigated 
-in the field of neuroimaging in which uses optimized 
-processing methods with the purpose of functional and structural 
-assessments of the human brain.
-According to the previous 
-studies, the variety of computing infrastructures including workstation 
-types, parallelization methods, operating systems, and analysis 
-packages are known to influence the reproducibility of the analyses~\cite{Gronenschild2012, 
-diethelm2012limits, Glatard2015, bowring2019exploring}.
-These irreproducibility issues are reported as the result of the 
-creation, propagation, and amplification of small numerical 
-differences.
+% % Verificarlo and MCA, require recompilation
+% Numerical instabilities originate in the limited \todo{precision} of floating-point representations. 
+% Traditionnaly, it has been evaluated through 
 
-In particular, the effect of the operating systems on  
-computational pipelines shows the creation of small numerical differences~\cite{Glatard2015, Scaria2017}.
-These differences mainly correspond to the mathematical functions implemented 
-in different operating system libraries.
-For instance, changing the mathematical functions like \emph{expf()} and 
-\emph{cosf()} which manipulate the precision of floating-point representations, 
-between \emph{glibc} libraries in different operating systems can produce 
-small numerical differences.
-Besides, a similar issue is expected for any operating system which is 
-based on \emph{glibc}, the GNU C library.
+% % -> File-based analysis of pipelines without instrumentation
+% % Reprozip
 
-There are different approaches to improve the reproducibility of the analysis, 
-including containerization techniques that encapsulate software/hardware dependencies, 
-provenance capturing tools, and version control systems. 
-However, a comprehensive solution requires to fix the numerical instabilities instead of 
-masking the problem. For this purpose, bagging is one solution that has been used to 
-stabilize motion estimation analysis in fMRI~\cite{Glatard2018hbm}. 
-Bootstrap aggregation reduces the instabilities, but it needs expensive computations.
-As the second solution, a debugging tool can help to identify and 
-fix the instabilities in the pipeline. Therefore, we introduce 
-the Numerical Reproducibility Measurement (NURM) tool to identify 
-the processes in the pipeline that create numerical differences across different conditions. 
-Furthermore, we can stabilize the identified processes in the next steps.
+% Reproducibility is a crucial element of the scientific works, 
+% as it enables researchers to evaluate authenticity and reliability 
+% of the findings~\cite{plesser2018reproducibility}.
+% Reproducibility is defined as the ability to regenerate the same 
+% results as the original findings when the experiment is reanalyzed by 
+% the same analytic methods, software package, parameters, and 
+% data~\cite{peng2011reproducible}. 
+% In addition, numerical reproducibility is defined as the ability to 
+% regenerate bit for bit identical results from multiple 
+% runs~\cite{hill2017numerical}. 
+% We considered the numerical reproducibility in our experiments by comparing 
+% the binary content of the results using the checksum method.
 
-The remainder of this paper describes the NURM-tool in different parts 
-including the way of capturing and representation of the provenance 
-information, the method of clustering of different subject types, and 
-process labelling to characterize differences. We describe the HCP 
-pre-processing pipelines as a popular neuroimaging project to test the 
-NURM-tool and evaluate its functionality. Finally, we reported the 
-experimental results which describe the processes that are responsible 
-for the differences in the pipelines.
+% Recently, validation of the reproducibility has been widely investigated 
+% in the field of neuroimaging in which uses optimized 
+% processing methods with the purpose of functional and structural 
+% assessments of the human brain.
+% According to the previous 
+% studies, the variety of computing infrastructures including workstation 
+% types, parallelization methods, operating systems, and analysis 
+% packages are known to influence the reproducibility of the analyses~\cite{Gronenschild2012, 
+% diethelm2012limits, Glatard2015, bowring2019exploring}.
+% These irreproducibility issues are reported as the result of the 
+% creation, propagation, and amplification of small numerical 
+% differences.
+
+% In particular, the effect of the operating systems on  
+% computational pipelines shows the creation of small numerical differences~\cite{Glatard2015, Scaria2017}.
+% These differences mainly correspond to the mathematical functions implemented 
+% in different operating system libraries.
+% For instance, changing the mathematical functions like \emph{expf()} and 
+% \emph{cosf()} which manipulate the precision of floating-point representations, 
+% between \emph{glibc} libraries in different operating systems can produce 
+% small numerical differences.
+% Besides, a similar issue is expected for any operating system which is 
+% based on \emph{glibc}, the GNU C library.
+
+% There are different approaches to improve the reproducibility of the analysis, 
+% including containerization techniques that encapsulate software/hardware dependencies, 
+% provenance capturing tools, and version control systems. 
+% However, a comprehensive solution requires to fix the numerical instabilities instead of 
+% masking the problem. For this purpose, bagging is one solution that has been used to 
+% stabilize motion estimation analysis in fMRI~\cite{Glatard2018hbm}. 
+% Bootstrap aggregation reduces the instabilities, but it needs expensive computations.
+% As the second solution, a debugging tool can help to identify and 
+% fix the instabilities in the pipeline. Therefore, we introduce 
+% the numerical reproducibility measurement tool named \emph{Spot} to identify 
+% the processes in the pipeline that create numerical differences across different conditions. 
+% Furthermore, we can stabilize the identified processes in the next steps.
+
+
 
 \section{Tool description}
 
@@ -208,7 +249,7 @@ pipeline execution.
      (\href{https://docs.google.com/drawings/d/1yblYuKWAD18aJe5JxBu2h1EysyoQA3YrsQj-1T3s0l8/edit?usp=sharing}{Source})}
      \label{fig:overview-labelling}
    \end{subfigure}
-   \caption{An overview of NURM-tool in two steps. First capturing intermediary files (a); then
+   \caption{An overview of Spot tool in two steps. First capturing intermediary files (a); then
             labelling process graphs (b).}
    \label{fig:overview}
   \end{figure}
@@ -603,7 +644,7 @@ in the operating systems. One is between-OS differences caused by the
 operating system library updates and the other type, within-OS differences
 occur as a result of the pseudo-random processes used in the pipelines.
 
-In particular, NURM-tool is tested on the neuroimaging applications which are 
+In particular, Spot tool is tested on the neuroimaging applications which are 
 predominantly using mathematical libraries. Therefore, we expect to find 
 differences as a result of changing the mathematical functions between operating system libraries.
 
@@ -834,7 +875,7 @@ procedure.
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
-NURM-tool identified \emph{mris\_make\_surfaces} as the only process in 
+Spot tool identified \emph{mris\_make\_surfaces} as the only process in 
 the pipeline that creates differences in 10 subjects among 20 subjects.
 This process generates surface files for cortical and white matter surfaces 
 (see~\cite{fischl2012freesurfer} for more detail). 
@@ -936,6 +977,7 @@ the amplification of these differences should be quantified in the future works.
 We can use distance-preserving hashes rather than MD5 checksums or metrics specific to the file type like the Dice coefficient 
 for the registration and segmentation processes to measure the magnitude of differences. 
 
+% mention fuzzy libmath as a way to do this across distributions.
 
 \section{Conclusion}
 
@@ -956,7 +998,11 @@ Bagging is a fundamental technique toward reducing the instability of the analys
 Therefore, we can use bagging for the parts in the pipeline that amplify differences, 
 but it still is computationally expensive. }
 
+% importance of data-driven evaluations, subject clustering, etc
 
+% future work with MCA
+
+% link registration to our motion estimation study
 
 \section{Acknowledgments}
 
