@@ -41,7 +41,7 @@
 \newcommand{\english}[1]{\uwave{#1}}
 
  
-\title{NURM: a tool to 
+\title{Spot: a tool to 
 locate numerical differences in pipelines}
   
 \begin{document}
@@ -130,16 +130,16 @@ stabilize motion estimation analysis in fMRI~\cite{Glatard2018hbm}.
 Bootstrap aggregation reduces the instabilities, but it needs expensive computations.
 As the second solution, a debugging tool can help to identify and 
 fix the instabilities in the pipeline. Therefore, we introduce 
-the Numerical Reproducibility Measurement (NURM) tool to identify 
+the numerical reproducibility measurement tool named \emph{Spot} to identify 
 the processes in the pipeline that create numerical differences across different conditions. 
 Furthermore, we can stabilize the identified processes in the next steps.
 
-The remainder of this paper describes the NURM-tool in different parts 
+The remainder of this paper describes the Spot tool in different parts 
 including the way of capturing and representation of the provenance 
 information, the method of clustering of different subject types, and 
 process labelling to characterize differences. We describe the HCP 
 pre-processing pipelines as a popular neuroimaging project to test the 
-NURM-tool and evaluate its functionality. Finally, we reported the 
+Spot tool and evaluate its functionality. Finally, we reported the 
 experimental results which describe the processes that are responsible 
 for the differences in the pipelines.
 
@@ -194,7 +194,7 @@ pipeline execution.
      (\href{https://docs.google.com/drawings/d/1yblYuKWAD18aJe5JxBu2h1EysyoQA3YrsQj-1T3s0l8/edit?usp=sharing}{Source})}
      \label{fig:overview-labelling}
    \end{subfigure}
-   \caption{An overview of NURM-tool in two steps. First capturing intermediary files (a); then
+   \caption{An overview of Spot tool in two steps. First capturing intermediary files (a); then
             labelling process graphs (b).}
    \label{fig:overview}
   \end{figure}
@@ -589,7 +589,7 @@ in the operating systems. One is between-OS differences caused by the
 operating system library updates and the other type, within-OS differences
 occur as a result of the pseudo-random processes used in the pipelines.
 
-In particular, NURM-tool is tested on the neuroimaging applications which are 
+In particular, Spot tool is tested on the neuroimaging applications which are 
 predominantly using mathematical libraries. Therefore, we expect to find 
 differences as a result of changing the mathematical functions between operating system libraries.
 
@@ -820,7 +820,7 @@ procedure.
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
-NURM-tool identified \emph{mris\_make\_surfaces} as the only process in 
+Spot tool identified \emph{mris\_make\_surfaces} as the only process in 
 the pipeline that creates differences in 10 subjects among 20 subjects.
 This process generates surface files for cortical and white matter surfaces 
 (see~\cite{fischl2012freesurfer} for more detail). 
