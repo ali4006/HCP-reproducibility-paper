@@ -67,9 +67,9 @@ this process could play a major role in the current reproducibility crisis.
 We present a technique to identify the computational processes in a
 pipeline that create numerical differences when executed in different
 computational conditions. Our technique leverages system-call interception to reconstruct
-processing and file graphs without pipeline instrumentation. Applying our tool to
-the structural pre-processing pipelines released by the Human Connectome
-Project, we find that linear and non-linear registration are the cause of
+processing and file graphs without pipeline instrumentation. By applying our tool to
+the HCP pre-processing pipelines, 
+we find that linear and non-linear registration are the cause of
 most numerical instabilities in such pipelines, which confirms previous
 findings. 
 
@@ -103,7 +103,7 @@ from FSL, AFNI, Freesurfer and ANTs to provide a state-of-the art
 functional MRI processing tool with minimal user input. Another example are the pipelines of the Human
 Connectome Project~\cite{glasser2013} that combine tools from FSL and Freesurfer to pre-process
 structural, functional and diffusion data from their
-open dataset. In both cases, the pipelines leverage toolboxes that are
+open dataset. In both cases, pipelines leverage toolboxes that are
 widely trusted in the community. At the same time, substantial results
 variations have been observed in these toolboxes resulting from minor data
 or infrastructure perturbations~\cite{Glatard2015, Gronenschild2012, Lewis2017-ll}, which suggests that further investigation of their
@@ -200,59 +200,53 @@ application to pre-processing pipelines of the HCP project.
 
 \section{Tool description}
 
-Figure~\ref{fig:overview} shows an overview of our method. For each tested
+Spot identifies processes that create differences from a process graph of the pipeline execution.
+This tool compares file dependencies through all the processes based on the result files in two conditions.
+In this paper, different conditions refer to various operating systems.
+This tool is applicable on the complex pipelines in which tracing a large number of processes is difficult. 
+
+Figure~\ref{fig:overview-tool} shows an overview of our method. For each tested
 condition, Condition 1 and Condition 2, the pipeline is containerized with
 Docker, and its interface is described with
-Boutiques~\cite{glatard2017boutiques}. \reprozip~\cite{chirigati2016reprozip} is
-added to Condition 1 for provenance tracking. Our tool starts by
-identifying temporary files and ``multi-write" files, i.e., files written
-by more than one process (Figure~\ref{fig:overview-capturing}). To do that,
-the tool first executes the pipeline in Condition 1, to obtain a process
-graph (Figure~\ref{fig:overview-capturing} - (1)) and a list of result files.
-The list of processes that create intermediary or multi-write
-files is then generated (Figure~\ref{fig:overview-capturing} - (2)). 
-Using this list, the tool modifies Docker image in Condition 1 and
-exectutes the pipeline again through it, which turns to produce results
-including temporary and overwritten files
-(Figure~\ref{fig:overview-capturing} - (3,4)). In the second step, the
+Boutiques~\cite{glatard2017boutiques}. 
+\reprozip is added to Condition 1 for provenance tracking. 
+This captures process dependencies through system call interceptions, 
+then Spot tool creates related process trees (Figure~\ref{fig:overview-tool} - (1)).
+Different subjects produce different process trees. 
+Hierachical clustering used to group subjects into different types (Figure~\ref{fig:overview-tool} - (2)).
+The rest of the procedure is done separately on each subject type.
+Our tool continues by
+restoring temporary files and ``multi-write" files, i.e., files written
+by more than one process (Figure~\ref{fig:overview-tool} - (3)). 
+To do so, the tool creates a list of processes 
+that introduce intermediary files and replaces their corresponding executables with a wrapper script. 
+The tool re-executes the pipeline in a modified Docker image in Condition 1.
+This copies files in the list to a read-only directory.
+In the next step, the
 processes are labeled from the differences found in their outputs in the
-two tested conditions (Figure~\ref{fig:overview-labelling}). To this order,
-the tool builds docker image for Condition 2 by modifying pipeline
-processes (Figure~\ref{fig:overview-labelling} - (1)) that recognised from 
-the process graph. Then, the modified docker
-image is executed in Condition 2 and each process is labeled right after
-the running by comparing the results obtained in Condition 1
-and output files of the process in Condition 2
-(Figure~\ref{fig:overview-labelling} - (2)). We then label processes in 2
-categories depending whether they
+two tested conditions (Figure~\ref{fig:overview-tool} - (4)). 
+The tool builds the Docker image for Condition 2 by modifying all
+the processes in the pipeline. Then, the modified Docker
+image is executed in Condition 2 and each process is labeled after
+running by comparing the results obtained in Condition 1
+and output files of the process in Condition 2. We label processes in 2
+categories depending on whether they
 create differences (represented in red) or not (green). 
 The tool replaces output file with the same file obtained in Condition 1 
-if process creates differences (Figure~\ref{fig:overview-labelling} - (3)).
+if the process creates differences.
 Process labelling
-is done through hooks which are defined during the docker image modifying
-procedure, and incremental updates in Condition 2, until the end of the
-pipeline execution.
+is done through hooks which are defined during the Docker image modifying
+procedure in Condition 2.
+Spot tool is available at https://github.com/big-data-lab-team/repro-tools.
 
 \begin{figure}
   \centering
-  \begin{subfigure}{\columnwidth}
-    \centering
-    \includegraphics[width=1\columnwidth]{images/fig1-a}
-    \caption{Identification of temporary and multi-write files.
-    (\href{https://docs.google.com/drawings/d/1rsbFwPjNPNMRhXUl4RSK3G0OaiJC7K-buiHN0hPD8eQ/edit?usp=sharing}{Source})}
-    \label{fig:overview-capturing}
-  \end{subfigure}
-   \begin{subfigure}{\columnwidth}
-    \centering
-     \includegraphics[width=1\columnwidth]{images/fig1-b}
-     \caption{Labelling process graphs including intermediary files.
-     (\href{https://docs.google.com/drawings/d/1yblYuKWAD18aJe5JxBu2h1EysyoQA3YrsQj-1T3s0l8/edit?usp=sharing}{Source})}
-     \label{fig:overview-labelling}
-   \end{subfigure}
-   \caption{An overview of Spot tool in two steps. First capturing intermediary files (a); then
-            labelling process graphs (b).}
-   \label{fig:overview}
+    \includegraphics[width=1\columnwidth]{images/overview-fig}
+    \caption{An overview of Spot tool in four steps.
+    (\href{https://encsconcordiaca-my.sharepoint.com/:p:/g/personal/m_alari_encs_concordia_ca/EYx_aIZgYKlDuuXKPKi5ckIBo_WmJeE1Czr9rqG4gLHOOA?e=H8gack}{Source})}
+    \label{fig:overview-tool}
   \end{figure}
+
 
 \subsection{Provenance capture and representation}
 
@@ -266,12 +260,22 @@ temporary files. \reprozip collects this information through the
 Our tool reconstructs a \emph{process tree} starting from the first process
 created by the pipeline and traversing processes through \texttt{clone()}
 and \texttt{fork()} dependencies. Our tool also creates a process \emph{graph} 
-(Figure~\ref{fig:overview-capturing} - (1)) from this tree
+from this tree
 by adding edges corresponding to file dependencies between processes. A
 file dependency is defined between processes A and B if a file written by A
 is read by B. Figure~\ref{fig:simple_script} shows an example of a process
 tree and graph constructed from the example pipeline in
 Listing~\ref{listing:sample-script}.
+
+Different subjects may lead to different process trees, due to
+variations that may be coming from differences in data types or
+cardinality. For instance, some images may have been acquired multiple
+times in some subjects. Some of these differences can be neglected, for
+instance, when a data decompression step is present at the beginning of the
+execution for some subjects only, and other ones cannot, when different
+processing paths are used in different subjects.
+Accordingly, we cluster subjects into different types. 
+
 \begin{listing}
 \begin{minted}[frame=single,
   framesep=3mm,
@@ -297,7 +301,7 @@ bet_output=$(basename "${input_image}" \
 bet_output_binarized=$(basename "${input_image}" \
                        .nii.gz)_brain_bin.nii.gz
 
-# Run FSL bet, put result ${bet_output}
+# Run FSL bet, put result in ${bet_output}
 bet "${input_image}" "${bet_output}" > bet_temp.out
 echo "Voxels / Volume in brain mask:"
 # Run FSL stats on ${bet_output}
@@ -335,9 +339,31 @@ fslmaths "${bet_output}" "${bet_output_binarized}"
 \end{figure}
 
 
+\subsection{Subject clustering}
+
+
+We cluster subjects into different types to specify how many different 
+process trees are generated. 
+Nodes in the process trees are labeled by the process name.
+The tree edit distance~\cite{zhang1989simple} is used as a similarity measure for 
+representing the distance between labeled trees. 
+Tree edit distance  is defined  
+as the minimum number of edit operations which is needed to transform one tree into 
+the other. Three edit operations are considered: node label modification, 
+node removal, and node insertion. Each operation has an associated cost of 1.
+With this distance, we cluster subjects using agglomerative hierarchical
+clustering as implemented in SciPy~\cite{oliphant2007scipy}.
+As a result, the distance between
+any two subjects in a cluster is lower than a threshold parameter.
+
+We will show that different types of subjects certainly produce different results, 
+while subjects in the same type can be either reproducible or not.
+
+
 \subsection{Graph analysis}
 
-We label in two categories the processes of the graph of each subject. First,
+We clustered subjects into different types that each one refers to a specific graph.
+The processes of the graph of each subject are labeled into two categories. First,
 processes that read files that do not have differences and write files that
 do not have differences are labeled \emph{transparent}
 (Figure~\ref{fig:green}). Second, processes that read files that do not
@@ -432,8 +458,8 @@ Files written by multiple processes also lead
 to undetermined labels. For a file F 
 written by all processes in \textbf{P} = \{$P_{1}$, \ldots $P_{n}$\}, we 
 (1) check that processes in \textbf{P} do not write concurrently to F, 
-(2) we establish an order on \textbf{P} based on the creation timestamp 
-of the processes, (3) we replace every process $P_{i}$ in \textbf{P} by 
+(2) establish an order on \textbf{P} based on the creation timestamp 
+of the processes, (3) replace every process $P_{i}$ in \textbf{P} by 
 a wrapper that first calls $P_{i}$ and then saves F to a read-only 
 directory. Thus, multiple versions of F are saved and used in the 
 analysis. 
@@ -443,17 +469,14 @@ was written by more than one process. We remove such cycles by removing
 file edges between processes A and B when A's process creation 
 timestamp is posterior to B's or when A=B. Indeed, such edges cannot 
 happen in practice unless A and B were running concurrently, which we 
-assume is not the case (the tool checks for that). 
+assume is not the case. 
 
-As an example of this capturing process, in the sample pipeline in 
-Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} writes a temporary file and 
-also file \emph{T1w\_brain\_bin.nii.gz} is first written by process \texttt{2\#bet2} and 
-then overwritten by process \texttt{3\#fslmaths}. The list of these processes is captured in 
+As an example, in the sample pipeline in Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} writes a temporary file.
+Also, file \emph{T1w\_brain\_bin.nii.gz} is first written by \texttt{2\#bet2} and then overwritten by process \texttt{3\#fslmaths}.
+The complete list of the processes that write intermediary files is captured in 
 Listing~\ref{listing:json_process}.
-Using this list, we modify relevant processes in Condition 1 and then re-execute pipeline 
-to save them in a backup folder.
-Figure~\ref{fig:overview-capturing} - (4) shows pipeline results including intermediary files 
-captured as the outputs in Condition 1. 
+Using this list, we modify processes in Condition 1 and then re-execute pipeline 
+to save them in a backup folder. 
 
 \begin{listing}
   \begin{minted}[frame=single,
@@ -498,34 +521,33 @@ Listing~\ref{listing:sample-script} that should be captured.}
 
 \subsubsection{Labelling undetermined processes} 
 
-Since all the result files are captured in Condition 1, the tool 
-is ready to label the piepeline processes based on the results in Condition 2.
+When all the result files are captured in Condition 1, the tool 
+is ready to label the pipeline processes in Condition 2.
 However, another challenge is to label undetermined processes that read files with 
-differences and write files with differences too. In this
-situation, it is not possible to determine from the pipeline results 
-whether the process created differences or 
-was transparent.
+differences and write files with differences too. 
+In this case, it is not possible to determine from the pipeline results 
+whether the process creates differences or 
+is transparent.
 To address this issue, we set hooks in the pipeline 
 in Condition 2. Hooks are set by replacing the pipeline 
-processes with a custom script. This custom script labels each process 
-as \emph{transparent} or \emph{create differences} immediately after running 
+processes with a wrapper script.
+The replacement is done by modifying the PATH environment variable, as explained before. 
+The wrapper script labels each process 
+as \emph{transparent} or \emph{create differences} after running 
 the original executable. 
-The replacement is done through the PATH variable, as before. Moreover, 
-this custom script copies the results obtained from the same process in 
+Then, it copies the results obtained from the same process in 
 Condition 1 to the pipeline output in Condition 2 if 
-it is invoked with the arguments of a process that created differences 
-(Figure~\ref{fig:overview-labelling} - (3)). 
-Differences are identified by comparing checksum of the output files for 
-the same process in both conditions (Figure~\ref{fig:overview-labelling} - (2)).
-In addition, the distance functions that are specific to file types can be added 
-to our tool to measure differences more precisely. 
+it is invoked with the arguments of a process that created differences.
+Differences are identified by comparing the checksum of the output files for 
+the same process in both conditions.
+Besides, to measure the magnitude of the differences, we can add distance functions specific to file types.
 We developed an incremental approach that consists of the following steps: 
 
 \begin{enumerate}
   \item Start the pipeline execution in Condition 2; 
         after hooking all the processes involved in the pipeline.
   \item Label each process as \emph{transparent} or \emph{create differences} 
-        right after its running.
+        after running.
   \item Check if process is \emph{create differences} then: 
         copy the results produced by the same process in Condition 1 to the 
         pipeline output in Condition 2. 
@@ -534,24 +556,19 @@ We developed an incremental approach that consists of the following steps:
 
 This algorithm creates a \emph{labeled process tree} at the end of pipeline execution 
 which highlights processes that create differences.
-(Figure~\ref{fig:overview-labelling} - (4)).
 
 \begin{figure}
   \centering
   \includegraphics[width=\columnwidth]{images/iterative_modif}
-  \caption{A simple example of steps of the proposed approach.}
+  \caption{Illustration of the labelling approach.}
   \label{fig:iterations}
 \end{figure}
 
 Figure~\ref{fig:iterations} illustrates our incremental labelling 
 process for the example in Figure~\ref{fig:simple_script}. At every 
 step, processes that created differences are shown in red and other processes 
-(transparent processes) are in green. As in 
-Figure~\ref{fig:simple_script}, plain black edges represent the process 
-tree and dashed edges represent file dependencies: green edges 
-represent files with no differences, while red edges represent files with 
-differences. Temporary files are not represented because they have been 
-saved as previously described.
+(transparent processes) are in green. Temporary files are not represented 
+because they have been saved as previously described.
 
 The four steps in Figure~\ref{fig:iterations} correspond to the 
 steps of the labelling algorithm. 
@@ -563,7 +580,7 @@ from files without differences. Therefore, the files produced by \texttt{2\#bet2
 Condition 2 are replaced with the files produced by \texttt{2\#bet2} in 
 Condition 1.
 At step 3, after running process \texttt{3\#fslstats}, it labeled as 
-transparent as it write files without differences.
+transparent as it writes files without differences.
 At step 4, process \texttt{4\#fslmaths} is labeled as difference creator 
 as the last process of the pipeline.
 As a result of these 4 steps, the final process labelling is: 
@@ -571,73 +588,9 @@ As a result of these 4 steps, the final process labelling is:
 and the other processes are transparent.
 
 
-\subsection{Subject clustering}
-
-Different subjects may lead to different process tree, due to
-variations that may be coming from differences in data types or
-cardinality. For instance, some images may have been acquired multiple
-times in some subjects. Some of these differences can be neglected, for
-instance when a data decompression step is present at the beginning of the
-execution for some subjects only, and other ones cannot, when different
-processing paths are used in different subjects.
-
-Different process tree shows that pipeline execution followed by a different procedure. 
-This implies the possible impact of different subjects on pipeline results.
-We cluster subjects into different types to specify how many different 
-process trees are generated. Clustering is performed based on the process trees 
-which nodes are labeled by the process name. 
-In this order, 
-the tree edit distance~\cite{zhang1989simple} is used as a similarity measure for 
-representing the distance between labeled trees. Tree edit distance  is defined  
-as the minimum number of edit operations which is needed to transform one tree into 
-the other. Three edit operations are considered: node label modification, 
-node removal, and node insertion. Each operation has an associated cost of 1.
-With this distance, we cluster subjects using agglomerative hierarchical
-clustering as implemented in SciPy~\cite{oliphant2007scipy}
-(Algorithm~\ref{algo:hclustering}). As a result, the distance between
-any two subjects in a cluster is lower than a threshold parameter.
-
-Furthermore, we will show that even subjects in the same cluster, 
-having the same topological process tree structure, 
-may have different labels as processes that create differences.
-
-\begin{algorithm}[h!]
-\caption{Hierarchical clustering algorithm from SciPy}
-\label{algo:hclustering}
-\begin{algorithmic}
-
-  \State /* Input: - a list of n trees; \texttt{T = [t${_1}$, t${_2}$,...,t${_n}$]}
-  \State /*\quad \quad \quad \quad - a distance threshold value; \texttt{threshold}
-  \State /* Output: a list of clusters; \texttt{C = [c${_1}$,c${_2}$,...,c${_k}$]}
-  \State \texttt{\# Create a cluster for each tree in input list;}
-  \State \texttt{C = [ [t${_1}$], [t${_2}$], \ldots , [t${_n}$] ]}
-  \State \texttt{\# Define a 2 $\times$ 2 array to store distances}
-  \State \texttt{D} = \texttt{array(n, n)}
-  \While{\texttt{len(C)} > \texttt{1}}  
-  \State \texttt{\# Select the two nearest clusters}
-  \For{\texttt{i=1} to \texttt{n}}
-  \For{\texttt{j=i+1} to \texttt{len(C)}}
-  \State \texttt{D[i][j]} = $\min \left\{ \texttt{edit\_dist(a, b)}: \ \texttt{a} \in \texttt{C[i]}, \texttt{b} \in \texttt{C[j]} \right\}$
-    \EndFor
-  \EndFor
-  \State \texttt{i, j} = $\argmin \left\{ \texttt{D[i][j]}, \ \texttt{i, j} \in \llbracket 1, \texttt{len(C)}\rrbracket^2 \right\}$
-  \If{\texttt{D[i][j]} > \texttt{threshold}}
-  \State \Return \texttt{C}
-  \Else
-  \State \texttt{\# Merge C[j] into C[i]}
-  \State \texttt{C[i]} = \texttt{merge}(\texttt{C[i] and C[j]})
-  \State \texttt{\# Remove C[j] from C}
-  \State \texttt{remove(C[j], C)}
-  \EndIf
-  \EndWhile
-%  \State Function edit\_distance (C${_1}$, C${_2}$)
-%  \State EndFunction
-\end{algorithmic}
-\end{algorithm}
-
 \section{Experiments}
 
-In this experiment, we analyse the numerical reproducibility of the computational pipelines 
+In this experiment, we analyse the numerical reproducibility of computational pipelines 
 and identify the origin of differences across the operating systems. 
 Two types of differences can occur in the subjects due to the differences
 in the operating systems. One is between-OS differences caused by the
@@ -648,21 +601,19 @@ In particular, Spot tool is tested on the neuroimaging applications which are
 predominantly using mathematical libraries. Therefore, we expect to find 
 differences as a result of changing the mathematical functions between operating system libraries.
 
-This section describes datasets and pipelines used for the analyses, 
-how data processed through the pipelines, and the results.
-
+This section describes datasets and pipelines used for the analyses, and the way of data processing.
 
 \subsection{HCP pipelines and dataset}
 
 We used our tool to evaluate the reproducibility of the pipelines from the Human Connectome 
 Project (\href{https://www.humanconnectome.org}{HCP}).
-The HCP initiative is a significant effort to acquire and analyze 
+The HCP initiative is an effort to acquire and analyse 
 brain connectivity data from 1200 healthy adults.
 It enables the neuroscience 
 research community to discover relationships between brain circuits and 
 individual behaviors. This helps to understand a wide range of brain disorders.
-The HCP project provides (1) database services (ConnectomeDB) for storing and 
-sharing primary and processed data freely, and (2) data analysis pipelines that 
+The HCP project provides database services (ConnectomeDB) for storing and 
+sharing primary and processed data freely, and data analysis pipelines that 
 are available under an open-source license.
 
 The HCP developed a set of pre-processing pipelines to process structural,
@@ -694,8 +645,8 @@ and FreeSurfer is $\approx$ 4.1 GB.
 
 HCP data collected from different types of imaging techniques, including 
 structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
-The structural images include T1-weighted (T1w) and T2-weighted (T2w) images which 
-help in the diagnosis of the brain injury.
+The structural images include T1-weighted (T1w) and T2-weighted (T2w) images, which 
+help in the diagnosis of brain injury.
 The images are indexed with a suffix if several scans of the same modality were acquired.
 For example, some data may include two T1w images with low and high resolutions.
 The functional images, including task-based fMRI and resting-state scans, 
@@ -704,10 +655,9 @@ Diffusion imaging is another kind of MRI technique, which measures
 the anatomical connectivity between regions.
 See~\cite{van2013wu} for a discussion of these various modalities.
 
-Data from 1200 subjects 
-is available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
 In this paper, we randomly selected 20 unprocessed subjects 
-containing the 3-tesla type of MRI scanners from the HCP data release S500.
+containing 3-tesla type of MRI scanners from the HCP data release S500 
+available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
 
 
 \subsection{Data processing}
@@ -731,30 +681,24 @@ for reuse.
 The data were processed with PreFreeSurfer and FreeSurfer. 
 First, PreFreeSurfer was utilized to analyse the unprocessed data, and then its 
 results were used as the input of FreeSurfer.
-
 Each subject was processed twice on the same operating system to detect
 variability coming from pseudo-random operations. 
 Within-OS variability may also be coming from other factors than pseudo-randomness. 
-For instance, metadata may differ due to the presence of timestamps, 
+For instance, the same files may have different metadata such as timestamps, 
 file paths, and other execution-specific information. 
-To ensure that differences belong to the file data part, 
-we added distance functions specific to the file types.
-These functions are \emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff} 
-from FreeSurfer tool for comparing volumes, surface-based files, 
-and lta files (transforms) respectively. 
+To ensure that the differences are not related to the metadata, 
+we used specific functions from FreeSurfer tool including 
+\emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff}.
 These functions compare files based on the image dimensions, 
-pixel intensities, the number of vertices, and geometry information
+voxel intensities, the number of vertices, and geometry information
 (see~\cite{fischl2012freesurfer} for more details). 
-Moreover, we used the Dice coefficient metric to evaluate the similarity of 
+In addition, we used the Dice coefficient metric to evaluate the similarity of 
 the image segmentation results, which is defined by
 \[DICE=\frac{2(|X|\cap|Y|)}{|X|+|Y|}\]
-The coefficient between 0 to 1, 1 means that two images are totally identical, while if 
-X and Y have no voxels in common, it is equal to 0. 
+The Dice coefficient ranges from 0, indicating X and Y have no voxels in common, to 1, if 
+two images are identical. 
 
-Furthermore, we clustered subjects into different type using 
-the clustering method as described before.
-We set the threshold value to zero for the clustering method. 
-This turns to cluster the subjects with the same topology into the same type.
+Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
 Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
 
@@ -762,7 +706,7 @@ Also, we used the nearest neighbor algorithm to calculate the distance between c
 
 \subsubsection{Within-OS differences}
 
-We didn't observe any within-OS difference in PreFreeSurfer, however, we
+We did not observe any within-OS difference in PreFreeSurfer, however, we
 identified two FreeSurfer processes leading to within-OS differences due
 to the use of pseudo-random numbers: image registration with
 \emph{mri\_segreg}, and cortical surface curvature
@@ -817,43 +761,43 @@ and Altas Registration), and in image warping with FSL \emph{new\_invwarp} (in B
 and Atlas Registration). Differences were also observed in image mean 
 computations with FSL maths  (in Anatomical Average). 
 
-Results show the variability between processes when 
-the same tool behaves differently in different process instances. For example, 
+The results show two types of differences, between-process and between-subject.
+Between-process differences occur when the same tool behaves differently in different process instances.
+For example, 
 FLIRT tool always produces files without differences in \emph{AAve} sub-pipeline but 
 mostly creates different files in \emph{AAli} sub-pipeline.
-
-Furthermore, different frequencies show the variability between subjects.
-Results show that the same process can be reproducible for some subjects but not for others. 
-Between subject differences can be a result of different subject types. 
-For instance, the subjects contain two T1 images need more calculations 
-to produce an average image between them.
+Also, different frequencies show between-subjects variability.
+Accordingly, the same process can be reproducible for some subjects but not for others. 
 The similar findings in another study~\cite{bowring2019exploring} were reported 
-the effect of subject type on reproducibility.
+the effect of between-subject differences on reproducibility.
+% Between subject differences can be a result of different subject types. 
+% For instance, the subjects contain two T1 images need more calculations 
+% to produce an average image between them.
+
 
 % make figure in two columns use {figure*}
 \begin{figure*}
 \centering
   \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
-  \caption{Heatmap frequency of processes along with the sub-pipelines that introduce 
-           differences among 20 subjects. 
+  \caption{Frequency heatmap of processes in the tools that introduce differences among 20 subjects. 
            Each column represents the pipeline tool, and each row shows the sub-pipeline.
-           Each cell may contain several process instances of a tool in a sub-pipeline.
+           Each cell may contain several instances of the process of a tool in a sub-pipeline.
            Annotations describe the frequency distribution of the instances as ``N [M] x Y" 
-           in which N is the percentage of the process 
-           that creates differences out of all M times that is occurred in the sub-pipeline. 
-           Also, times Y shows the number of instances with the same distribution.
-           For example, the cell of FLIRT tool in sub-pipeline AAve shows 10 process instances  
-           with the frequency of 10 that introduce no differences.
+           in which N is the proportion of the process 
+           that creates differences out of all M times that is occurred. 
+           Also, times Y shows the number of processes with the same distribution.
+           For example, the cell of FLIRT tool in the sub-pipeline AAve shows 10 instances of the process 
+           with the frequency of 11 that introduce no differences.
            The range between red and green colors shows the highest and lowest 
            proportion of occurrences of the processes with differences.
-           Also, grey cells indicate that the pipeline tool is not executed in the sub-pipeline.}
+           Also, grey cells indicate that the tool is not executed in the sub-pipeline.}
   \label{fig:pfs_freq}
 \end{figure*}
 
 
 Figure~\ref{fig:fnirt_result} 
-shows the checkerboard images from the results of ACPC-Alignment in PreFreeSurfer. 
-Each rectangle includes the replaced pixels with different intensity values between images.
+shows checkerboard image from the results of ACPC-Alignment in PreFreeSurfer. 
+Each rectangle includes the replaced voxels with different intensity values between images.
 The misaligned regions visually represent significant differences in the alignment 
 procedure.
 
@@ -865,7 +809,7 @@ procedure.
     \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
     \caption{Differences between FNIRT results of one subject from PreFreeSurfer 
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
-    CentOS7). Sagittal (left) and coronal (right) views of the brain are in dimension of X=130, Y=155, Z=130.
+    CentOS7).
     \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
     {The link} to the animated version of alignment results shows the better visualization of differences.
 } 
@@ -875,8 +819,9 @@ procedure.
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
+We processed 20 subjects using FreeSurfer and 
 Spot tool identified \emph{mris\_make\_surfaces} as the only process in 
-the pipeline that creates differences in 10 subjects among 20 subjects.
+the pipeline that creates differences in 10 subjects.
 This process generates surface files for cortical and white matter surfaces 
 (see~\cite{fischl2012freesurfer} for more detail). 
 Also, FreeSurfer did not introduce any differences in 10 subjects. 
@@ -892,22 +837,13 @@ from 20 subject results of the brain tissue segmentation across OSes.
 This figure shows between-OS differences  
 as a result of the propagation and amplification of differences in FreeSurfer. 
 Differences are mostly localized at the interfaces between tissues.
-In our dataset, we found subjects with the min and max Dice coefficient 
-values of 0.89 and 0.96, respectively.
+In our dataset, we found subjects with min Dice value of 0.89 and max Dice  
+value of 0.96.
 
-Furthermore, Figure~\ref{fig:scatter_plot} plots the Dice coefficients 
-for the 44 segmented regions obtained on the two operating systems.
-High Dice coefficients (more than 0.95) in most of the regions indicate minor differences.
-Dice values can be very low, down to 0.5, in particular in small structures 
-such as the vessels and lateral ventricles.
-
-We formulated the linear regression model for the Dice and region size variables as:
-\[D=1 + T\epsilon ;    T=\frac{-1}{\overline{R}}\]
-It is easier to obtain high overlaps with large regions, 
-while smaller regions are harder to be similarly segmented.
-We obtained the epsilon value of $\approx$ 8.3 voxels ($\approx$ 3mm) which indicate the minimum number
-of voxels in each region that needs to be segmented.
-
+Furthermore, the scatter plots of the Dice coefficients of the 44 segmented regions obtained 
+from two operating systems are shown in Figure~\ref{fig:scatter_plot}.
+This figure shows high Dice coefficients (more than 0.95) in large regions and very low 
+Dice coefficients (below 0.5) in small structures particularly in the vessels and lateral ventricles.
 
 
 \begin{figure}
@@ -918,19 +854,19 @@ of voxels in each region that needs to be segmented.
           20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
           All binarized differences were resampled to the default MNI152 volume template.
           \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
-          {The link} to the animated version of segmentation results of one subject represents the significance of differences.} 
+          {The link} to the animated version of segmentation results of one subject presents more clear illustration of differences.} 
   \label{fig:tissue_class}
 \end{figure}
-
 
 \begin{figure*}
   \centering
     \includegraphics[width=\textwidth]{images/scatter_plot.png} 
     \caption{The scatter plots of the Dice coefficients between segmented regions 
             from 20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
-            The x-axes are the number of voxels in each region.
-            Right plot shows an overview of similarities between all regions and 
-            left plot represents a closer view of differences between 
+            The x-axes are the number of voxels in each region and 
+            y-axes are Dice values that are in different scales in two plots.
+            The right plot shows the similarity between regions larger than $10^4$ voxels. 
+            The left plot represents the differences between 
             regions smaller than $10^4$ voxels.
             The complete table of Dice coefficient values is 
             \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/data/dice_values.csv}
@@ -938,6 +874,13 @@ of voxels in each region that needs to be segmented.
     \label{fig:scatter_plot}
   \end{figure*}
 
+  % We formulated the linear regression model for the Dice and region size variables as:
+  % \[D=1 + T\epsilon ;    T=\frac{-1}{\overline{R}}\]
+  % It is easier to obtain high overlaps with large regions, 
+  % while smaller regions are harder to be similarly segmented.
+  % We obtained the epsilon value of $\approx$ 8.3 voxels ($\approx$ 3mm) which indicate the minimum number
+  % of voxels in each region that needs to be segmented.
+  
 
 \section{Discussion}
 
@@ -950,14 +893,13 @@ We can see that \emph{FLIRT} creates differences in almost all the sub-pipelines
 We monitored the library system calls using \emph{ltrace} to check that registration processes
 use the same libraries. There were no differences in the library dependencies used by 
 the tool in two operating systems, but we found a different number of calls to the \emph{glibc}.
-More investigations need to stabilize registration processes.
 
 In the second experiment, 
 the analyses obtained by the FreeSurfer show substantial between-OS differences.
 These results show the sensitivity of the segmentation process to the 
 size of regions, however, it might be also sensitive to the location and shape of 
 the segmented regions.
-We demonstrate that statically builds of the pipeline would not improve the numerical stability of the pipeline. 
+We demonstrate that static build of the pipeline would not improve the numerical stability of the pipeline. 
 FreeSurfer pipeline propagates and amplifies the numerical differences that are created by the 
 differences in the underlying operating system libraries.
 These results are consistent with the findings in the paper~\cite{Glatard2015}, 
