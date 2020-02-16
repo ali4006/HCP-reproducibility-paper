@@ -58,17 +58,17 @@
 
 \begin{abstract} 
 
-Operating systems and other computational factors are known to have an
-effect on the results produced by neuroimaging pipelines, presumably due to
-the creation, propagation and amplification of numerical errors along data
-analysis pipelines. However, the precise causes of such instabilities and
-the path along which they propagate in the pipelines are unclear, while
-this process could play a major role in the current reproducibility crisis.
-We present a technique to identify the computational processes in a
-pipeline that create numerical differences when executed in different
-computational conditions. Our technique leverages system-call interception to reconstruct
-processing and file graphs without pipeline instrumentation. Applying our tool to
-the structural pre-processing pipelines released by the Human Connectome
+Data analysis pipelines are known to be impacted by operating system
+updates and other infrastructural factors, presumably due to the creation,
+propagation and amplification of numerical errors. However, the precise
+causes of such instabilities and the path along which they propagate in the
+pipelines are unclear, while this process could play a major role in the
+current reproducibility crisis. We present a technique to identify the
+computational processes in a pipeline that create numerical differences
+when executed in different computational conditions. Our technique
+leverages system-call interception to reconstruct processing and file
+graphs without pipeline instrumentation. By applying our tool to the
+structural pre-processing pipelines released by the Human Connectome
 Project, we find that linear and non-linear registration are the cause of
 most numerical instabilities in such pipelines, which confirms previous
 findings. 
@@ -99,7 +99,7 @@ In neuroimaging, our primary application field, data analyses often consist
 of hundreds of computational processes, sometimes coming from multiple
 toolboxes, that are aggregated to perform a specific function. For
 instance, the fMRIprep pipeline~\cite{esteban2019fmriprep} assembles software blocks
-from FSL, AFNI, Freesurfer and ANTs to provide a state-of-the art
+from FSL~\cite{jenkinson2012fsl}, AFNI~\cite{cox2012afni}, Freesurfer~\cite{fischl2012freesurfer} and ANTs~\cite{avants2009advanced} to provide a state-of-the art
 functional MRI processing tool with minimal user input. Another example are the pipelines of the Human
 Connectome Project~\cite{glasser2013} that combine tools from FSL and Freesurfer to pre-process
 structural, functional and diffusion data from their
