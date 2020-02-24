@@ -39,6 +39,7 @@
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{blue}\textbf{From Tristan:}#1\color{black}}
 \newcommand{\english}[1]{\uwave{#1}}
+\newcommand{\toolname}[0]{Spot\xspace}
 
  
 \title{File-based localization of numerical perturbations in data analysis pipelines}
@@ -200,44 +201,21 @@ application to pre-processing pipelines of the HCP project.
 
 \section{Tool description}
 
-Spot identifies processes that create differences from a process graph of the pipeline execution.
-This tool compares file dependencies through all the processes based on the result files in two conditions.
-In this paper, different conditions refer to various operating systems.
-This tool is applicable on the complex pipelines in which tracing a large number of processes is difficult. 
-
-Figure~\ref{fig:overview-tool} shows an overview of our method. For each tested
-condition, Condition 1 and Condition 2, the pipeline is containerized with
-Docker, and its interface is described with
-Boutiques~\cite{glatard2017boutiques}. 
-\reprozip is added to Condition 1 for provenance tracking. 
-This captures process dependencies through system call interceptions, 
-then Spot tool creates related process trees (Figure~\ref{fig:overview-tool} - (1)).
-Different subjects produce different process trees. 
-Hierachical clustering used to group subjects into different types (Figure~\ref{fig:overview-tool} - (2)).
-The rest of the procedure is done separately on each subject type.
-Our tool continues by
-restoring temporary files and ``multi-write" files, i.e., files written
-by more than one process (Figure~\ref{fig:overview-tool} - (3)). 
-To do so, the tool creates a list of processes 
-that introduce intermediary files and replaces their corresponding executables with a wrapper script. 
-The tool re-executes the pipeline in a modified Docker image in Condition 1.
-This copies files in the list to a read-only directory.
-In the next step, the
-processes are labeled from the differences found in their outputs in the
-two tested conditions (Figure~\ref{fig:overview-tool} - (4)). 
-The tool builds the Docker image for Condition 2 by modifying all
-the processes in the pipeline. Then, the modified Docker
-image is executed in Condition 2 and each process is labeled after
-running by comparing the results obtained in Condition 1
-and output files of the process in Condition 2. We label processes in 2
-categories depending on whether they
-create differences (represented in red) or not (green). 
-The tool replaces output file with the same file obtained in Condition 1 
-if the process creates differences.
-Process labelling
-is done through hooks which are defined during the Docker image modifying
-procedure in Condition 2.
-Spot tool is available at https://github.com/big-data-lab-team/repro-tools.
+Figure~\ref{fig:overview-tool} shows an overview of our method. The output
+of 2 computational conditions is compared through 3 main steps. At step 1,
+we build a low-level provenance graph for the processing of each subject in
+Condition 1, where nodes are OS processes created by the application and
+edges are file dependencies. Such provenance graphs reconstruct a model of
+the application workflow, regardless of the original programming language
+and dependencies. They may, however, slightly differ across the processed
+subjects since different execution paths might be followed due to
+variations in the data. To address this issue, we cluster subjects based on
+their provenance graph (step 2), resulting in a reduced set of $k$
+representative provenance graphs. These $k$ graphs and their corresponding
+subjects /TODO: ???/ are then used for process labeling (step 3), where
+Condition 2 is executed step by step, comparing the files produced by each
+process to their counterparts in Condition 1, making sure that temporary
+files and files written by more than a single process are correctly saved.
 
 \begin{figure}
   \centering
@@ -250,67 +228,24 @@ Spot tool is available at https://github.com/big-data-lab-team/repro-tools.
 
 \subsection{Provenance capture and representation}
 
-We use \reprozip 
+We use the \reprozip tool~\cite{rampin2016reprozip}
 to capture: (1) the set of processes created by the
 pipeline, using the \texttt{clone()} or \texttt{fork()} system call, and
 (2) the set of files read, written and executed by each process, including
 temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call and stores it in a SQLite database.
 
-Our tool reconstructs a \emph{process tree} starting from the first process
+\toolname reconstructs a \emph{process tree} starting from the first process
 created by the pipeline and traversing processes through \texttt{clone()}
-and \texttt{fork()} dependencies. Our tool also creates a process \emph{graph} 
-from this tree
-by adding edges corresponding to file dependencies between processes. A
+and \texttt{fork()} dependencies. It also creates a process \emph{graph} 
+from this tree by adding edges corresponding to file dependencies between processes. A
 file dependency is defined between processes A and B if a file written by A
 is read by B. Figure~\ref{fig:simple_script} shows an example of a process
 tree and graph constructed from the example pipeline in
 Listing~\ref{listing:sample-script}.
 
-Different subjects may lead to different process trees, due to
-variations that may be coming from differences in data types or
-cardinality. For instance, some images may have been acquired multiple
-times in some subjects. Some of these differences can be neglected, for
-instance, when a data decompression step is present at the beginning of the
-execution for some subjects only, and other ones cannot, when different
-processing paths are used in different subjects.
-Accordingly, we cluster subjects into different types. 
-
 \begin{listing}
-\begin{minted}[frame=single,
-  framesep=3mm,
-  linenos=false,
-  xleftmargin=0pt,
-  tabsize=4]{bash}
-#!/bin/bash
-
-# This script extracts the brain from an input image,
-# measures the volume of the extracted brain,
-# and creates a binarized brain mask.
-
-if [ $# != 1 ]
-then
-    echo "usage: $0 <inputimage.nii.gz>"
-    exit 1
-fi
-
-# Parse argument, set file names
-input_image=$1
-bet_output=$(basename "${input_image}" \
-                       .nii.gz)_brain.nii.gz
-bet_output_binarized=$(basename "${input_image}" \
-                       .nii.gz)_brain_bin.nii.gz
-
-# Run FSL bet, put result in ${bet_output}
-bet "${input_image}" "${bet_output}" > bet_temp.out
-echo "Voxels / Volume in brain mask:"
-# Run FSL stats on ${bet_output}
-fslstats "${bet_output}" -V
-# Run FSL maths on ${bet_output}
-fslmaths "${bet_output}" "${bet_output_binarized}"
-# Remove temporary file
-\rm bet_temp.out
-\end{minted}
+  \inputminted{bash}{"bin/example.sh"}
   \caption{Example pipeline}
   \label{listing:sample-script}
 \end{listing}
@@ -341,23 +276,24 @@ fslmaths "${bet_output}" "${bet_output_binarized}"
 
 \subsection{Subject clustering}
 
+Different subjects may lead to different provenance graphs, due to
+variations that may be coming from differences in data types or
+cardinality. For instance, some images may have been acquired multiple
+times in some subjects, for noise-reduction purposes. Some of these
+differences can be neglected, for instance, when a data decompression step
+is present at the beginning of the execution for some subjects only, but
+other differences cannot be ignored, for instance when complete different
+processing paths are used in different subjects. 
 
-We cluster subjects into different types to specify how many different 
-process trees are generated. 
-Nodes in the process trees are labeled by the process name.
-The tree edit distance~\cite{zhang1989simple} is used as a similarity measure for 
-representing the distance between labeled trees. 
-Tree edit distance  is defined  
-as the minimum number of edit operations which is needed to transform one tree into 
-the other. Three edit operations are considered: node label modification, 
-node removal, and node insertion. Each operation has an associated cost of 1.
-With this distance, we cluster subjects using agglomerative hierarchical
-clustering as implemented in SciPy~\cite{oliphant2007scipy}.
-As a result, the distance between
-any two subjects in a cluster is lower than a threshold parameter.
-
-We will show that different types of subjects certainly produce different results, 
-while subjects in the same type can be either reproducible or not.
+To reduce the number of provenance graphs to be examined, we cluster
+process trees using agglomerative hierarchical clustering, as implemented
+in SciPy~\cite{oliphant2007scipy}. We use the tree edit
+distance~\cite{zhang1989simple} between process trees, as implemented in
+the zss Python package. This distance is defined as the minimum number of
+edit operations to transform one tree into the other. Three edit operations
+are considered: node label modification, node removal, and node insertion.
+Each operation has an associated cost of 1. 
+//If threshold is 0, why do we even need the edit distance?//
 
 
 \subsection{Graph analysis}
