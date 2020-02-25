@@ -1,0 +1,109 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/data/asalari/ali-tests/nurm-out/16/commands_captured.json", 
+        "conditions": "/data/asalari/ali-tests/nurm-out/16/conditions.txt", 
+        "exclude_items": "/data/asalari/ali-tests/nurm-out/16/exclude_items.txt", 
+        "sqlite_db": "/data/asalari/ali-tests/nurm-out/16/trace.sqlite3", 
+        "subject_name": "140420"
+    }, 
+    "ignored_multi": [
+        231, 
+        232, 
+        234, 
+        390, 
+        400, 
+        1541, 
+        1545, 
+        1559, 
+        1606, 
+        1609, 
+        1963, 
+        1977, 
+        2045, 
+        2051, 
+        2061, 
+        2080, 
+        2102, 
+        2128, 
+        2142, 
+        2210, 
+        2216, 
+        2226, 
+        2245, 
+        2267, 
+        2397, 
+        2400, 
+        2401, 
+        2405, 
+        2406, 
+        2407, 
+        2408, 
+        2409, 
+        2410, 
+        2411, 
+        2412, 
+        2551, 
+        2700, 
+        2842, 
+        2843, 
+        2853, 
+        2854, 
+        2861, 
+        2862, 
+        2880, 
+        2920, 
+        2924, 
+        2928, 
+        2973, 
+        2974, 
+        2976, 
+        2983, 
+        2991, 
+        2992, 
+        2993, 
+        2994, 
+        2995, 
+        2996, 
+        2997, 
+        2998, 
+        3123, 
+        3129, 
+        3154, 
+        3190, 
+        3226, 
+        3242, 
+        3248, 
+        3273, 
+        3309, 
+        3345, 
+        3627, 
+        3635, 
+        3813, 
+        3821
+    ], 
+    "multiWrite_cmd": {}, 
+    "total_commands_multi": {
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-set-structure\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/lh.white.surf.gii\u0000CORTEX_LEFT\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/lh.white.surf.gii"
+            ], 
+            "id": 2884
+        }, 
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-surface-apply-affine\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/lh.white.surf.gii\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/mri/c_ras.mat\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/lh.white.surf.gii\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/lh.white.surf.gii"
+            ], 
+            "id": 2888
+        }, 
+        "mris_make_surfaces\u0000-variablesigma\u00004\u0000-white\u0000NOWRITE\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.deformed\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w\u0000-mgz\u0000-T1\u0000T1w_hires.greynorm\u0000140420\u0000rh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/rh.area.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/rh.curv.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/rh.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/16/exec/exec/140420/T1w/140420/surf/rh.thickness"
+            ], 
+            "id": 2984
+        }
+    }
+}

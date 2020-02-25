@@ -1,0 +1,117 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/data/asalari/ali-tests/nurm-out/2/commands_captured.json", 
+        "conditions": "/data/asalari/ali-tests/nurm-out/2/conditions.txt", 
+        "exclude_items": "/data/asalari/ali-tests/nurm-out/2/exclude_items.txt", 
+        "sqlite_db": "/data/asalari/ali-tests/nurm-out/2/trace.sqlite3", 
+        "subject_name": "102311"
+    }, 
+    "ignored_multi": [
+        231, 
+        232, 
+        234, 
+        390, 
+        400, 
+        1553, 
+        1557, 
+        1571, 
+        1618, 
+        1621, 
+        1975, 
+        1989, 
+        2057, 
+        2063, 
+        2073, 
+        2092, 
+        2114, 
+        2140, 
+        2154, 
+        2222, 
+        2228, 
+        2238, 
+        2257, 
+        2279, 
+        2409, 
+        2412, 
+        2413, 
+        2417, 
+        2418, 
+        2419, 
+        2420, 
+        2421, 
+        2422, 
+        2423, 
+        2424, 
+        2563, 
+        2712, 
+        2854, 
+        2855, 
+        2865, 
+        2873, 
+        2874, 
+        2892, 
+        2932, 
+        2936, 
+        2940, 
+        2985, 
+        2986, 
+        2988, 
+        2995, 
+        3003, 
+        3004, 
+        3005, 
+        3006, 
+        3007, 
+        3008, 
+        3009, 
+        3010, 
+        3135, 
+        3141, 
+        3166, 
+        3202, 
+        3238, 
+        3254, 
+        3260, 
+        3285, 
+        3321, 
+        3357, 
+        3639, 
+        3647, 
+        3825, 
+        3833
+    ], 
+    "multiWrite_cmd": {}, 
+    "total_commands_multi": {
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-set-structure\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/lh.white.surf.gii\u0000CORTEX_LEFT\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/lh.white.surf.gii"
+            ], 
+            "id": 2896
+        }, 
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-surface-apply-affine\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/lh.white.surf.gii\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/mri/c_ras.mat\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/lh.white.surf.gii\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/lh.white.surf.gii"
+            ], 
+            "id": 2900
+        }, 
+        "mris_make_surfaces\u0000-variablesigma\u00004\u0000-white\u0000NOWRITE\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.deformed\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w\u0000-mgz\u0000-T1\u0000T1w_hires.greynorm\u0000102311\u0000rh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.thickness", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.curv.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.area.pial"
+            ], 
+            "id": 2996
+        }, 
+        "mris_make_surfaces\u0000-variablesigma\u00008\u0000-white\u0000NOWRITE\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.deformed\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w\u0000-mgz\u0000-T1\u0000T1w_hires.norm\u0000102311\u0000rh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.thickness", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.curv.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/2/exec/exec/102311/T1w/102311/surf/rh.area.pial"
+            ], 
+            "id": 2866
+        }
+    }
+}

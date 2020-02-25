@@ -1,0 +1,114 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/data/asalari/ali-tests/nurm-out/10/commands_captured.json", 
+        "conditions": "/data/asalari/ali-tests/nurm-out/10/conditions.txt", 
+        "exclude_items": "/data/asalari/ali-tests/nurm-out/10/exclude_items.txt", 
+        "sqlite_db": "/data/asalari/ali-tests/nurm-out/10/trace.sqlite3", 
+        "subject_name": "106521"
+    }, 
+    "ignored_multi": [
+        231, 
+        232, 
+        234, 
+        390, 
+        400, 
+        1517, 
+        1521, 
+        1535, 
+        1582, 
+        1585, 
+        1939, 
+        1953, 
+        2021, 
+        2027, 
+        2037, 
+        2056, 
+        2078, 
+        2104, 
+        2118, 
+        2186, 
+        2192, 
+        2202, 
+        2221, 
+        2243, 
+        2373, 
+        2376, 
+        2377, 
+        2381, 
+        2383, 
+        2384, 
+        2385, 
+        2386, 
+        2387, 
+        2388, 
+        2527, 
+        2676, 
+        2818, 
+        2819, 
+        2830, 
+        2837, 
+        2838, 
+        2856, 
+        2896, 
+        2900, 
+        2904, 
+        2949, 
+        2950, 
+        2952, 
+        2959, 
+        2960, 
+        2967, 
+        2968, 
+        2969, 
+        2970, 
+        2971, 
+        2972, 
+        2973, 
+        2974, 
+        3099, 
+        3105, 
+        3130, 
+        3166, 
+        3202, 
+        3218, 
+        3224, 
+        3249, 
+        3285, 
+        3321, 
+        3603, 
+        3611, 
+        3789, 
+        3797
+    ], 
+    "multiWrite_cmd": {}, 
+    "total_commands_multi": {
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-set-structure\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.white.surf.gii\u0000CORTEX_LEFT\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.white.surf.gii"
+            ], 
+            "id": 2860
+        }, 
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-surface-apply-affine\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.white.surf.gii\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/mri/c_ras.mat\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.white.surf.gii\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.white.surf.gii"
+            ], 
+            "id": 2864
+        }, 
+        "mri_surf2surf\u0000--s\u0000106521\u0000--sval-xyz\u0000white.deformed\u0000--reg\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/mri/transforms/1mm2hires.dat\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/mri/orig.mgz\u0000--tval-xyz\u0000--tval\u0000white\u0000--surfreg\u0000white\u0000--hemi\u0000rh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/rh.white"
+            ], 
+            "id": 2382
+        }, 
+        "mris_make_surfaces\u0000-variablesigma\u00008\u0000-white\u0000NOWRITE\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.deformed\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w\u0000-mgz\u0000-T1\u0000T1w_hires.norm\u0000106521\u0000lh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.curv.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.area.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/10/exec/exec/106521/T1w/106521/surf/lh.thickness"
+            ], 
+            "id": 2829
+        }
+    }
+}
