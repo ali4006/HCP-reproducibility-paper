@@ -203,17 +203,16 @@ application to pre-processing pipelines of the HCP project.
 \section{Tool description}
 
 The steps implemented in \toolname to compare pipeline executions in
-different conditions are outlined in Figure~\ref{fig:overview-tool}. First,
+2 conditions are outlined in Figure~\ref{fig:overview-tool}. First,
 in Condition 1, a directed, rooted, bipartite provenance graph is built for
 each subject, where nodes represent application processes or files, and
-edges represent read or write file accesses (Step 1 in Figure
-Figure~\ref{fig:overview-tool}). \emph{Transient} files are then identified as
+edges represent read or write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). \emph{Transient} files are then identified as
  files that are either deleted during the execution, or modified by
 multiple processes (Step 2). \toolname re-runs the pipeline to save these files
 right after they are produced, resulting in a provenance \emph{DAG}
 (Directed Acyclic Graph) in which file nodes have a single parent (in-degree
 of 1) (Step 3). This DAG is then compared to the one produced from
-Condition 2, in a step-by-step process that prevents the propagation of differences.
+Condition 2, in a step-by-step process that prevents the propagation of differences (step 4).
 \toolname finally produces a labeled graph that identifies the
 non-reproducible processes of the pipeline. 
 
@@ -229,15 +228,16 @@ non-reproducible processes of the pipeline.
   \todo{review and summarize assumptions:
   * No concurrent writes from multiple processes
   * A given process cannot modify the bytes it wrote to a file
+  * Process are command lines
   But we support non-concurrent writes by different processes. This is common in neuroimaging.
   }
 
-\subsection{Recording of provenance graphs}
+\subsection{Recording provenance graphs}
 
 We use the \reprozip tool~\cite{rampin2016reprozip}
 to capture: (1) the set of processes created by the
-pipeline, using the \texttt{clone()} or \texttt{fork()} system call, and
-(2) the set of files read, written and executed by each process, including
+pipeline, and
+(2) the set of files read and written by each process, including
 temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call, with no required instrumentation of the pipeline.
 \toolname then reconstructs a provenance graph by creating process and file
@@ -246,12 +246,12 @@ to file reads and file writes (Figure~\ref{fig:simple_script}).
 
 \todo{Is every process linked to an executable?}
 
-Provenance graphs may be subject-dependent, which justifies iterating
-\toolname on multiple subjects. For instance, data acquisitions may be
+Provenance graphs may be subject-dependent, which justifies the processing
+of multiple subjects. For instance, data acquisitions may be
 repeated a different number of times in each subject, for noise-reduction
 purposes. Some of these differences can be neglected, for instance when a
 data decompression step is present at the beginning of the execution for
-some subjects only, but other differences cannot be ignored, for instance
+some subjects only, but other differences cannot, for instance
 when complete different processing paths are used in different subjects. 
 
 \begin{listing}
@@ -283,62 +283,25 @@ when complete different processing paths are used in different subjects.
   \label{fig:simple_script}
 \end{figure}
 
-\subsection{Capture of transient files}
+\subsection{Capturing transient files}
 
 \toolname captures temporary files in Condition 1 by replacing every
 process P by a wrapper that first calls P and then saves the produced
 temporary files to a read-only directory. This process replacement is done
-without pipeline instrumentation, by pre-pending to the PATH environment
+without pipeline instrumentation, by pre-pending to the \texttt{PATH} environment
 variable a directory containing a wrapper script named as the executable
-called by the process (see Listing~\ref{listing:modify-script}).
-
-% The temporary files that are removed by P 
-% itself won't be saved, but this is not a problem since these files do not play any role in 
-% the subsequent steps of the pipeline. 
-
-\begin{listing}
-  \begin{minted}[frame=single,
-    framesep=3mm,
-    linenos=false,
-    xleftmargin=0pt,
-    tabsize=4]{python}
-  #!/usr/bin/env python
-  import os.path as op
-  import shutil
-  import pipes
-
-  # Run the original executable using the same arguments
-  executed_file = sys.argv[0]
-  exec_proc = op.join('original_scripts', executed_file)
-  exec_argv = " ".join(map(pipes.quote, sys.argv[1:]))
-  exec_cmd = exec_proc + exec_argv
-  subprocess.Popen(exec_cmd, shell=True).communicate()
-  
-  # Load list of captured process to be checked
-  with open('path/to/p_list/', 'r') as p_list:
-      process_list = json.load(p_list)
-
-  if exec_cmd in process_list.keys():
-      # Save output files to read-only directory
-      p_files = process_list[exec_cmd]
-      shutil.copy(p_files, '/read-only/dir')
-  
-  \end{minted}
-    \caption{Wrapper script used to save temporary and modified files.}
-    \label{listing:modify-script}
-  \end{listing}
+called by P.
 
 Files written by multiple processes are disambiguated as follows. For a
  file F written by the processes in \textbf{P} = \{$P_{1}$, \ldots,
  $P_{n}$\}, \toolname first checks that processes in \textbf{P} do not
  write concurrently to F, which would violate our assumptions. Then, it
  replaces every process $P_{i}$ by a \texttt{PATH}-based wrapper that first
- calls $P_{i}$ and then saves F to a read-only directory. In this way, the
- multiple versions of F are preserved for comparison. \toolname finally
+ calls $P_{i}$ and then saves F to a read-only directory. In this way,
+ successive versions of F are preserved for comparison. \toolname finally
  updates the provenance graph accordingly, so that all files in the graph
  have an in-degree of 1. This operation also makes the provenance graph
- acyclic, since we assumed that a process cannot modify a file once it was
- written \todo{check/prove that}.
+ acyclic, since we assumed that a process can only write a single time to a file.
 
 As an example, in the sample pipeline in
 Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} writes a
@@ -389,25 +352,22 @@ Listing~\ref{listing:sample-script} that should be captured.}
 \label{listing:json_process}
 \end{listing}
 
-\subsection{Process labelling} 
+\subsection{Labelling processes} 
 
 Once all the files have been captured in Condition 1, including transient
-files, \toolname labels pipeline processes through a step-by-step execution
+ones, \toolname labels pipeline processes through a step-by-step execution
 in Condition 2. Each process in Condition 2 is run and its output files are
 compared to the ones produced in Condition 1. If no differences are found,
 the process is marked as reproducible. Otherwise, the process is marked as
-irrreproducible and the output files produced in Condition 1 are copied to
+non-reproducible and the output files produced in Condition 1 are copied to
 Condition 2, to ensure that differences do not propagate further in the
 pipeline. Processes are instrumented transparently, through a modification
-of the \texttt{PATH} variable similar to the one described previously. 
-
-By default, differences in output files are identified by comparing file
+of the \texttt{PATH} variable similar to the one described previously. By
+default, differences in output files are identified by comparing file
 checksums. Other comparison functions can also be defined for specific file
 types, for instance to ignore sections of the file containing timestamps or
-other execution-specific information.
-
-Finally, \toolname creates a labeled provenance graph, 
-highlighting non-reproducible processes.
+other execution-specific information. Finally, \toolname creates a labeled
+provenance graph, highlighting non-reproducible processes.
 
 \begin{figure}
   \centering
