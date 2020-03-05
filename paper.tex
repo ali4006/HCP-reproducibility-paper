@@ -198,8 +198,6 @@ application to pre-processing pipelines of the HCP project.
 % the processes in the pipeline that create numerical differences across different conditions. 
 % Furthermore, we can stabilize the identified processes in the next steps.
 
-
-
 \section{Tool description}
 
 The steps implemented in \toolname to compare pipeline executions in
@@ -242,7 +240,7 @@ temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call, with no required instrumentation of the pipeline.
 \toolname then reconstructs a provenance graph by creating process and file
 nodes from the \reprozip trace, and by adding directed edges corresponding
-to file reads and file writes (Figure~\ref{fig:simple_script}). 
+to file reads and file writes (Figure~\ref{fig:simple_script}-left). 
 
 \todo{Is every process linked to an executable?}
 
@@ -262,23 +260,23 @@ when complete different processing paths are used in different subjects.
 
 \begin{figure}
 \centering
-  \includegraphics[width=0.3\columnwidth]{images/simple_graph}
-  \caption{Process graph
+  \includegraphics[width=1\columnwidth]{images/provenance-graphs}
+  \caption{Provenance graphs
   constructed from the example pipeline in
   Listing~\ref{listing:sample-script}.
-  Processes that read or write
-  temporary files are 
-  represented with squares. Plain edges 
+  Nodes are devided into two sets including processes that are shaped 
+  in the circles and files that are shaped in the boxes.
+  Transient files are represented with grey color boxes. 
+  Plain edges 
   represent the process tree (\texttt{fork()} or \texttt{clone()} 
-  system calls). Dashed edges represent file dependencies: temporary 
-  files are in purple and result files are in black.
-  Every node in the tree is labeled using (1) a process id created by our
-  reconstruction, (2) the name of the executable run by the process.
+  system calls). Dashed edges represent file dependencies.
+  Every node in the graph is labeled using (1) a process id created by our
+  reconstruction, (2) the name of the executable run by the process or the file name.
   Process 0 is the initial call to the \texttt{sh} interpreter, and
-  processes 1, 3 and 4 are the calls to FSL bet, stats and maths made in
-  Listing~\ref{listing:sample-script}. Process 2 is forked by process 1: it
-  was captured by \reprozip while it did not appear in
-  Listing~\ref{listing:sample-script}. \todo{Tristan: check that, this is not a bipartite graph now}. 
+  the rest of processes are the calls to FSL robustfov, bet, stats and maths made in
+  Listing~\ref{listing:sample-script}. Processes 75 and 149 are forked by processes 4 and 78, respectively: 
+  they were captured by \reprozip while they did not appear in
+  Listing~\ref{listing:sample-script}.  
 }
   \label{fig:simple_script}
 \end{figure}
@@ -300,15 +298,15 @@ Files written by multiple processes are disambiguated as follows. For a
  calls $P_{i}$ and then saves F to a read-only directory. In this way,
  successive versions of F are preserved for comparison. \toolname finally
  updates the provenance graph accordingly, so that all files in the graph
- have an in-degree of 1. This operation also makes the provenance graph
+ have an in-degree of 1 (Figure~\ref{fig:simple_script}-right). This operation also makes the provenance graph
  acyclic, since we assumed that a process can only write a single time to a file.
 
 As an example, in the sample pipeline in
-Listing~\ref{listing:sample-script}, process \texttt{2\#bet2} writes a
-temporary file. Also, file \emph{T1w\_brain\_bin.nii.gz} is first written
-by \texttt{2\#bet2} and then overwritten by process \texttt{3\#fslmaths}
-\todo{it's not the case, check}. The complete list of the processes that
-write intermediary files is captured in Listing~\ref{listing:json_process}.
+Listing~\ref{listing:sample-script}, process \texttt{3\#robustfov} writes a
+temporary file. Also, file \emph{T1w\_brain.nii.gz} is first written
+by \texttt{75\#bet2} and then overwritten by process \texttt{149\#bet2}. 
+The complete list of the processes that
+write transient files is captured in Listing~\ref{listing:json_process}.
 Using this list, we modify processes in Condition 1 and then re-execute
 pipeline to save them in a backup folder. 
 
@@ -320,35 +318,35 @@ pipeline to save them in a backup folder.
     tabsize=4]{JSON}
 {
   "multi_write_process": {
-    "fslmaths\00T1w_brain.nii.gz\00T1w_brain_bin.nii.gz":
+    "bet2\00T1w\00T1w_brain":
     {
       "files":[
-        "/cond1/subj1/T1w_brain_bin.nii.gz"
-      ],
-      "pid": 78
-    },
-    "bet2\00/cond1/subj1/T1w.nii.gz\00T1w_brain.nii.gz":
-    {
-      "files":[
-        "/cond1/subj1/T1w_brain_bin.nii.gz"
+        "/cond1/subj1/T1w_brain.nii.gz"
       ],
       "pid": 75
+    },
+    "bet2\00T1w_roi\00T1w_brain":
+    {
+      "files":[
+        "/cond1/subj1/T1w_brain.nii.gz"
+      ],
+      "pid": 149
     }
   },
   "temp_process": {
-    "bet2\00/cond1/subj1/T1w.nii.gz\00T1w_brain.nii.gz": 
+    "robustfov\00-i\00T1w.nii.gz\00-r\00T1w_roi.nii.gz": 
     {
       "files": [
-        "/cond1/subj1/temp.tmp"
+        "/cond1/subj1/T1w_roi.nii.gz"
       ],
-      "pid": 75
+      "pid": 3
     } 
   } 
 }
 
 \end{minted}
-\caption{List of process and their files from the example pipeline in 
-Listing~\ref{listing:sample-script} that should be captured.}
+\caption{List of processes and transient files from the example pipeline in 
+Listing~\ref{listing:sample-script}.}
 \label{listing:json_process}
 \end{listing}
 
@@ -369,26 +367,26 @@ types, for instance to ignore sections of the file containing timestamps or
 other execution-specific information. Finally, \toolname creates a labeled
 provenance graph, highlighting non-reproducible processes.
 
-\begin{figure}
+\begin{figure*}
   \centering
-  \includegraphics[width=\columnwidth]{images/iterative_modif}
-  \caption{Illustration of the labelling approach. Non-reproducible processes are shown in red. \todo{update with bi-partite graph}}
+  \includegraphics[width=.8\textwidth]{images/labelling-process}
+  \caption{Illustration of the labelling approach. Non-reproducible processes are shown in red.}
   \label{fig:iterations}
-\end{figure}
+\end{figure*}
 
 Figure~\ref{fig:iterations} illustrates our incremental labelling 
 process for the example in Figure~\ref{fig:simple_script}. 
-At step one, process \texttt{1\#bet} is executed and then labeled 
+At step one, process \texttt{3\#robustfov} is executed and then labeled 
 as reproducible (green) as it produced files without differences.
-At step 2, \texttt{2\#bet2} 
-is labeled as non-reproducible (red) as it produced files with differences 
-from files without differences. Therefore, the files produced by \texttt{2\#bet2} in  
-Condition 2 are replaced with the files produced by \texttt{2\#bet2} in 
+At step 2, \texttt{75\#bet2} 
+is also labeled as reproducible as it produced files without differences. 
+At step 3 \texttt{149\#bet2} is labeled as non-reproducible (red) as it produced files with differences 
+from files without differences. Therefore, the files produced by \texttt{149\#bet2} in  
+Condition 2 are replaced with the files produced by \texttt{149\#bet2} in 
 Condition 1.
-At step 3, \texttt{3\#fslstats} is labeled as 
-reproducible as it writes files without differences.
-At step 4, \texttt{4\#fslmaths} is labeled as non-reproducible 
-as the last process of the pipeline.
+At step 4, \texttt{152\#fslmaths} is labeled as non-reproducible as it writes files with differences.
+At step 5, \texttt{153\#fslstats} is labeled as 
+reproducible as the last process of the pipeline.
 
 \section{Experiments}
 

@@ -1,0 +1,30 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/commands_captured.json", 
+        "conditions": "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/conditions.txt", 
+        "exclude_items": "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/exclude_items.txt", 
+        "sqlite_db": "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/trace.sqlite3", 
+        "subject_name": "subject1"
+    }, 
+    "ignored_multi": [
+        75
+    ], 
+    "multiWrite_cmd": {},
+    "total_commands": {
+        "/usr/local/src/fsl/bin/fslmaths\u0000T1w_brain\u0000-bin\u0000T1w_brain_bin\u0000": {
+            "files": [
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain_bin.nii.gz"
+            ],
+            "id": 152
+        }
+    },
+    "total_commands_multi": {
+        "/usr/local/src/fsl/bin/bet2\u0000T1w_roi\u0000T1w_brain\u0000": {
+            "files": [
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain.nii.gz"
+            ],
+            "id": 149
+        }
+    }
+}
