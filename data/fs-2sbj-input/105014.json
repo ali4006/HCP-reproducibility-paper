@@ -1,0 +1,112 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/data/asalari/ali-tests/nurm-out/5/commands_captured.json", 
+        "conditions": "/data/asalari/ali-tests/nurm-out/5/conditions.txt", 
+        "exclude_items": "/data/asalari/ali-tests/nurm-out/5/exclude_items.txt", 
+        "sqlite_db": "/data/asalari/ali-tests/nurm-out/5/trace.sqlite3", 
+        "subject_name": "105014"
+    }, 
+    "ignored_multi": [
+        231, 
+        232, 
+        234, 
+        390, 
+        400, 
+        1541, 
+        1545, 
+        1559, 
+        1606, 
+        1609, 
+        1963, 
+        1977, 
+        2045, 
+        2051, 
+        2061, 
+        2080, 
+        2102, 
+        2128, 
+        2142, 
+        2210, 
+        2216, 
+        2226, 
+        2245, 
+        2267, 
+        2397, 
+        2400, 
+        2401, 
+        2405, 
+        2406, 
+        2407, 
+        2408, 
+        2409, 
+        2410, 
+        2411, 
+        2412, 
+        2551, 
+        2700, 
+        2842, 
+        2843, 
+        2853, 
+        2854, 
+        2861, 
+        2862, 
+        2880, 
+        2920, 
+        2924, 
+        2928, 
+        2973, 
+        2974, 
+        2976, 
+        2983, 
+        2984, 
+        2991, 
+        2992, 
+        2993, 
+        2994, 
+        2995, 
+        2996, 
+        2997, 
+        2998, 
+        3123, 
+        3129, 
+        3154, 
+        3190, 
+        3226, 
+        3242, 
+        3248, 
+        3273, 
+        3309, 
+        3345, 
+        3627, 
+        3635, 
+        3813, 
+        3821
+    ], 
+    "multiWrite_cmd": {}, 
+    "total_commands": {
+        "mris_make_surfaces\u0000-first_wm_peak\u0000-whiteonly\u0000-noaparc\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.hires\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w\u0000-T1\u0000T1w_hires.masked.norm\u0000-orig_white\u0000white.hires\u0000-output\u0000.deformed\u0000-w\u00000\u0000105014\u0000lh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.deformed", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/label/lh.cortex.deformed.label", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.curv.deformed", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.area.deformed"
+            ], 
+            "id": 2333
+        }
+    }, 
+    "total_commands_multi": {
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-set-structure\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.surf.gii\u0000CORTEX_LEFT\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.surf.gii"
+            ], 
+            "id": 2884
+        }, 
+        "/usr/local/src/tools/workbench/bin_rh_linux64/../exe_rh_linux64/wb_command\u0000-surface-apply-affine\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.surf.gii\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/mri/c_ras.mat\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.surf.gii\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/5/exec/exec/105014/T1w/105014/surf/lh.white.surf.gii"
+            ], 
+            "id": 2888
+        }
+    }
+}

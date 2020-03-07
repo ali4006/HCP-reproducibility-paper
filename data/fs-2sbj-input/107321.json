@@ -1,0 +1,66 @@
+{
+    "certain_cmd": {}, 
+    "execution_info": {
+        "captured_list": "/data/asalari/ali-tests/nurm-out/11/commands_captured.json", 
+        "conditions": "/data/asalari/ali-tests/nurm-out/11/conditions.txt", 
+        "exclude_items": "/data/asalari/ali-tests/nurm-out/11/exclude_items.txt", 
+        "sqlite_db": "/data/asalari/ali-tests/nurm-out/11/trace.sqlite3", 
+        "subject_name": "107321"
+    }, 
+    "ignored_multi": [
+        231, 
+        232, 
+        234, 
+        390, 
+        400, 
+        1805, 
+        1809, 
+        1823, 
+        1870, 
+        1873, 
+        2227, 
+        2241, 
+        2309, 
+        2315, 
+        2325, 
+        2344, 
+        2366, 
+        2392, 
+        2406, 
+        2474, 
+        2480, 
+        2490, 
+        2509, 
+        2531, 
+        2661, 
+        2664, 
+        2665, 
+        2669, 
+        2670, 
+        2671, 
+        2672, 
+        2673, 
+        2674, 
+        2675, 
+        2676, 
+        2815, 
+        2964, 
+        3106, 
+        3107, 
+        3118, 
+        3125, 
+        3126
+    ], 
+    "multiWrite_cmd": {}, 
+    "total_commands_multi": {
+        "mris_make_surfaces\u0000-variablesigma\u00008\u0000-white\u0000NOWRITE\u0000-aseg\u0000aseg.hires\u0000-orig\u0000white.deformed\u0000-filled\u0000filled.hires\u0000-wm\u0000wm.hires\u0000-sdir\u0000/data/asalari/ali-tests/PFS_Centos6_Traced/11/exec/exec/107321/T1w\u0000-mgz\u0000-T1\u0000T1w_hires.norm\u0000107321\u0000lh\u0000": {
+            "files": [
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/11/exec/exec/107321/T1w/107321/surf/lh.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/11/exec/exec/107321/T1w/107321/surf/lh.area.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/11/exec/exec/107321/T1w/107321/surf/lh.curv.pial", 
+                "/data/asalari/ali-tests/PFS_Centos6_Traced/11/exec/exec/107321/T1w/107321/surf/lh.thickness"
+            ], 
+            "id": 3117
+        }
+    }
+}
