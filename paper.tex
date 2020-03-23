@@ -197,42 +197,46 @@ application to pre-processing pipelines of the HCP project.
 % the numerical reproducibility measurement tool named \emph{Spot} to identify 
 % the processes in the pipeline that create numerical differences across different conditions. 
 % Furthermore, we can stabilize the identified processes in the next steps.
+\todo{explain creation vs propagation}
+\todo{define pipeline}
 
 \section{Tool description}
 
-The steps implemented in \toolname to compare pipeline executions in
-2 conditions are outlined in Figure~\ref{fig:overview-tool}. First,
-in Condition 1, a directed, rooted, bipartite provenance graph is built for
-each subject, where nodes represent application processes or files, and
-edges represent read or write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). \emph{Transient} files are then identified as
+\toolname identifies the processes in a pipeline that produce different results in two different conditions.  
+In Condition 1, a directed, rooted, bipartite provenance graph is recorded for
+each subject, where nodes represent application processes and files, and
+edges represent read and write file accesses (Step 1 in Figure~\ref{fig:overview-tool}).
+\emph{Transient} files are then identified as
  files that are either deleted during the execution, or modified by
 multiple processes (Step 2). \toolname re-runs the pipeline to save these files
 right after they are produced, resulting in a provenance \emph{DAG}
 (Directed Acyclic Graph) in which file nodes have a single parent (in-degree
 of 1) (Step 3). This DAG is then compared to the one produced from
-Condition 2, in a step-by-step process that prevents the propagation of differences (step 4).
+Condition 2, in a step-by-step execution to prevent the propagation of differences (step 4).
 \toolname finally produces a labeled graph that identifies the
 non-reproducible processes of the pipeline. 
+
+\toolname makes the following assumptions on the pipeline, meant to ensure that 
+a file can be unambiguously associated with the process that created it:
+\begin{enumerate}
+  \item Files are not written concurrently by different processes, although sequential writes by multiple processes are supported;
+  \item In case a process writes multiple versions of the same file, only a single version is made available to other processes.
+\end{enumerate} 
+In addition, \toolname also requires that processes are associated to a
+command line (executable and arguments), to facilitate process instrumentation.
+
+\tristan{Ali: please review these assumptions and check if any other one is required}
 
 \begin{figure*}
   \centering
     \includegraphics[width=.8\textwidth]{images/spot-diagram}
-    \caption{An overview of Spot tool in four steps.
-    (\href{https://docs.google.com/drawings/d/1OB3sB8kkK17Q516-TcmXKh3TwXSLDToJB11IVfUH5AU/edit?usp=sharing}{Source})}
+    \caption{\toolname overview.}
     \label{fig:overview-tool}
   \end{figure*}
 
-
-  \todo{review and summarize assumptions:
-  * No concurrent writes from multiple processes
-  * A given process cannot modify the bytes it wrote to a file
-  * Process are command lines
-  But we support non-concurrent writes by different processes. This is common in neuroimaging.
-  }
-
 \subsection{Recording provenance graphs}
 
-We use the \reprozip tool~\cite{rampin2016reprozip}
+\toolname uses the \reprozip tool~\cite{rampin2016reprozip}
 to capture: (1) the set of processes created by the
 pipeline, and
 (2) the set of files read and written by each process, including
@@ -240,9 +244,10 @@ temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call, with no required instrumentation of the pipeline.
 \toolname then reconstructs a provenance graph by creating process and file
 nodes from the \reprozip trace, and by adding directed edges corresponding
-to file reads and file writes (Figure~\ref{fig:simple_script}-left). 
-
-\todo{Is every process linked to an executable?}
+to file reads and file writes (Figure~\ref{fig:simple_script}-left). \tristan{the new example is 
+confusing: it has too many processes and its purpose is confusing. This should be simplified. 
+See suggestion in example.sh: it has only a few processes, and it has a temporary and a multiple-write file. 
+If you agree that this example is enough, could you update the figure?}
 
 Provenance graphs may be subject-dependent, which justifies the processing
 of multiple subjects. For instance, data acquisitions may be
@@ -264,12 +269,11 @@ when complete different processing paths are used in different subjects.
   \caption{Provenance graphs
   constructed from the example pipeline in
   Listing~\ref{listing:sample-script}.
-  Nodes are devided into two sets including processes that are shaped 
-  in the circles and files that are shaped in the boxes.
-  Transient files are represented with grey color boxes. 
+  Processes are represented with circles and files with rectangles.
+  Transient files are shaded in gray. 
   Plain edges 
   represent the process tree (\texttt{fork()} or \texttt{clone()} 
-  system calls). Dashed edges represent file dependencies.
+  system calls) \tristan{Does spot make any use of the process tree at any stage? If not, I think we may want to remove these edges.}. Dashed edges represent file dependencies.
   Every node in the graph is labeled using (1) a process id created by our
   reconstruction, (2) the name of the executable run by the process or the file name.
   Process 0 is the initial call to the \texttt{sh} interpreter, and
@@ -285,9 +289,9 @@ when complete different processing paths are used in different subjects.
 
 \toolname captures temporary files in Condition 1 by replacing every
 process P by a wrapper that first calls P and then saves the produced
-temporary files to a read-only directory. This process replacement is done
-without pipeline instrumentation, by pre-pending to the \texttt{PATH} environment
-variable a directory containing a wrapper script named as the executable
+temporary files to a read-only directory. This process replacement does not require 
+modifying the pipeline: it only pre-pends to the \texttt{PATH} environment
+variable a directory containing a wrapper script named after the executable
 called by P.
 
 Files written by multiple processes are disambiguated as follows. For a
@@ -299,72 +303,28 @@ Files written by multiple processes are disambiguated as follows. For a
  successive versions of F are preserved for comparison. \toolname finally
  updates the provenance graph accordingly, so that all files in the graph
  have an in-degree of 1 (Figure~\ref{fig:simple_script}-right). This operation also makes the provenance graph
- acyclic, since we assumed that a process can only write a single time to a file.
+ acyclic, since we assumed that a process could only release a single version of a file.
 
 As an example, in the sample pipeline in
 Listing~\ref{listing:sample-script}, process \texttt{3\#robustfov} writes a
 temporary file. Also, file \emph{T1w\_brain.nii.gz} is first written
 by \texttt{75\#bet2} and then overwritten by process \texttt{149\#bet2}. 
-The complete list of the processes that
-write transient files is captured in Listing~\ref{listing:json_process}.
-Using this list, we modify processes in Condition 1 and then re-execute
-pipeline to save them in a backup folder. 
-
-\begin{listing}
-  \begin{minted}[frame=single,
-    framesep=3mm,
-    linenos=false,
-    xleftmargin=0pt,
-    tabsize=4]{JSON}
-{
-  "multi_write_process": {
-    "bet2\00T1w\00T1w_brain":
-    {
-      "files":[
-        "/cond1/subj1/T1w_brain.nii.gz"
-      ],
-      "pid": 75
-    },
-    "bet2\00T1w_roi\00T1w_brain":
-    {
-      "files":[
-        "/cond1/subj1/T1w_brain.nii.gz"
-      ],
-      "pid": 149
-    }
-  },
-  "temp_process": {
-    "robustfov\00-i\00T1w.nii.gz\00-r\00T1w_roi.nii.gz": 
-    {
-      "files": [
-        "/cond1/subj1/T1w_roi.nii.gz"
-      ],
-      "pid": 3
-    } 
-  } 
-}
-
-\end{minted}
-\caption{List of processes and transient files from the example pipeline in 
-Listing~\ref{listing:sample-script}.}
-\label{listing:json_process}
-\end{listing}
 
 \subsection{Labelling processes} 
 
-Once all the files have been captured in Condition 1, including transient
-ones, \toolname labels pipeline processes through a step-by-step execution
-in Condition 2. Each process in Condition 2 is run and its output files are
-compared to the ones produced in Condition 1. If no differences are found,
-the process is marked as reproducible. Otherwise, the process is marked as
-non-reproducible and the output files produced in Condition 1 are copied to
-Condition 2, to ensure that differences do not propagate further in the
-pipeline. Processes are instrumented transparently, through a modification
-of the \texttt{PATH} variable similar to the one described previously. By
-default, differences in output files are identified by comparing file
-checksums. Other comparison functions can also be defined for specific file
-types, for instance to ignore sections of the file containing timestamps or
-other execution-specific information. Finally, \toolname creates a labeled
+Once transient files are captured, \toolname labels pipeline processes
+through a step-by-step execution in Condition 2. Each process in Condition
+2 is run and its output files are compared to the ones produced in
+Condition 1. If no differences are found, the process is marked as
+reproducible. Otherwise, the process is marked as non-reproducible and the
+output files produced in Condition 1 are copied to Condition 2, to ensure
+that differences do not propagate further in the pipeline. Processes are
+instrumented transparently, through a modification of the \texttt{PATH}
+variable similar to the one described previously. By default, differences
+in output files are identified by comparing file checksums. Other
+comparison functions can also be defined for specific file types, for
+instance to ignore sections of the file containing timestamps or other
+execution-specific information. Finally, \toolname creates a labeled
 provenance graph, highlighting non-reproducible processes.
 
 \begin{figure*}
@@ -696,6 +656,8 @@ Dice coefficients (below 0.5) in small structures particularly in the vessels an
   
 
 \section{Discussion}
+
+* granularity is that of processes, no in-memory checks.
 
 Method:
 * we assume no concurrent file accesses.

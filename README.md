@@ -13,6 +13,10 @@ authors should be amended.
 
 Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a comment}```.
 
+## Figure sources
+
+* [Figure 1](https://docs.google.com/drawings/d/1OB3sB8kkK17Q516-TcmXKh3TwXSLDToJB11IVfUH5AU/edit?usp=sharing)
+
 ## How to generate the pdf
 
 (You may edit ```paper.tex``` without generating the pdf if you don't manage to).
