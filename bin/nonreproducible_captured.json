@@ -11,20 +11,13 @@
         75
     ], 
     "multiWrite_cmd": {},
-    "total_commands": {
-        "/usr/local/src/fsl/bin/fslmaths\u0000T1w_brain\u0000-bin\u0000T1w_brain_bin\u0000": {
-            "files": [
-                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain_bin.nii.gz"
-            ],
-            "id": 152
-        }
-    },
+    "total_commands": {},
     "total_commands_multi": {
-        "/usr/local/src/fsl/bin/bet2\u0000T1w_roi\u0000T1w_brain\u0000": {
+        "/usr/local/src/fsl/bin/bet2\u0000T1w\u0000output\u0000": {
             "files": [
-                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain.nii.gz"
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/output.nii.gz"
             ],
-            "id": 149
+            "id": 73
         }
     }
 }
