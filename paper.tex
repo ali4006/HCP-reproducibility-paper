@@ -221,11 +221,10 @@ a file can be unambiguously associated with the process that created it:
 \begin{enumerate}
   \item Files are not written concurrently by different processes, although sequential writes by multiple processes are supported;
   \item In case a process writes multiple versions of the same file, only a single version is made available to other processes.
+  \item Temporary files are not removed by the processes that create them.
 \end{enumerate} 
 In addition, \toolname also requires that processes are associated to a
 command line (executable and arguments), to facilitate process instrumentation.
-
-\tristan{Ali: please review these assumptions and check if any other one is required}
 
 \begin{figure*}
   \centering
@@ -244,10 +243,7 @@ temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call, with no required instrumentation of the pipeline.
 \toolname then reconstructs a provenance graph by creating process and file
 nodes from the \reprozip trace, and by adding directed edges corresponding
-to file reads and file writes (Figure~\ref{fig:simple_script}-left). \tristan{the new example is 
-confusing: it has too many processes and its purpose is confusing. This should be simplified. 
-See suggestion in example.sh: it has only a few processes, and it has a temporary and a multiple-write file. 
-If you agree that this example is enough, could you update the figure?}
+to file reads and file writes (Figure~\ref{fig:simple_script}-left).
 
 Provenance graphs may be subject-dependent, which justifies the processing
 of multiple subjects. For instance, data acquisitions may be
@@ -265,7 +261,7 @@ when complete different processing paths are used in different subjects.
 
 \begin{figure}
 \centering
-  \includegraphics[width=1\columnwidth]{images/provenance-graphs}
+  \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
   \caption{Provenance graphs
   constructed from the example pipeline in
   Listing~\ref{listing:sample-script}.
@@ -273,13 +269,18 @@ when complete different processing paths are used in different subjects.
   Transient files are shaded in gray. 
   Plain edges 
   represent the process tree (\texttt{fork()} or \texttt{clone()} 
-  system calls) \tristan{Does spot make any use of the process tree at any stage? If not, I think we may want to remove these edges.}. Dashed edges represent file dependencies.
+  system calls) 
+  \tristan{Does spot make any use of the process tree at any stage? If not, 
+  I think we may want to remove these edges. 
+  Ali: Yes, it uses process tree structure to do some tree operations like search, filter, or remove.
+  Also using the process tree we do clustering later}. 
+  Dashed edges represent file dependencies.
   Every node in the graph is labeled using (1) a process id created by our
   reconstruction, (2) the name of the executable run by the process or the file name.
   Process 0 is the initial call to the \texttt{sh} interpreter, and
-  the rest of processes are the calls to FSL robustfov, bet, stats and maths made in
-  Listing~\ref{listing:sample-script}. Processes 75 and 149 are forked by processes 4 and 78, respectively: 
-  they were captured by \reprozip while they did not appear in
+  the rest of processes are the calls to FSL bet, stats and maths made in
+  Listing~\ref{listing:sample-script}. Process 73 is forked by process 2: 
+  it was captured by \reprozip while it did not appear in
   Listing~\ref{listing:sample-script}.  
 }
   \label{fig:simple_script}
@@ -306,9 +307,8 @@ Files written by multiple processes are disambiguated as follows. For a
  acyclic, since we assumed that a process could only release a single version of a file.
 
 As an example, in the sample pipeline in
-Listing~\ref{listing:sample-script}, process \texttt{3\#robustfov} writes a
-temporary file. Also, file \emph{T1w\_brain.nii.gz} is first written
-by \texttt{75\#bet2} and then overwritten by process \texttt{149\#bet2}. 
+Listing~\ref{listing:sample-script}, file \emph{output.nii.gz} is first written
+by \texttt{73\#bet2} and then overwritten by process \texttt{75\#fslmaths} as a temporary file. 
 
 \subsection{Labelling processes} 
 
@@ -327,25 +327,23 @@ instance to ignore sections of the file containing timestamps or other
 execution-specific information. Finally, \toolname creates a labeled
 provenance graph, highlighting non-reproducible processes.
 
-\begin{figure*}
+\begin{figure}
   \centering
-  \includegraphics[width=.8\textwidth]{images/labelling-process}
+  \includegraphics[width=.8\columnwidth]{images/labelling-process}
   \caption{Illustration of the labelling approach. Non-reproducible processes are shown in red.}
   \label{fig:iterations}
-\end{figure*}
+\end{figure}
 
 Figure~\ref{fig:iterations} illustrates our incremental labelling 
 process for the example in Figure~\ref{fig:simple_script}. 
-At step one, process \texttt{3\#robustfov} is executed and then labeled 
-as reproducible (green) as it produced files without differences.
-At step 2, \texttt{75\#bet2} 
-is also labeled as reproducible as it produced files without differences. 
-At step 3 \texttt{149\#bet2} is labeled as non-reproducible (red) as it produced files with differences 
-from files without differences. Therefore, the files produced by \texttt{149\#bet2} in  
-Condition 2 are replaced with the files produced by \texttt{149\#bet2} in 
+At step one, process \texttt{73\#bet2} is labeled as non-reproducible (red) 
+as it produced files with differences 
+from files without differences. Therefore, the files produced by \texttt{73\#bet2} in  
+Condition 2 are replaced with the files produced by \texttt{73\#bet2} in 
 Condition 1.
-At step 4, \texttt{152\#fslmaths} is labeled as non-reproducible as it writes files with differences.
-At step 5, \texttt{153\#fslstats} is labeled as 
+At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
+as reproducible (green) as it produced files without differences.
+At step 3, \texttt{76\#fslstats} is also labeled as 
 reproducible as the last process of the pipeline.
 
 \section{Experiments}
