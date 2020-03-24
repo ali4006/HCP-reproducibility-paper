@@ -3,25 +3,25 @@
         "subject_name": "subject1"
     }, 
     "total_multi_write_proc": {
-        "/usr/local/src/fsl/bin/bet2\u0000T1w\u0000T1w_brain\u0000": {
+        "/usr/local/src/fsl/bin/bet2\u0000T1w\u0000output\u0000": {
             "files": [
-                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain.nii.gz"
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/output.nii.gz"
+            ], 
+            "id": 73
+        }, 
+        "/usr/local/src/fsl/bin/fslmaths\u0000output.nii.gz\u0000-bin\u0000output.nii.gz\u0000": {
+            "files": [
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/output.nii.gz"
             ], 
             "id": 75
-        }, 
-        "/usr/local/src/fsl/bin/bet2\u0000T1w_roi\u0000T1w_brain\u0000": {
-            "files": [
-                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_brain.nii.gz"
-            ], 
-            "id": 149
         }
     }, 
     "total_temp_proc": {
-        "robustfov\u0000-i\u0000T1w.nii.gz\u0000-r\u0000T1w_roi.nii.gz\u0000": {
+        "/usr/local/src/fsl/bin/bet2\u0000T1w\u0000output\u0000": {
             "files": [
-                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/T1w_roi.nii.gz"
-            ], 
-            "id": 3
+                "/home/Ali/Desktop/git_repo/repo/repro-tools/reprotools/test/peds_test_data/prefreesurfer/bin/centos7/subject1/output.nii.gz"
+            ],
+            "id": 73
         }
     }
 }
