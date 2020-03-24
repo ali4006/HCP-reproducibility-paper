@@ -29,6 +29,20 @@
 \usepackage{amsmath}
 \usepackage{ulem}
 \usepackage{pifont}
+
+\hypersetup{
+colorlinks=true,% hyperlinks will be coloured
+linkcolor=blue,% hyperlink text will be blue
+linkbordercolor=blue,% hyperlink border will be blue
+}
+\makeatletter
+\Hy@AtBeginDocument{%
+  \def\@pdfborder{0 0 1}% Overrides border definition set with colorlinks=true
+  \def\@pdfborderstyle{/S/U/W 1}% Overrides border style set with colorlinks=true
+                                % Hyperlink border style will be underline of width 1pt
+}
+\makeatother
+
 \DeclareMathOperator*{\argmin}{argmin}
 
 
@@ -40,7 +54,6 @@
 \newcommand{\tristan}[1]{\color{blue}\textbf{From Tristan:}#1\color{black}}
 \newcommand{\english}[1]{\uwave{#1}}
 \newcommand{\toolname}[0]{Spot\xspace}
-
  
 \title{File-based localization of numerical perturbations in data analysis pipelines}
 \begin{document}
@@ -54,6 +67,8 @@
 \affil[1]{Department of Computer Science and Software Engineering, Concordia University, Montreal, Canada}
 \affil[2]{McGill University, Montreal, Canada}
 \affil[3]{Montreal Neurological Institute, Montreal, Canada}
+
+
 
 \maketitle
 
@@ -350,116 +365,115 @@ reproducible as the last process of the pipeline.
 
 \section{Experiments}
 
-In this experiment, we analyse the numerical reproducibility of computational pipelines 
-and identify the origin of differences across the operating systems. 
-Two types of differences can occur in the subjects due to the differences
-in the operating systems. One is between-OS differences caused by the
-operating system library updates and the other type, within-OS differences
-occur as a result of the pseudo-random processes used in the pipelines.
+We applied \toolname to find the origin of between-OS differences that
+occur in many neuroimaging pipelines. In particular, we studied the minimal
+pre-processing pipelines released by the Human Connectome Project
+(\href{https://www.humanconnectome.org}{HCP}), a leading initiative in
+neurosciences. 
 
-In particular, Spot tool is tested on the neuroimaging applications which are 
-predominantly using mathematical libraries. Therefore, we expect to find 
-differences as a result of changing the mathematical functions between operating system libraries.
+% In this experiment, we analyse the numerical reproducibility of computational pipelines 
+% and identify the origin of differences across the operating systems. 
+% Two types of differences can occur in the subjects due to the differences
+% in the operating systems. One is between-OS differences caused by the
+% operating system library updates and the other type, within-OS differences
+% occur as a result of the pseudo-random processes used in the pipelines.
 
-This section describes datasets and pipelines used for the analyses, and the way of data processing.
+% In particular, Spot tool is tested on the neuroimaging applications which are 
+% predominantly using mathematical libraries. Therefore, we expect to find 
+% differences as a result of changing the mathematical functions between operating system libraries.
+
+% This section describes datasets and pipelines used for the analyses, and the way of data processing.
 
 \subsection{HCP pipelines and dataset}
 
-We used our tool to evaluate the reproducibility of the pipelines from the Human Connectome 
-Project (\href{https://www.humanconnectome.org}{HCP}).
-The HCP initiative is an effort to acquire and analyse 
-brain connectivity data from 1200 healthy adults.
-It enables the neuroscience 
-research community to discover relationships between brain circuits and 
-individual behaviors. This helps to understand a wide range of brain disorders.
-The HCP project provides database services (ConnectomeDB) for storing and 
-sharing primary and processed data freely, and data analysis pipelines that 
-are available under an open-source license.
+% We used our tool to evaluate the reproducibility of the pipelines from the Human Connectome 
+% Project .
+% The HCP initiative is an effort to acquire and analyse 
+% brain connectivity data from 1200 healthy adults.
+% It enables the neuroscience 
+% research community to discover relationships between brain circuits and 
+% individual behaviors. This helps to understand a wide range of brain disorders.
+% The HCP project provides database services (ConnectomeDB) for storing and 
+% sharing primary and processed data freely, and data analysis pipelines that 
+% are available under an open-source license.
 
 The HCP developed a set of pre-processing pipelines to process structural,
 functional, and diffusion MRI data acquired in the project. We focus on HCP
-pre-processing pipelines for structural data, particularly PreFreeSurfer
-and FreeSurfer. 
-
-According to~\cite{glasser2013}, the sequence of the 
-sub-pipelines in PreFreeSurfer includes 
-(1) Distortion Correction (DC), 
-(2) Anatomical Average (AAve), 
-(3) ACPC (Anterior Commissure, Posterior Commissure) Alignment (ACPC-A), 
-(4) Brain Extraction (BExt), 
-(5) Bias Field Correction (BFC), 
-(6) Atlas-Registration (AR).
-
-Also, the sequence of the main sub-pipelines in FreeSurfer includes 
-(1) Downsampling images, 
-(2) T1w image registration, 
-(3) Placement of surface images, 
-(4) Folding-based surface registration.
+pre-processing pipelines for structural data, and particularly
+PreFreeSurfer and FreeSurfer. 
 A detailed description of the analyses done in these
 pipelines is available in~\cite{glasser2013}. 
+In summary, PreFreeSurfer consists of the following steps: 
+\begin{itemize}
+\item Distortion Correction (DC), 
+\item Anatomical Average (AAve), 
+\item ACPC (Anterior Commissure, Posterior Commissure) Alignment (ACPC-A), 
+\item Brain Extraction (BExt), 
+\item Bias Field Correction (BFC), 
+\item Atlas-Registration (AR).
+\end{itemize}
+And FreeSurfer consists of the following ones:
+\begin{itemize}
+\item Downsampling images, 
+\item T1w image registration, 
+\item Placement of surface images, 
+\item Folding-based surface registration.
+\end{itemize}
+The average processing time per subject is approximately 2 hours for
+PreFreeSurfer and 8 hours for FreeSurfer. The average output file size is
+approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
+\tristan{Ali, are these numbers per subject or for 20 subjects?}
 
-Furthermore, the average time per subject taken for PreFreeSurfer processing is $\approx$ 2.2 hours, 
-and FreeSurfer processing is $\approx$ 8.3 hours (20 runs), 
-and the average output file size of 20 subjects in PreFreeSurfer is $\approx$ 2.7 GB, 
-and FreeSurfer is $\approx$ 4.1 GB.
-
-HCP data collected from different types of imaging techniques, including 
-structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
-The structural images include T1-weighted (T1w) and T2-weighted (T2w) images, which 
-help in the diagnosis of brain injury.
-The images are indexed with a suffix if several scans of the same modality were acquired.
-For example, some data may include two T1w images with low and high resolutions.
-The functional images, including task-based fMRI and resting-state scans, 
-enable the measurement of functional activations within brain areas. 
-Diffusion imaging is another kind of MRI technique, which measures 
-the anatomical connectivity between regions.
+We randomly selected 20 unprocessed subjects 
+from the HCP data release S500 
+available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
+\tristan{Can you let me know where the data is located, so that I could describe it here?}
 See~\cite{van2013wu} for a discussion of these various modalities.
 
-In this paper, we randomly selected 20 unprocessed subjects 
-containing 3-tesla type of MRI scanners from the HCP data release S500 
-available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
-
+% HCP data collected from different types of imaging techniques, including 
+% structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
+% The structural images include T1-weighted (T1w) and T2-weighted (T2w) images, which 
+% help in the diagnosis of brain injury.
+% The images are indexed with a suffix if several scans of the same modality were acquired.
+% For example, some data may include two T1w images with low and high resolutions.
+% The functional images, including task-based fMRI and resting-state scans, 
+% enable the measurement of functional activations within brain areas. 
+% Diffusion imaging is another kind of MRI technique, which measures 
+% the anatomical connectivity between regions.
 
 \subsection{Data processing}
 
-We executed the pipelines using Docker containers to simplify the 
-deployment of different operating system versions on execution 
-platforms. 
-The Docker images were built for the HCP pre-processing 
-pipelines v3.19.0 (PreFreeSurfer and FreeSurfer) in 
-CentOS 6.9 (Final) and CentOS 7.4 (Core). 
-CentOS is a widely used operating system among the Neuroscience community because of 
-the appropriate community support, network functions, safety, portability, and openness
-~\cite{hanke2011neuroscience}.
-These containers were installed with all the necessary software and libraries 
-required to run the HCP pipelines including FSL (version 5.0.6), 
-FreeSurfer (version 5.3.0-HCP, CentOS4 build), and Connectome Workbench (version 1.0).
-Docker images are available on 
-\href{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}{DockerHub}
-for reuse.
+We built Docker images for the HCP pre-processing pipelines v3.19.0
+(PreFreeSurfer and FreeSurfer) in CentOS 6.9 (Final) and CentOS 7.4 (Core),
+a widely-used operating system in neurosciences
+~\cite{hanke2011neuroscience}. Container images are available on
+\href{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}{DockerHub}.
+They contain the software dependencies of the HCP pipelines, including FSL
+(version 5.0.6), FreeSurfer (version 5.3.0-HCP, CentOS4 build), and
+Connectome Workbench (version 1.0).
 
-The data were processed with PreFreeSurfer and FreeSurfer. 
-First, PreFreeSurfer was utilized to analyse the unprocessed data, and then its 
-results were used as the input of FreeSurfer.
-Each subject was processed twice on the same operating system to detect
-variability coming from pseudo-random operations. 
-Within-OS variability may also be coming from other factors than pseudo-randomness. 
-For instance, the same files may have different metadata such as timestamps, 
-file paths, and other execution-specific information. 
-To ensure that the differences are not related to the metadata, 
-we used specific functions from FreeSurfer tool including 
-\emph{mri\_diff}, \emph{mris\_diff}, and \emph{lta\_diff}.
-These functions compare files based on the image dimensions, 
-voxel intensities, the number of vertices, and geometry information
-(see~\cite{fischl2012freesurfer} for more details). 
-In addition, we used the Dice coefficient metric to evaluate the similarity of 
-the image segmentation results, which is defined by
-\[DICE=\frac{2(|X|\cap|Y|)}{|X|+|Y|}\]
-The Dice coefficient ranges from 0, indicating X and Y have no voxels in common, to 1, if 
-two images are identical. 
+We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2
+CentOS versions. Each subject was processed twice on the same operating
+system to detect potential within-OS variability, for instance coming from
+pseudo-random operations. 
 
-Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
-Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
+\tristan{See what to do with this paragraph}
+Within-OS variability may also be coming from other factors than
+pseudo-randomness. For instance, the same files may have different metadata
+such as timestamps, file paths, and other execution-specific information.
+To ensure that the differences are not related to the metadata, we used
+specific functions from FreeSurfer tool including \emph{mri\_diff},
+\emph{mris\_diff}, and \emph{lta\_diff}. These functions compare files
+based on the image dimensions, voxel intensities, the number of vertices,
+and geometry information (see~\cite{fischl2012freesurfer} for more
+details) \tristan{Ali, are these functions used by \toolname to compare results?}.
+
+In addition, we used the Dice coefficient metric to evaluate the
+similarity of image segmentation results, defined by:
+\[DICE=\frac{2|X \cap Y|}{|X| + |Y|}\].
+
+% Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
+% Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
 
 \subsection{Results}
@@ -479,36 +493,33 @@ Also, we used the nearest neighbor algorithm to calculate the distance between c
 
 \subsubsection{Within-OS differences}
 
-We did not observe any within-OS difference in PreFreeSurfer, however, we
-identified two FreeSurfer processes leading to within-OS differences due
+We did not observe any within-OS difference in PreFreeSurfer. In
+FreeSurfer, we identified 2 processes leading to within-OS differences due
 to the use of pseudo-random numbers: image registration with
-\emph{mri\_segreg}, and cortical surface curvature
-estimations with \emph{mris\_curvature}. To address this issue, we fixed
-the seed used by the pseudo-random number generator, through defining 
-option ``--seed'' in the command-line of the processes.
-Our analysis can focus on between-OS differences. 
+\texttt{mri\_segreg}, and cortical surface curvature estimations with
+\texttt{mris\_curvature}. To remove these differences, we fixed the random
+seed used by FreeSurfer using the \texttt{--seed} command-line option. 
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
 
-We identified four types of subjects with different PreFreeSurfer process
-trees (Table~\ref{table:data-clusters}). Differences between subject types
-are coming from different  numbers of T1 and T2 images in the raw data:
-subjects of type 1 have 2 T1 images and 2 T2 images, while subjects of type
-2 only have 1 T1 image and 1 T2 image. This leads to
-different sets of output files. We verified that the process trees were
-identical for all subjects of the same type, for both versions of
-CentOS.
+We identified four types of subjects with different PreFreeSurfer
+provenance graphs (Table~\ref{table:data-clusters}). Differences between
+subject types are coming from different  numbers of T1 and T2 images in the
+raw data: subjects of type 1 have 2 T1 images and 2 T2 images, while
+subjects of type 2 only have 1 T1 image and 1 T2 image. We verified that
+the provenance graphs were identical for all subjects of the same type, for
+both versions of CentOS.
 
 \begin{table}
 \centering
 \begin{threeparttable}
-\caption{Clustering of 20 input subjects.}
+\caption{Types of provenance graphs in PreFreeSurfer.}
 \label{table:data-clusters}
 
 \begin{tabular}{cccccc}
 \toprule
-       &                        &  \multicolumn{4}{c}{Available Modalities}    \\ 
+       &                        &  \multicolumn{4}{c}{Image modalities in subject data}    \\ 
 \cmidrule(lr){3-6}       
 Type   &   \makecell{Number of \\ Subjects}   &  T1w\_1          & T1w\_2      & T2w\_1          & T2w\_2        \\ \midrule
 1      &               9                      &   \ding{51}      &   \ding{51} &   \ding{51}     &   \ding{51}   \\ 
@@ -517,32 +528,26 @@ Type   &   \makecell{Number of \\ Subjects}   &  T1w\_1          & T1w\_2      &
 4      &               2                      &   \ding{51}      &   \ding{51} &   \ding{51}     &               \\ 
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
-     \small
-     \item *Type refers to the topology type of the process tree of subjects.
-\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
 
-Figure~\ref{fig:pfs_freq} shows the frequency at which  processes create differences 
-in the pipeline, and how differences are distributed among sub-pipelines.
+Figure~\ref{fig:pfs_freq} shows the frequency of non-reproducible pipeline processes
+by PreFreeSurfer pipeline step.
 Differences were observed in linear registration 
 with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, 
 Atlas Registration), in non-linear registration with FSL FNIRT (in Brain Extraction 
-and Altas Registration), and in image warping with FSL \emph{new\_invwarp} (in Brain Extraction 
+and Altas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
 and Atlas Registration). Differences were also observed in image mean 
-computations with FSL maths  (in Anatomical Average). 
+computations with FSL maths  (in Anatomical Average). \tristan{figure and caption to be fixed.} 
 
-The results show two types of differences, between-process and between-subject.
+Two types of differences are observed: between-process and between-subject.
 Between-process differences occur when the same tool behaves differently in different process instances.
-For example, 
-FLIRT tool always produces files without differences in \emph{AAve} sub-pipeline but 
-mostly creates different files in \emph{AAli} sub-pipeline.
-Also, different frequencies show between-subjects variability.
-Accordingly, the same process can be reproducible for some subjects but not for others. 
-The similar findings in another study~\cite{bowring2019exploring} were reported 
-the effect of between-subject differences on reproducibility.
+For example, \texttt{flirt}
+always produces files without differences in the \texttt{AAve} sub-pipeline but 
+almost always creates different files in the \texttt{AAli} sub-pipeline.
+Conversely, the same process can be reproducible for some subjects but not for others. 
+
 % Between subject differences can be a result of different subject types. 
 % For instance, the subjects contain two T1 images need more calculations 
 % to produce an average image between them.
@@ -552,10 +557,9 @@ the effect of between-subject differences on reproducibility.
 \begin{figure*}
 \centering
   \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
-  \caption{Frequency heatmap of processes in the tools that introduce differences among 20 subjects. 
-           Each column represents the pipeline tool, and each row shows the sub-pipeline.
-           Each cell may contain several instances of the process of a tool in a sub-pipeline.
-           Annotations describe the frequency distribution of the instances as ``N [M] x Y" 
+  \caption{Frequency heatmap of non-reproducible PreFreeSurfer processes (N=20). 
+           Rows refer to PreFreeSurfer pipeline steps.
+           Cell labels describe the frequency distribution of the instances as ``N [M] x Y" 
            in which N is the proportion of the process 
            that creates differences out of all M times that is occurred. 
            Also, times Y shows the number of processes with the same distribution.
@@ -568,23 +572,18 @@ the effect of between-subject differences on reproducibility.
 \end{figure*}
 
 
-Figure~\ref{fig:fnirt_result} 
-shows checkerboard image from the results of ACPC-Alignment in PreFreeSurfer. 
-Each rectangle includes the replaced voxels with different intensity values between images.
-The misaligned regions visually represent significant differences in the alignment 
-procedure.
-
-%Alternating rectangular regions between two images, creating a characteristic 
-%checkerboard-like pattern of varying magnitudes.
+To give an idea of the observed differences, Figure~\ref{fig:fnirt_result} 
+compares results of ACPC-Alignment in PreFreeSurfer. \tristan{Ali, there is no
+FNIRT process in ACPC-Alignment, please check.}
 
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
-    \caption{Differences between FNIRT results of one subject from PreFreeSurfer 
+    \caption{Differences between FNIRT results from PreFreeSurfer 
     (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
-    CentOS7).
+    CentOS7). An animated version of the comparison is available 
     \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
-    {The link} to the animated version of alignment results shows the better visualization of differences.
+    {here}.
 } 
     \label{fig:fnirt_result}
 \end{figure}
@@ -592,42 +591,34 @@ procedure.
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
-We processed 20 subjects using FreeSurfer and 
-Spot tool identified \emph{mris\_make\_surfaces} as the only process in 
-the pipeline that creates differences in 10 subjects.
-This process generates surface files for cortical and white matter surfaces 
-(see~\cite{fischl2012freesurfer} for more detail). 
-Also, FreeSurfer did not introduce any differences in 10 subjects. 
+The only non-reproducible process identified in FreeSurfer was
+\texttt{mris\_make\_surfaces}, which was the case for 10 out of 20
+subjects. \tristan{do you know why this was the case: is this CLI
+dynamically linked?} This process generates the cortical and white matter
+surfaces. However, this does not mean that FreeSurfer results were
+identical for the remaining 10 subjects and for the other processes, due to the
+propagation of PreFreeSurfer differences.
 
-Results show that the static builds of FreeSurfer in which uses the embedded libraries 
-significantly avoids the creation of differences.
-However, we found that between-OS differences occur when pre-processed data are different in FreeSurfer. 
-FreeSurfer may not introduce differences, but it propagates and amplifies 
-the current differences that appeared in PreFreeSurfer results across the operating systems.
+For instance, Figure~\ref{fig:tissue_class} illustrates the sum of
+binarized between-OS differences among the 20 whole-brain segmentations. An
+animated comparison of the segmentations obtained in 1 subject is available
+\href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
+{here}.
 
-Figure~\ref{fig:tissue_class} illustrates the sum of binarized differences 
-from 20 subject results of the brain tissue segmentation across OSes.
-This figure shows between-OS differences  
-as a result of the propagation and amplification of differences in FreeSurfer. 
-Differences are mostly localized at the interfaces between tissues.
-In our dataset, we found subjects with min Dice value of 0.89 and max Dice  
-value of 0.96.
-
-Furthermore, the scatter plots of the Dice coefficients of the 44 segmented regions obtained 
-from two operating systems are shown in Figure~\ref{fig:scatter_plot}.
-This figure shows high Dice coefficients (more than 0.95) in large regions and very low 
-Dice coefficients (below 0.5) in small structures particularly in the vessels and lateral ventricles.
+The Dice coefficients associated with the 44 regions segmented by
+FreeSurfer are shown in Figure~\ref{fig:scatter_plot}. This figure shows
+high Dice coefficients (more than 0.95) in large regions and very low Dice
+coefficients (below 0.5) in small structures particularly in the vessels
+and lateral ventricles.
 
 
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
   \includegraphics[width=\columnwidth]{images/brain_segmentation_mni.png} 
-  \caption{Heatmap binarized differences between brain segmentation results (file \emph{aseg.hires.mgz}) from 
-          20 subjects in FreeSurfer (CentOS6 vs. CentOS7). 
-          All binarized differences were resampled to the default MNI152 volume template.
-          \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
-          {The link} to the animated version of segmentation results of one subject presents more clear illustration of differences.} 
+  \caption{Sum of binarized between-OS differences between whole-brain FreeSurfer segmentations (N=20),
+           resampled and overlaid to the MNI152 volume template.
+} 
   \label{fig:tissue_class}
 \end{figure}
 
@@ -655,9 +646,15 @@ Dice coefficients (below 0.5) in small structures particularly in the vessels an
   % of voxels in each region that needs to be segmented.
   
 
+
 \section{Discussion}
 
-* granularity is that of processes, no in-memory checks.
+
+  The similar findings in another study~\cite{bowring2019exploring} were reported 
+  the effect of between-subject differences on reproducibility.
+
+* granularity is that
+ of processes, no in-memory checks.
 
 Method:
 * we assume no concurrent file accesses.
