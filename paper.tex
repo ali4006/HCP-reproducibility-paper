@@ -420,12 +420,15 @@ And FreeSurfer consists of the following ones:
 The average processing time per subject is approximately 2 hours for
 PreFreeSurfer and 8 hours for FreeSurfer. The average output file size is
 approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
-\tristan{Ali, are these numbers per subject or for 20 subjects?}
+\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
 
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
 available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
-\tristan{Can you let me know where the data is located, so that I could describe it here?}
+\tristan{Can you let me know where the data is located, so that I could describe it here?
+Subjects are located in consider:/data/asalari/ali-tests/PFS\_Centos6\_Traced
+and consider:/data/asalari/ali-tests/PFS\_Centos7\_Traced 
+and outputs are in consider:/data/asalari/ali-tests/nurm-out}
 See~\cite{van2013wu} for a discussion of these various modalities.
 
 % HCP data collected from different types of imaging techniques, including 
@@ -464,7 +467,8 @@ specific functions from FreeSurfer tool including \emph{mri\_diff},
 \emph{mris\_diff}, and \emph{lta\_diff}. These functions compare files
 based on the image dimensions, voxel intensities, the number of vertices,
 and geometry information (see~\cite{fischl2012freesurfer} for more
-details) \tristan{Ali, are these functions used by \toolname to compare results?}.
+details) \tristan{Ali, are these functions used by \toolname to compare results?
+Yes, they have been used based on the file format}.
 
 In addition, we used the Dice coefficient metric to evaluate the
 similarity of image segmentation results, defined by:
@@ -561,8 +565,11 @@ Conversely, the same process can be reproducible for some subjects but not for o
            in which N is the proportion of the process 
            that creates differences out of all M times that is occurred. 
            Also, times Y shows the number of processes with the same distribution.
-           For example, the cell of FLIRT tool in the sub-pipeline AAve shows 10 instances of the process 
-           with the frequency of 11 that introduce no differences.
+           For example, the FNIRT process occurred at most 6 times in sub-pipeline DC in each subject. 
+           Also, this shows 3 different distributions among the subjects.
+           The left cell shows 2 instances of the FNIRT that introduce differences in 19 out of 20 subjects.
+           The middle cell indicates three instances of the FNIRT that create no differences for all 20 subjects.
+           The right cell shows one instance of the FNIRT that introduces differences in 17 out of 20 subjects.
            The range between red and green colors shows the highest and lowest 
            proportion of occurrences of the processes with differences.
            Also, grey cells indicate that the tool is not executed in the sub-pipeline.}
@@ -571,8 +578,8 @@ Conversely, the same process can be reproducible for some subjects but not for o
 
 
 To give an idea of the observed differences, Figure~\ref{fig:fnirt_result} 
-compares results of ACPC-Alignment in PreFreeSurfer. \tristan{Ali, there is no
-FNIRT process in ACPC-Alignment, please check.}
+compares results of Brain Extraction in PreFreeSurfer. \tristan{Ali, there is no
+FNIRT process in ACPC-Alignment, please check. Ali: yes, it was brain extraction.}
 
 \begin{figure}
   \centering
@@ -592,7 +599,8 @@ FNIRT process in ACPC-Alignment, please check.}
 The only non-reproducible process identified in FreeSurfer was
 \texttt{mris\_make\_surfaces}, which was the case for 10 out of 20
 subjects. \tristan{do you know why this was the case: is this CLI
-dynamically linked?} This process generates the cortical and white matter
+dynamically linked? Ali: It includes dynamic linking and I guess it may be affected by this.} 
+This process generates the cortical and white matter
 surfaces. However, this does not mean that FreeSurfer results were
 identical for the remaining 10 subjects and for the other processes, due to the
 propagation of PreFreeSurfer differences.
