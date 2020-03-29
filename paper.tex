@@ -227,16 +227,16 @@ multiple processes (Step 2). \toolname re-runs the pipeline to save these files
 right after they are produced, resulting in a provenance \emph{DAG}
 (Directed Acyclic Graph) in which file nodes have a single parent (in-degree
 of 1) (Step 3) \tristan{Ali, this is not true in Figure 1: at step 3 there are still transient files}. This DAG is then compared to the one produced from
-Condition 2, in a step-by-step execution to prevent the propagation of differences (step 4).
+Condition 2, in a step-by-step execution that prevents the propagation of differences (Step 4).
 \toolname finally produces a labeled graph that identifies the
 non-reproducible processes of the pipeline. 
 
 \toolname makes the following assumptions on the pipeline, meant to ensure that 
 a file can be unambiguously associated with the process that created it:
 \begin{enumerate}
-  \item Files are not written concurrently by different processes, although sequential writes by multiple processes are supported;
+  \item Files are not written concurrently by different processes, although sequential writes by multiple processes are supported.
   \item In case a process writes multiple versions of the same file, only a single version is made available to other processes.
-  \item Temporary files are not removed by the processes that create them.
+  \item Temporary files used by multiple processes are not removed by the process that created them. \tristan{explain}
 \end{enumerate} 
 In addition, \toolname also requires that processes are associated to a
 command line (executable and arguments), to facilitate process instrumentation.
@@ -247,6 +247,8 @@ command line (executable and arguments), to facilitate process instrumentation.
     \caption{\toolname overview.}
     \label{fig:overview-tool}
   \end{figure*}
+
+\tristan{The text switches between active and passive voice, this should be fixed.}
 
 \subsection{Recording provenance graphs}
 
@@ -260,10 +262,12 @@ temporary files. \reprozip collects this information through the
 nodes from the \reprozip trace, and by adding directed edges corresponding
 to file reads and file writes (Figure~\ref{fig:simple_script}-left).
 
-Provenance graphs may be subject-dependent, which justifies the processing
-of multiple subjects. For instance, data acquisitions may be
-repeated a different number of times in each subject, for noise-reduction
-purposes. Some of these differences can be neglected, for instance when a
+Provenance graphs are often subject-dependent.
+%, which justifies the processing
+% of multiple subjects. For instance, data acquisitions may be
+% repeated a different number of times in each subject, for noise-reduction
+% purposes. 
+Some of these differences can be neglected, for instance when a
 data decompression step is present at the beginning of the execution for
 some subjects only, but other differences cannot, for instance
 when complete different processing paths are used in different subjects. 
@@ -303,7 +307,7 @@ when complete different processing paths are used in different subjects.
 
 \subsection{Capturing transient files}
 
-\toolname captures temporary files in Condition 1 by replacing every
+\toolname captures temporary files by replacing every
 process P by a wrapper that first calls P and then saves the produced
 temporary files to a read-only directory. This process replacement does not require 
 modifying the pipeline: it only pre-pends to the \texttt{PATH} environment
@@ -324,6 +328,7 @@ Files written by multiple processes are disambiguated as follows. For a
 As an example, in the sample pipeline in
 Listing~\ref{listing:sample-script}, file \emph{output.nii.gz} is first written
 by \texttt{73\#bet2} and then overwritten by process \texttt{75\#fslmaths} as a temporary file. 
+\tristan{add this comment to caption}
 
 \subsection{Labelling processes} 
 
