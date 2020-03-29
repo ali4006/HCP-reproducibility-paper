@@ -217,7 +217,7 @@ application to pre-processing pipelines of the HCP project.
 
 \section{Tool description}
 
-\toolname identifies the processes in a pipeline that produce different results in two different conditions.  
+\toolname identifies the processes in a pipeline that produce different results when executed in two different conditions.  
 In Condition 1, a directed, rooted, bipartite provenance graph is recorded for
 each subject, where nodes represent application processes and files, and
 edges represent read and write file accesses (Step 1 in Figure~\ref{fig:overview-tool}).
@@ -226,7 +226,7 @@ edges represent read and write file accesses (Step 1 in Figure~\ref{fig:overview
 multiple processes (Step 2). \toolname re-runs the pipeline to save these files
 right after they are produced, resulting in a provenance \emph{DAG}
 (Directed Acyclic Graph) in which file nodes have a single parent (in-degree
-of 1) (Step 3). This DAG is then compared to the one produced from
+of 1) (Step 3) \tristan{Ali, this is not true in Figure 1: at step 3 there are still transient files}. This DAG is then compared to the one produced from
 Condition 2, in a step-by-step execution to prevent the propagation of differences (step 4).
 \toolname finally produces a labeled graph that identifies the
 non-reproducible processes of the pipeline. 
