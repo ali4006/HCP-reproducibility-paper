@@ -217,29 +217,40 @@ application to pre-processing pipelines of the HCP project.
 
 \section{Tool description}
 
-\toolname identifies the processes in a pipeline that produce different results when executed in two different conditions.  
-In Condition 1, a directed, rooted, bipartite provenance graph is recorded for
-each subject, where nodes represent application processes and files, and
-edges represent read and write file accesses (Step 1 in Figure~\ref{fig:overview-tool}).
-\emph{Transient} files are then identified as
- files that are either deleted during the execution, or modified by
-multiple processes (Step 2). \toolname re-runs the pipeline to save these files
-right after they are produced, resulting in a provenance \emph{DAG}
-(Directed Acyclic Graph) in which file nodes have a single parent (in-degree
-of 1) (Step 3) \tristan{Ali, this is not true in Figure 1: at step 3 there are still transient files}. This DAG is then compared to the one produced from
-Condition 2, in a step-by-step execution that prevents the propagation of differences (Step 4).
-\toolname finally produces a labeled graph that identifies the
-non-reproducible processes of the pipeline. 
+\toolname identifies the processes in a pipeline that produce different
+results when executed in two different conditions. First, a directed
+bipartite provenance graph is recorded for each subject, where nodes
+represent application processes and files, and edges represent read and
+write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). Second,
+transient files, i.e., files that are either deleted during pipeline
+execution or modified by multiple processes, are identified (Step 2) and
+disambiguated, resulting in a provenance \emph{DAG} (Directed Acyclic
+Graph) in which file nodes have a single parent (in-degree of 1) (Step 3)
+\tristan{Ali, this is not true in Figure 1: at step 3 there are still
+transient files}. DAGs produced in the two conditions are then compared, in
+a step-by-step execution that prevents the propagation of differences in the pipeline (Step
+4). Finally, a labeled graph is produced that identifies the
+non-reproducible processes in the pipeline. 
 
-\toolname makes the following assumptions on the pipeline, meant to ensure that 
-a file can be unambiguously associated with the process that created it:
+
+To ensure that a file can be unambiguously associated with the process that
+created it, we assume that pipeline processes can be re-ordered such that:
 \begin{enumerate}
-  \item Files are not written concurrently by different processes, although sequential writes by multiple processes are supported.
-  \item In case a process writes multiple versions of the same file, only a single version is made available to other processes.
-  \item Temporary files used by multiple processes are not removed by the process that created them. \tristan{explain}
-\end{enumerate} 
-In addition, \toolname also requires that processes are associated to a
-command line (executable and arguments), to facilitate process instrumentation.
+\item Processes don't run concurrently;
+\item Each process sequentially reads, computes, and writes. 
+\end{enumerate}
+In practice, pipeline processes may still run concurrently provided that
+they don't write concurrently to the same files. A process may also
+interleave file writes with computing, for instance when different file
+blocks are processed sequentially. However, only a single version of the
+file must eventually be made available to the other processes. Similarly,
+in case processes write and delete temporary files throughout their
+execution, these temporary files must not be read by any other process in
+the pipeline.
+
+In addition, we also require that processes are
+associated to a command line (executable and arguments), to facilitate
+process instrumentation.
 
 \begin{figure*}
   \centering
@@ -248,21 +259,19 @@ command line (executable and arguments), to facilitate process instrumentation.
     \label{fig:overview-tool}
   \end{figure*}
 
-\tristan{The text switches between active and passive voice, this should be fixed.}
-
 \subsection{Recording provenance graphs}
 
-\toolname uses the \reprozip tool~\cite{rampin2016reprozip}
+We use the \reprozip tool~\cite{rampin2016reprozip}
 to capture: (1) the set of processes created by the
 pipeline, and
 (2) the set of files read and written by each process, including
 temporary files. \reprozip collects this information through the
 \texttt{ptrace()} system call, with no required instrumentation of the pipeline.
-\toolname then reconstructs a provenance graph by creating process and file
-nodes from the \reprozip trace, and by adding directed edges corresponding
-to file reads and file writes (Figure~\ref{fig:simple_script}-left).
+Using the \reprozip trace, \toolname reconstructs a provenance graph by creating process and file
+nodes and by adding directed edges corresponding
+to file reads and writes (Figure~\ref{fig:provenance-graph}).
 
-Provenance graphs are often subject-dependent.
+Provenance graphs are often subject-dependent, due to variations in input data among subjects.
 %, which justifies the processing
 % of multiple subjects. For instance, data acquisitions may be
 % repeated a different number of times in each subject, for noise-reduction
@@ -270,7 +279,7 @@ Provenance graphs are often subject-dependent.
 Some of these differences can be neglected, for instance when a
 data decompression step is present at the beginning of the execution for
 some subjects only, but other differences cannot, for instance
-when complete different processing paths are used in different subjects. 
+when complete different processing paths are used in different subjects. \tristan{We need to conclude on that comment}
 
 \begin{listing}
   \inputminted{bash}{"bin/example.sh"}
@@ -279,63 +288,65 @@ when complete different processing paths are used in different subjects.
 \end{listing}
 
 \begin{figure}
-\centering
-  \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
+\begin{subfigure}{0.4\linewidth}
+  [ FIGURE GOES HERE ]
+
+  \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
+  \label{fig:provenance-graph}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.4\linewidth}
+  [ FIGURE GOES HERE ]
+
+  \caption{Provenance DAG, with disambiguated transient files.}
+  \label{fig:provenance-dag}
+\end{subfigure}
+  % \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
   \caption{Provenance graphs
-  constructed from the example pipeline in
+  created from the example pipeline in
   Listing~\ref{listing:sample-script}.
-  Processes are represented with circles and files with rectangles.
-  Transient files are shaded in gray. 
-  Plain edges 
-  represent the process tree (\texttt{fork()} or \texttt{clone()} 
-  system calls) 
-  \tristan{Does spot make any use of the process tree at any stage? If not, 
-  I think we may want to remove these edges. 
-  Ali: Yes, it uses process tree structure to do some tree operations like search, filter, or remove.
-  Also using the process tree we do clustering later}. 
-  Dashed edges represent file dependencies.
-  Every node in the graph is labeled using (1) a process id created by our
-  reconstruction, (2) the name of the executable run by the process or the file name.
-  Process 0 is the initial call to the \texttt{sh} interpreter, and
-  the rest of processes are the calls to FSL bet, stats and maths made in
-  Listing~\ref{listing:sample-script}. Process 73 is forked by process 2: 
-  it was captured by \reprozip while it did not appear in
-  Listing~\ref{listing:sample-script}.  
+  Processes are represented with circles, files with rectangles, and read/write accesses 
+  with plain edges. 
+  For visualization purposes, the process tree is represented too, with
+  dashed edges. Every node in the graph is labeled using (1) a process id
+  created by our reconstruction, (2) the name of the executable run by the
+  process or the file name. Process 0 is the initial call to the
+  \texttt{sh} interpreter; the other processes are the calls to FSL bet,
+  stats and maths made in Listing~\ref{listing:sample-script}. Process 73
+  is forked by process 2: it was captured by \reprozip while it did not
+  appear in Listing~\ref{listing:sample-script}.
 }
   \label{fig:simple_script}
 \end{figure}
 
 \subsection{Capturing transient files}
 
-\toolname captures temporary files by replacing every
+We capture temporary files by replacing every
 process P by a wrapper that first calls P and then saves the produced
-temporary files to a read-only directory. This process replacement does not require 
-modifying the pipeline: it only pre-pends to the \texttt{PATH} environment
-variable a directory containing a wrapper script named after the executable
+temporary files to a read-only directory. This process replacement is done by pre-pending
+ to the \texttt{PATH} environment
+variable a directory that contains a wrapper script named after the executable
 called by P.
 
-Files written by multiple processes are disambiguated as follows. For a
+Files written by multiple processes are disambiguated using a similar technique. For a
  file F written by the processes in \textbf{P} = \{$P_{1}$, \ldots,
- $P_{n}$\}, \toolname first checks that processes in \textbf{P} do not
- write concurrently to F, which would violate our assumptions. Then, it
- replaces every process $P_{i}$ by a \texttt{PATH}-based wrapper that first
+ $P_{n}$\}, we first check that processes in \textbf{P} do not
+ write concurrently to F, which would violate our assumptions. Then, we
+ replace every process $P_{i}$ by a \texttt{PATH}-based wrapper that first
  calls $P_{i}$ and then saves F to a read-only directory. In this way,
- successive versions of F are preserved for comparison. \toolname finally
- updates the provenance graph accordingly, so that all files in the graph
- have an in-degree of 1 (Figure~\ref{fig:simple_script}-right). This operation also makes the provenance graph
+ successive versions of F are preserved for comparison. We finally
+ update the provenance graph accordingly, so that all files in the graph
+ have an in-degree of 1 (Figure~\ref{fig:provenance-dag}). This operation also makes the provenance graph
  acyclic, since we assumed that a process could only release a single version of a file.
 
-As an example, in the sample pipeline in
-Listing~\ref{listing:sample-script}, file \emph{output.nii.gz} is first written
-by \texttt{73\#bet2} and then overwritten by process \texttt{75\#fslmaths} as a temporary file. 
-\tristan{add this comment to caption}
+
 
 \subsection{Labelling processes} 
 
-Once transient files are captured, \toolname labels pipeline processes
-through a step-by-step execution in Condition 2. Each process in Condition
-2 is run and its output files are compared to the ones produced in
-Condition 1. If no differences are found, the process is marked as
+After capturing transient files, we re-run the pipeline
+step by step in Condition 2 to label processes. The output files
+produced by a process in Condition 2 are compared to the ones produced
+in Condition 1. If no differences are found, the process is marked as
 reproducible. Otherwise, the process is marked as non-reproducible and the
 output files produced in Condition 1 are copied to Condition 2, to ensure
 that differences do not propagate further in the pipeline. Processes are
@@ -343,9 +354,20 @@ instrumented transparently, through a modification of the \texttt{PATH}
 variable similar to the one described previously. By default, differences
 in output files are identified by comparing file checksums. Other
 comparison functions can also be defined for specific file types, for
-instance to ignore sections of the file containing timestamps or other
-execution-specific information. Finally, \toolname creates a labeled
-provenance graph, highlighting non-reproducible processes.
+instance to ignore file headers or file sections containing timestamps.
+\toolname finally creates a labeled
+provenance graph highlighting non-reproducible processes.
+
+Figure~\ref{fig:iterations} illustrates the incremental labelling 
+process for the example in Figure~\ref{fig:simple_script}. 
+At step 1, process \texttt{73\#bet2} is labeled as non-reproducible (red) 
+as it produces files with differences. Subsequently, the files produced by \texttt{73\#bet2} in  
+Condition 2 are replaced with the files produced by \texttt{73\#bet2} in 
+Condition 1.
+At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
+as reproducible (green) as it produced files without differences.
+At step 3, \texttt{76\#fslstats} is also labeled as 
+reproducible as it didn't produce any file.
 
 \begin{figure}
   \centering
@@ -354,17 +376,7 @@ provenance graph, highlighting non-reproducible processes.
   \label{fig:iterations}
 \end{figure}
 
-Figure~\ref{fig:iterations} illustrates our incremental labelling 
-process for the example in Figure~\ref{fig:simple_script}. 
-At step one, process \texttt{73\#bet2} is labeled as non-reproducible (red) 
-as it produced files with differences 
-from files without differences. Therefore, the files produced by \texttt{73\#bet2} in  
-Condition 2 are replaced with the files produced by \texttt{73\#bet2} in 
-Condition 1.
-At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
-as reproducible (green) as it produced files without differences.
-At step 3, \texttt{76\#fslstats} is also labeled as 
-reproducible as the last process of the pipeline.
+
 
 \section{Experiments}
 
@@ -660,6 +672,7 @@ and lateral ventricles.
 
 \section{Discussion}
 
+Propagation is very important. 
 
   The similar findings in another study~\cite{bowring2019exploring} were reported 
   the effect of between-subject differences on reproducibility.
