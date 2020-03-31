@@ -279,7 +279,8 @@ Provenance graphs are often subject-dependent, due to variations in input data a
 Some of these differences can be neglected, for instance when a
 data decompression step is present at the beginning of the execution for
 some subjects only, but other differences cannot, for instance
-when complete different processing paths are used in different subjects. \tristan{We need to conclude on that comment}
+when complete different processing paths are used in different subjects. \toolname 
+includes helpers to identify different instances of provenance graphs \tristan{mention tree distance here}.
 
 \begin{listing}
   \inputminted{bash}{"bin/example.sh"}
@@ -380,8 +381,8 @@ reproducible as it didn't produce any file.
 
 \section{Experiments}
 
-We applied \toolname to find the origin of between-OS differences that
-occur in many neuroimaging pipelines. In particular, we studied the minimal
+We applied the \toolname to find the origin of between-OS differences that
+frequently occur in neuroimaging pipelines. In particular, we studied the minimal
 pre-processing pipelines released by the Human Connectome Project
 (\href{https://www.humanconnectome.org}{HCP}), a leading initiative in
 neurosciences. 
@@ -415,38 +416,39 @@ neurosciences.
 The HCP developed a set of pre-processing pipelines to process structural,
 functional, and diffusion MRI data acquired in the project. We focus on HCP
 pre-processing pipelines for structural data, and particularly
-PreFreeSurfer and FreeSurfer. 
-A detailed description of the analyses done in these
+on PreFreeSurfer and FreeSurfer. 
+A detailed description of the analyses done by these
 pipelines is available in~\cite{glasser2013}. 
 In summary, PreFreeSurfer consists of the following steps: 
 \begin{itemize}
 \item Distortion Correction (DC), 
 \item Anatomical Average (AAve), 
-\item ACPC (Anterior Commissure, Posterior Commissure) Alignment (ACPC-A), 
+\item Anterior/Posterior Commissure Alignment (ACPC-A), 
 \item Brain Extraction (BExt), 
 \item Bias Field Correction (BFC), 
 \item Atlas-Registration (AR).
 \end{itemize}
-And FreeSurfer consists of the following ones:
+And FreeSurfer consists of the following ones: \tristan{Check these steps}
 \begin{itemize}
-\item Downsampling images, 
+\item Image downsampling, 
 \item T1w image registration, 
-\item Placement of surface images, 
-\item Folding-based surface registration.
+\item Surface placement, 
+\item Surface registration.
 \end{itemize}
-The average processing time per subject is approximately 2 hours for
-PreFreeSurfer and 8 hours for FreeSurfer. The average output file size is
+The average processing time per subject is approximately 2~hours for
+PreFreeSurfer and 8~hours for FreeSurfer. The average output file size is
 approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
-\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
+%\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
 
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
 available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
-\tristan{Can you let me know where the data is located, so that I could describe it here?
-Subjects are located in consider:/data/asalari/ali-tests/PFS\_Centos6\_Traced
-and consider:/data/asalari/ali-tests/PFS\_Centos7\_Traced 
-and outputs are in consider:/data/asalari/ali-tests/nurm-out}
-See~\cite{van2013wu} for a discussion of these various modalities.
+For each subject, available data consisted of 1 or 2 T1 images, and 1 or 2 T2 images. 
+% \tristan{Can you let me know where the data is located, so that I could describe it here?
+% Subjects are located in consider:/data/asalari/ali-tests/PFS\_Centos6\_Traced
+% and consider:/data/asalari/ali-tests/PFS\_Centos7\_Traced 
+% and outputs are in consider:/data/asalari/ali-tests/nurm-out}
+Acquisition protocols and parameters are detailed in~\cite{van2013wu}. \tristan{Add summary of matrix sizes.}
 
 % HCP data collected from different types of imaging techniques, including 
 % structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
@@ -462,33 +464,19 @@ See~\cite{van2013wu} for a discussion of these various modalities.
 \subsection{Data processing}
 
 We built Docker images for the HCP pre-processing pipelines v3.19.0
-(PreFreeSurfer and FreeSurfer) in CentOS 6.9 (Final) and CentOS 7.4 (Core),
-a widely-used operating system in neurosciences
-~\cite{hanke2011neuroscience}. Container images are available on
+(PreFreeSurfer and FreeSurfer) in CentOS 6.9 (Final) and CentOS 7.4 (Core), available on
 \href{https://hub.docker.com/r/bigdatalabteam/hcp-prefreesurfer/}{DockerHub}.
-They contain the software dependencies of the HCP pipelines, including FSL
+Container images contain the HCP software dependencies, including FSL
 (version 5.0.6), FreeSurfer (version 5.3.0-HCP, CentOS4 build), and
 Connectome Workbench (version 1.0).
 
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2
 CentOS versions. Each subject was processed twice on the same operating
-system to detect potential within-OS variability, for instance coming from
-pseudo-random operations. 
-
-\tristan{See what to do with this paragraph}
-Within-OS variability may also be coming from other factors than
-pseudo-randomness. For instance, the same files may have different metadata
-such as timestamps, file paths, and other execution-specific information.
-To ensure that the differences are not related to the metadata, we used
-specific functions from FreeSurfer tool including \emph{mri\_diff},
-\emph{mris\_diff}, and \emph{lta\_diff}. These functions compare files
-based on the image dimensions, voxel intensities, the number of vertices,
-and geometry information (see~\cite{fischl2012freesurfer} for more
-details) \tristan{Ali, are these functions used by \toolname to compare results?
-Yes, they have been used based on the file format}.
-
-In addition, we used the Dice coefficient metric to evaluate the
-similarity of image segmentation results, defined by:
+system to detect within-OS variability coming from pseudo-random
+operations. We ignored execution-specific information such as file path or
+timestamps by using FreeSurfer tools \texttt{mri\_diff},
+\texttt{mris\_diff}, and \texttt{lta\_diff} that determine if MRI volumes
+or transformations differ. To compare segmentations, we used the Dice coefficient defined as follows:
 \[DICE=\frac{2|X \cap Y|}{|X| + |Y|}\].
 
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
@@ -552,11 +540,11 @@ Type   &   \makecell{Number of \\ Subjects}   &  T1w\_1          & T1w\_2      &
 
 
 Figure~\ref{fig:pfs_freq} shows the frequency of non-reproducible pipeline processes
-by PreFreeSurfer pipeline step.
+in PreFreeSurfer. 
 Differences were observed in linear registration 
-with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, 
+with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, and
 Atlas Registration), in non-linear registration with FSL FNIRT (in Brain Extraction 
-and Altas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
+and Atlas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
 and Atlas Registration). Differences were also observed in image mean 
 computations with FSL maths  (in Anatomical Average). \tristan{figure and caption to be fixed.} 
 
@@ -576,34 +564,31 @@ Conversely, the same process can be reproducible for some subjects but not for o
 \begin{figure*}
 \centering
   \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
-  \caption{Frequency heatmap of non-reproducible PreFreeSurfer processes (N=20). 
-           Rows refer to PreFreeSurfer pipeline steps.
-           Cell labels describe the frequency distribution of the instances as ``N [M] x Y" 
-           in which N is the proportion of the process 
-           that creates differences out of all M times that is occurred. 
-           Also, times Y shows the number of processes with the same distribution.
-           For example, the FNIRT process occurred at most 6 times in sub-pipeline DC in each subject. 
-           Also, this shows 3 different distributions among the subjects.
-           The left cell shows 2 instances of the FNIRT that introduce differences in 19 out of 20 subjects.
-           The middle cell indicates three instances of the FNIRT that create no differences for all 20 subjects.
-           The right cell shows one instance of the FNIRT that introduces differences in 17 out of 20 subjects.
-           The range between red and green colors shows the highest and lowest 
-           proportion of occurrences of the processes with differences.
-           Also, grey cells indicate that the tool is not executed in the sub-pipeline.}
+  \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
+  \tristan{Remove frequency values as they are shown by the color already. Remove multipliers, multiply cells instead. Cells should just contain subject numbers.}
+  Each cell represents the occurrence of a particular command line in a
+  pipeline step among Anatomical Average (AAve), Anterior/Posterior
+  Commissure Alignment (ACPC-A), Brain Extraction (BExt), Bias Field
+  Correction (BFC), or Atlas-Registration (AR). Cell labels indicate the
+  number of subjects where the corresponding process appears. For example,
+  the FLIRT tool was invoked 6 times in step DC for each of the 20
+  subjects: 2 instances weren't reproducible in 95\% of the subjects, 3
+  instances were always reproducible, and 1 instance wasn't reproducible in
+  85\% of the subjects.
+        }
   \label{fig:pfs_freq}
 \end{figure*}
 
 
-To give an idea of the observed differences, Figure~\ref{fig:fnirt_result} 
-compares results of Brain Extraction in PreFreeSurfer. \tristan{Ali, there is no
-FNIRT process in ACPC-Alignment, please check. Ali: yes, it was brain extraction.}
-
+To visually illustrate the observed differences,
+Figure~\ref{fig:fnirt_result} compares FNIRT results in Brain Extraction
+for a particular subject. Differences appear to be very substantial, in
+particular in the frontal and parietal lobes. 
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
-    \caption{Differences between FNIRT results from PreFreeSurfer 
-    (checkerboard image \emph{T2w\_acpc\_to\_MNI\_nonli.nii.gz}) (CentOS6 vs. 
-    CentOS7). An animated version of the comparison is available 
+    \caption{Differences between FNIRT results in PreFreeSurfer's Brain Extraction (CentOS6 vs. 
+    CentOS7) \tristan{Improve contrast}. An animated version of the comparison is available 
     \href{https://github.com/ali4006/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
     {here}.
 } 
@@ -671,6 +656,9 @@ and lateral ventricles.
 
 
 \section{Discussion}
+
+The reproducibility of a given tool may vary across subjects, and across parameters. 
+See FLIRT in DC in Figure 4.
 
 Propagation is very important. 
 
