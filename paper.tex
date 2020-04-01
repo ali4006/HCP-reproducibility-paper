@@ -548,6 +548,7 @@ and Atlas Registration), and in image warping with FSL \texttt{new\_invwarp} (in
 and Atlas Registration). Differences were also observed in image mean 
 computations with FSL maths  (in Anatomical Average). \tristan{figure and caption to be fixed.} 
 
+\tristan{Ali, it would be useful to show a complete PreFreesurfer graph here.}
 
 % Between subject differences can be a result of different subject types. 
 % For instance, the subjects contain two T1 images need more calculations 
@@ -649,102 +650,108 @@ values (below 0.5) in the smallest structures.
   % of voxels in each region that needs to be segmented.
   
 
-
 \section{Discussion}
 
-Static vs dynamic executables
+\subsection{Key findings}
 
-The reproducibility of a given tool may vary across subjects, and across parameters. 
-See FLIRT in DC in Figure 4.
-Two types of differences are observed: between-process and between-subject.
-Between-process differences occur when the same tool behaves differently in different process instances.
-For example, \texttt{flirt}
-always produces files without differences in the \texttt{AAve} sub-pipeline but 
-almost always creates different files in the \texttt{AAli} sub-pipeline.
-Conversely, the same process can be reproducible for some subjects but not for others. 
+Linear and non-linear registration with FSL were found to
+frequently lead to differences between results obtained with different
+operating systems. This does not come as a surprise given the instabilities
+associated with these processes. It also corroborates our previous findings
+in~\cite{Glatard2015} where fMRI pre-processing using FSL was found to be
+non-reproducible across operating systems starting from the motion
+correction step, a step that uses FSL's \texttt{flirt} tool internally. It
+would be relevant to investigate if the observed instability of
+registration processes generalizes to other toolkits, or if it is specific
+to FSL. In view of the effect of small data perturbations in a variety of
+toolboxes and processes, such as cortical surface extraction using
+FreeSurfer and CIVET~\cite{Lewis2017-ll} or connectome estimation using
+Dipy~\cite{kiar2019comparing}, it is possible that this observation
+generalizes widely across toolboxes and requires a deeper investigation of
+the stability of linear and non-linear registration.
 
+While only a handful or processes were found non-reproducible across the
+tested operating systems, including most notably linear and non-linear
+registration, the effect of such instabilities were found to propagate
+widely in the pipelines, resulting in Dice coefficients frequently below
+0.9 for the amygdala or ventricles. This illustrates the need to conduct such 
+reproducibility studies for entire pipelines rather than isolated processes.
 
+Furthermore, as shown in Figure~\ref{fig:pfs_freq}, the reproducibility of
+a given tool may vary across subjects and across processing parameters. For
+instance, linear registration with FLIRT seems to be fully reproducible in
+the Anatomical Average sub-pipeline, while it is highly non-reproducible in
+ACPC Alignment. In Brain Extraction, the same tool was found reproducible
+for some subjects only. Therefore, reproducibility studies need to be
+performed on several representative subjects rather than only a couple of
+them. While this is common practice in neurosciences, it is common that
+software tests be executed only on a single dataset, to reduce the
+associated computational load. It is likely, however, that the observed
+instabilities stem from numerical edge cases that may not manifest in all
+datasets. 
 
-Propagation is very important. 
+While our findings give insight on the reasons why image analysis processes
+are unstable across operating systems, they do not provide a complete
+uncertainty quantification for neuroimaging pipelines across operating
+systems. Although CentOS is a popular distribution in
+neurosciences~\cite{hanke2011neuroscience}, different observations could be
+made on other operating systems. The numerical noise introduced by
+operating system updates is a realistic one, as such updates are likely to
+occur throughout the time span of a neuroscience study, but it is also
+uncontrolled, as it originates in updates of low-level libraries by
+third-party developers. A possible method to study this problem more
+comprehensively would be to introduce controlled numerical perturbations in
+pipelines, which could be done either using data noise, or through
+computational noise introduced by Monte-Carlo
+Arithmetic~\cite{Parker1997-qq}. The work in~\cite{kiar2019comparing}
+discusses and compares these two techniques.
 
-  The similar findings in another study~\cite{bowring2019exploring} were reported 
-  the effect of between-subject differences on reproducibility.
+\subsection{\toolname evaluation}
 
-* granularity is that
- of processes, no in-memory checks.
+The processes identified by \toolname as non-reproducible were all
+associated with dynamically-linked executables \tristan{Ali, please check
+that}. This makes complete sense as statically-linked executables wouldn't
+be impacted by library updates. Moreover, the hypothetical effects of
+hardware or Linux kernel updates were not measured, as the different
+operating sytems were deployed in Docker containers on the same host, that
+is, using the same kernel and hardware.
 
-Method:
-* we assume no concurrent file accesses.
+To evaluate the reproducibility of a pipeline, \toolname needs to execute
+it 3 times in order to (1) record a first \reprozip trace, (2) save
+transient files, and (3) compare results in the second condition. This is
+one more execution than the theoretical minimum of 2. It might be possible
+to further reduce this overhead, by executing at step (2) only the
+processes depending on transient files.
 
-* we assume that the provenance graph is oriented, i.e., a process cannot read or write in the same file. Reasonnable in general but wouldn't work 
-for, say, out of core computations.
+We demonstrated the applicability of our approach by evaluating two of the
+arguably most complex pipelines in neuroimaging. Technically, these
+pipelines consist of a mix of tools assembled from different toolboxes
+through a variety of scripts written in different languages. Our file-based
+approach, notably enabled by \reprozip, was able to analyze these pipelines
+without requiring their instrumentation, which saved a very substantial
+technical effort. The assumptions made on the pipeline structure, related
+to the absence of concurrent writes, were not violated in our analysis, and
+are likely to not impede \toolname's applicability to the most common
+neuroimaging pipelines. 
 
-Comment on the overhead, number of executions (3, 2 in condition 1, 1 in condition 2)
-
-Applicability: no instrumentation required, fast.
-But not able to capture dependencies in memory.
-
-We identified four processes that create differences 
-among all 28 distinct processes that are involved in the PreFreeSurfer execution. 
-The numerical instability in the 
-PreFreeSurfer HCP pipeline arises mainly from linear 
-registration processes implemented in FSL \emph{FLIRT}. 
-We can see that \emph{FLIRT} creates differences in almost all the sub-pipelines. 
-We monitored the library system calls using \emph{ltrace} to check that registration processes
-use the same libraries. There were no differences in the library dependencies used by 
-the tool in two operating systems, but we found a different number of calls to the \emph{glibc}.
-
-In the second experiment, 
-the analyses obtained by the FreeSurfer show substantial between-OS differences.
-These results show the sensitivity of the segmentation process to the 
-size of regions, however, it might be also sensitive to the location and shape of 
-the segmented regions.
-We demonstrate that static build of the pipeline would not improve the numerical stability of the pipeline. 
-FreeSurfer pipeline propagates and amplifies the numerical differences that are created by the 
-differences in the underlying operating system libraries.
-These results are consistent with the findings in the paper~\cite{Glatard2015}, 
-as it has confirmed the propagation of differences in cortical thickness extraction analysis using FreeSurfer.
-
-We obtained results between OS versions; further investigations could be done over the OS families (e.g., Linux VS. Windows).
-In addition to variations of the operating system, numerical instability of the pipelines have been 
-explored when varying software, hardware and implementation details, or even by adding negligible 
-perturbations like one voxel noise in the input dataset.
-In the field of numerical analysis, we can investigate these issue using the Monte Carlo Arithmetic (MCA), 
-a method instrumenting floating-point operations based on the random rounding algorithms at a target precision.
-By this algorithm, we can locate the instabilities for the given pipelines, tools, or operations.
-
-We demonstrate that computational models in neuroimaging are sensitive to numerical instabilities. 
-Although we identify the processes in the pipeline that create differences, 
-the amplification of these differences should be quantified in the future works.
-We can use distance-preserving hashes rather than MD5 checksums or metrics specific to the file type like the Dice coefficient 
-for the registration and segmentation processes to measure the magnitude of differences. 
-
-% mention fuzzy libmath as a way to do this across distributions.
+However, file-based analyses also have limitations related to the
+granularity at which they operate. Indeed, differences can only be
+identified at the level of an entire operating-system process, which can
+correspond to arbitrary amounts of code. Narrowing down the analysis to
+particular libraries, functions, or even code sections would require
+another approach. Similarly, \toolname would not be able to detect
+differences in data not saved in files, and passed to subsequent processes
+in memory. A common scenario in neuroimaging pipelines is that tools return
+results in their standard output, which is parsed by the calling process
+and passed to subsequent ones through variables. Differences that occur in data 
+that is processed in this way would not be detected by \toolname.  
 
 \section{Conclusion}
 
-Our technique can characterize the stability of the pipelines
-automatically. We identified the leading causes of the between-OS differences as (1) the evolution 
-of the math libraries over time and (2) the instability of the pipelines. 
-There are two ways to tackle this problem. The easy but less preferred solution is masking the instabilities.
-This can be done by using, (1) single operating system for the processing of subjects, 
-(2) containerizing the pipelines so that the 
-processing is done on a more controlled environment, 
-(3) increasing the numerical precision of the arithmetics, 
-(4) building static executables by removing the host operating system library dependencies. 
-These solutions only make the problem invisible, but the pipelines are still unstable.
+Summary of key findings. 
 
-\note{The preferred solution is to find the origin of amplification of differences and 
-then fixing the particular functions/modules in the processing pipelines. 
-Bagging is a fundamental technique toward reducing the instability of the analysis.
-Therefore, we can use bagging for the parts in the pipeline that amplify differences, 
-but it still is computationally expensive. }
-
-% importance of data-driven evaluations, subject clustering, etc
-
-% future work with MCA
-
-% link registration to our motion estimation study
+Spot works well but is a first step toward deeper investigation of 
+particular processes.
 
 \section{Acknowledgments}
 
