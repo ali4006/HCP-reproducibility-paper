@@ -225,9 +225,8 @@ write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). Second,
 transient files, i.e., files that are either deleted during pipeline
 execution or modified by multiple processes, are identified (Step 2) and
 disambiguated, resulting in a provenance \emph{DAG} (Directed Acyclic
-Graph) in which file nodes have a single parent (in-degree of 1) (Step 3)
-\tristan{Ali, this is not true in Figure 1: at step 3 there are still
-transient files}. DAGs produced in the two conditions are then compared, in
+Graph) in which file nodes have a single parent (in-degree of 1) (Step 3). 
+DAGs produced in the two conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Step
 4). Finally, a labeled graph is produced that identifies the
 non-reproducible processes in the pipeline. 
@@ -280,7 +279,14 @@ Some of these differences can be neglected, for instance when a
 data decompression step is present at the beginning of the execution for
 some subjects only, but other differences cannot, for instance
 when complete different processing paths are used in different subjects. \toolname 
-includes helpers to identify different instances of provenance graphs \tristan{mention tree distance here}.
+includes helpers to identify different instances of provenance graphs.
+For this purpose, \toolname measures the distance between process trees using 
+the tree edit distance method~\cite{zhang1989simple}, as implemented in 
+the zss Python package. This distance is defined as the minimum number of
+edit operations to transform one tree into the other. Three edit operations
+are considered: node label modification, node removal, and node insertion.
+Each operation has an associated cost of 1.
+
 
 \begin{listing}
   \inputminted{bash}{"bin/example.sh"}
@@ -289,16 +295,16 @@ includes helpers to identify different instances of provenance graphs \tristan{m
 \end{listing}
 
 \begin{figure}
-\begin{subfigure}{0.4\linewidth}
-  [ FIGURE GOES HERE ]
-
+\begin{subfigure}[t]{0.4\linewidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{images/p-graph}
   \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
   \label{fig:provenance-graph}
 \end{subfigure}
 \hfill
-\begin{subfigure}{0.4\linewidth}
-  [ FIGURE GOES HERE ]
-
+\begin{subfigure}[t]{0.4\linewidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{images/p-graph-dag}
   \caption{Provenance DAG, with disambiguated transient files.}
   \label{fig:provenance-dag}
 \end{subfigure}
@@ -428,10 +434,11 @@ In summary, PreFreeSurfer consists of the following steps:
 \item Bias Field Correction (BFC), 
 \item Atlas-Registration (AR).
 \end{itemize}
-And FreeSurfer consists of the following ones: \tristan{Check these steps}
+And FreeSurfer consists of the following ones:
 \begin{itemize}
 \item Image downsampling, 
 \item T1w image registration, 
+\item T1w image segmentation,
 \item Surface placement, 
 \item Surface registration.
 \end{itemize}
@@ -444,11 +451,14 @@ We randomly selected 20 unprocessed subjects
 from the HCP data release S500 
 available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
 For each subject, available data consisted of 1 or 2 T1 images, and 1 or 2 T2 images. 
+The voxel size of the acquired T1 and T2 images was 0.7 × 0.7 × 0.7 mm, 
+and the dimension of the images was 256 x 320 x 320.
 % \tristan{Can you let me know where the data is located, so that I could describe it here?
 % Subjects are located in consider:/data/asalari/ali-tests/PFS\_Centos6\_Traced
 % and consider:/data/asalari/ali-tests/PFS\_Centos7\_Traced 
 % and outputs are in consider:/data/asalari/ali-tests/nurm-out}
-Acquisition protocols and parameters are detailed in~\cite{van2013wu}. \tristan{Add summary of matrix sizes.}
+Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
+
 
 % HCP data collected from different types of imaging techniques, including 
 % structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
@@ -546,10 +556,17 @@ with FSL FLIRT (in ACPC-Alignment, Brain Extraction, Distortion Correction, and
 Atlas Registration), in non-linear registration with FSL FNIRT (in Brain Extraction 
 and Atlas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
 and Atlas Registration). Differences were also observed in image mean 
-computations with FSL maths  (in Anatomical Average). \tristan{figure and caption to be fixed.} 
-
-\tristan{Ali, it would be useful to show a complete PreFreesurfer graph here.}
-
+computations with FSL maths  (in Anatomical Average). 
+A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{fig:complete_pfs}
+\begin{figure}
+  \centering
+    \includegraphics[width=\columnwidth]{images/pfs-intransient} 
+    \caption{A complete provenance graph from the PreFreesurfer pipeline.
+     Full-resolution image is available 
+     \href{https://drive.google.com/file/d/1xonnMq4hLEe6GwMp4P7umikvrIAeflDe/view?usp=sharing}{here}.}
+} 
+    \label{fig:complete_pfs}
+\end{figure}
 % Between subject differences can be a result of different subject types. 
 % For instance, the subjects contain two T1 images need more calculations 
 % to produce an average image between them.
@@ -560,16 +577,15 @@ computations with FSL maths  (in Anatomical Average). \tristan{figure and captio
 \centering
   \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
-  \tristan{Remove frequency values as they are shown by the color already. Remove multipliers, multiply cells instead. Cells should just contain subject numbers.}
   Each cell represents the occurrence of a particular command line in a
   pipeline step among Anatomical Average (AAve), Anterior/Posterior
   Commissure Alignment (ACPC-A), Brain Extraction (BExt), Bias Field
   Correction (BFC), or Atlas-Registration (AR). Cell labels indicate the
   number of subjects where the corresponding process appears. For example,
   the FLIRT tool was invoked 6 times in step DC for each of the 20
-  subjects: 2 instances weren't reproducible in 95\% of the subjects, 3
+  subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
-  85\% of the subjects.
+  17 subjects.
         }
   \label{fig:pfs_freq}
 \end{figure*}
@@ -583,7 +599,7 @@ particular in the frontal and parietal lobes.
   \centering
     \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
     \caption{Differences between T2 FNIRT results in PreFreeSurfer's Brain Extraction (CentOS6 vs 
-    CentOS7) \tristan{Improve contrast}. An animated version of the comparison is available 
+    CentOS7). An animated version of the comparison is available 
     \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
     {here}.
 } 
@@ -597,7 +613,13 @@ The only non-reproducible process identified by \toolname in FreeSurfer was
 \texttt{mris\_make\_surfaces} (cortical and white matter surfaces
 generation), which is also the only dynamically-linked executable in this pipeline
 \tristan{Ali, could you check that this is indeed the only dynamic
-executable in the pipeline?}. \texttt{mris\_make\_surfaces} produced different results for
+executable in the pipeline?
+Ali: There is another dynamically-linked executable named mris\_curvature 
+that doesn't create difference when set a seed for that.
+Also, another executables are in directory freesurfer/mni/bin/ such as volume\_hist, 
+mincinfo, mincresample, \dots
+that are dynamically-linked but do not create differences.}. 
+\texttt{mris\_make\_surfaces} produced different results for
 10 out of 20 subjects. 
 
 While by design \toolname only identifies processes that create
@@ -628,17 +650,17 @@ values (below 0.5) in the smallest structures.
 \begin{figure*}
   \centering
   \begin{subfigure}{0.45\linewidth}
-    [FIGURE GOES HERE]
+    \includegraphics[width=\linewidth]{images/scatter_plot_1.png}
     \caption{Regions with \emph{less} than 10,000 voxels.}
   \end{subfigure}
   \hfill
   \begin{subfigure}{0.45\linewidth}
-    [FIGURE GOES HERE]
+    \includegraphics[width=\linewidth]{images/scatter_plot_2.png}
     \caption{Regions with \emph{more} than 10,000 voxels.}
   \end{subfigure}
     % \includegraphics[width=\textwidth]{images/scatter_plot.png} 
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).
-        To improve readability, the two graphs are on different y scales. \tristan{Ali, could you separate the figures in 2 and insert them in each subfigure?}} 
+        To improve readability, the two graphs are on different y scales.}
     \label{fig:scatter_plot}
   \end{figure*}
 
@@ -709,8 +731,8 @@ discusses and compares these two techniques.
 \subsection{\toolname evaluation}
 
 The processes identified by \toolname as non-reproducible were all
-associated with dynamically-linked executables \tristan{Ali, please check
-that}. This makes complete sense as statically-linked executables wouldn't
+associated with dynamically-linked executables. 
+This makes complete sense as statically-linked executables wouldn't
 be impacted by library updates. Moreover, the hypothetical effects of
 hardware or Linux kernel updates were not measured, as the different
 operating sytems were deployed in Docker containers on the same host, that
