@@ -21,8 +21,7 @@ Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a 
 
 ### Fig 2
 
-* Fig 2a: `python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/p_graph -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json `
-* Fig 2b: `python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/p-graph-dag -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json -d`
+* `python ./bin/code/provenance_graph.py`
 
 ### Fig. 3
 

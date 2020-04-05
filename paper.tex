@@ -212,28 +212,29 @@ application to pre-processing pipelines of the HCP project.
 % the numerical reproducibility measurement tool named \emph{Spot} to identify 
 % the processes in the pipeline that create numerical differences across different conditions. 
 % Furthermore, we can stabilize the identified processes in the next steps.
-\todo{explain creation vs propagation}
+\todo{explain creation vs proSpagation}
 \todo{define pipeline}
+\todo{explain the need for reduced instrumentation}
 
 \section{Tool description}
 
 \toolname identifies the processes in a pipeline that produce different
-results when executed in two different conditions. First, a directed
+results in different execution conditions. First, a directed
 bipartite provenance graph is recorded for each subject, where nodes
 represent application processes and files, and edges represent read and
 write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). Second,
 transient files, i.e., files that are either deleted during pipeline
 execution or modified by multiple processes, are identified (Step 2) and
-disambiguated, resulting in a provenance \emph{DAG} (Directed Acyclic
+disambiguated, resulting in a provenance DAG (Directed Acyclic
 Graph) in which file nodes have a single parent (in-degree of 1) (Step 3). 
-DAGs produced in the two conditions are then compared, in
+DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Step
-4). Finally, a labeled graph is produced that identifies the
+4). The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
 
 
 To ensure that a file can be unambiguously associated with the process that
-created it, we assume that pipeline processes can be re-ordered such that:
+created it, we assume that the pipeline can be transformed such that:
 \begin{enumerate}
 \item Processes don't run concurrently;
 \item Each process sequentially reads, computes, and writes. 
@@ -242,12 +243,9 @@ In practice, pipeline processes may still run concurrently provided that
 they don't write concurrently to the same files. A process may also
 interleave file writes with computing, for instance when different file
 blocks are processed sequentially. However, only a single version of the
-file must eventually be made available to the other processes. Similarly,
-in case processes write and delete temporary files throughout their
-execution, these temporary files must not be read by any other process in
-the pipeline.
-
-In addition, we also require that processes are
+file must eventually be made available to the other processes. In
+particular, in case a process deletes a file that it had created itself,
+this file must not be used by any other process. Finally, we also require that processes are
 associated to a command line (executable and arguments), to facilitate
 process instrumentation.
 
@@ -275,17 +273,14 @@ Provenance graphs are often subject-dependent, due to variations in input data a
 % of multiple subjects. For instance, data acquisitions may be
 % repeated a different number of times in each subject, for noise-reduction
 % purposes. 
-Some of these differences can be neglected, for instance when a
-data decompression step is present at the beginning of the execution for
-some subjects only, but other differences cannot, for instance
-when complete different processing paths are used in different subjects. \toolname 
-includes helpers to identify different instances of provenance graphs.
-For this purpose, \toolname measures the distance between process trees using 
-the tree edit distance method~\cite{zhang1989simple}, as implemented in 
-the zss Python package. This distance is defined as the minimum number of
-edit operations to transform one tree into the other. Three edit operations
-are considered: node label modification, node removal, and node insertion.
-Each operation has an associated cost of 1.
+Some of these differences can be neglected, for instance when a data
+decompression step is present at the beginning of the execution for some
+subjects only, but other differences cannot, for instance when complete
+different processing paths are used in different subjects. \toolname
+includes helpers to identify different instances of provenance graphs. In
+particular, it can cluster process trees, where nodes are processes and
+edges are \texttt{fork()} or \texttt{clone()} system calls, using the tree
+edit distance~\cite{zhang1989simple} implemented in Python's \texttt{zss} package.
 
 
 \begin{listing}
@@ -297,14 +292,14 @@ Each operation has an associated cost of 1.
 \begin{figure}
 \begin{subfigure}[t]{0.4\linewidth}
   \centering
-  \includegraphics[width=.7\linewidth]{images/p-graph}
+  \includegraphics[width=.7\linewidth]{images/p-graph.pdf}
   \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
   \label{fig:provenance-graph}
 \end{subfigure}
 \hfill
 \begin{subfigure}[t]{0.4\linewidth}
   \centering
-  \includegraphics[width=.7\linewidth]{images/p-graph-dag}
+  \includegraphics[width=.7\linewidth]{images/p-graph-dag.pdf}
   \caption{Provenance DAG, with disambiguated transient files.}
   \label{fig:provenance-dag}
 \end{subfigure}
@@ -348,13 +343,13 @@ Files written by multiple processes are disambiguated using a similar technique.
 
 
 
-\subsection{Labelling processes} 
+\subsection{Labeling processes} 
 
 After capturing transient files, we re-run the pipeline
 step by step in Condition 2 to label processes. The output files
 produced by a process in Condition 2 are compared to the ones produced
 in Condition 1. If no differences are found, the process is marked as
-reproducible. Otherwise, the process is marked as non-reproducible and the
+reproducible. Otherwise, the process is marked as non-reproducible, and the
 output files produced in Condition 1 are copied to Condition 2, to ensure
 that differences do not propagate further in the pipeline. Processes are
 instrumented transparently, through a modification of the \texttt{PATH}
@@ -365,21 +360,20 @@ instance to ignore file headers or file sections containing timestamps.
 \toolname finally creates a labeled
 provenance graph highlighting non-reproducible processes.
 
-Figure~\ref{fig:iterations} illustrates the incremental labelling 
+Figure~\ref{fig:iterations} illustrates a hypothetical incremental labeling 
 process for the example in Figure~\ref{fig:simple_script}. 
 At step 1, process \texttt{73\#bet2} is labeled as non-reproducible (red) 
-as it produces files with differences. Subsequently, the files produced by \texttt{73\#bet2} in  
+as it produces files with differences, and the files produced by \texttt{73\#bet2} in  
 Condition 2 are replaced with the files produced by \texttt{73\#bet2} in 
-Condition 1.
-At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
+Condition 1. At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
 as reproducible (green) as it produced files without differences.
 At step 3, \texttt{76\#fslstats} is also labeled as 
 reproducible as it didn't produce any file.
 
 \begin{figure}
   \centering
-  \includegraphics[width=.8\columnwidth]{images/labelling-process}
-  \caption{Illustration of the labelling approach. Non-reproducible processes are shown in red.}
+  \includegraphics[width=.8\columnwidth]{images/p-graph-dag-labelled.pdf}
+  \caption{Illustration of the labeling approach. Non-reproducible processes are shown in red.}
   \label{fig:iterations}
 \end{figure}
 
@@ -387,8 +381,7 @@ reproducible as it didn't produce any file.
 
 \section{Experiments}
 
-We applied the \toolname to find the origin of between-OS differences that
-frequently occur in neuroimaging pipelines. In particular, we studied the minimal
+We applied the \toolname to the minimal
 pre-processing pipelines released by the Human Connectome Project
 (\href{https://www.humanconnectome.org}{HCP}), a leading initiative in
 neurosciences. 
@@ -574,7 +567,7 @@ A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{f
 % make figure in two columns use {figure*}
 \begin{figure*}
 \centering
-  \includegraphics[width=\textwidth]{images/pfs_heatmap.png}
+  \includegraphics[width=\textwidth]{./data/pfs-20sbj-output/heatmap.png}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
   Each cell represents the occurrence of a particular command line in a
   pipeline step among Anatomical Average (AAve), Anterior/Posterior
@@ -762,6 +755,8 @@ that is processed in this way would not be detected by \toolname.
 \section{Conclusion}
 
 Summary of key findings. 
+
+Mention non-instrumentation / reprozip
 
 Spot works well but is a first step toward deeper investigation of 
 particular processes.
