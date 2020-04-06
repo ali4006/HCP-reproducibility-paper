@@ -296,7 +296,6 @@ process instrumentation.
   \caption{Example pipeline}
   \label{listing:sample-script}
 \end{listing}
-\tristan{Ali, I added a file in Listing 1, could you re-generate the trace?}
 
 \subsection{Recording provenance graphs}
 
@@ -432,6 +431,9 @@ The average processing time per subject is approximately 2~hours for
 PreFreeSurfer and 8~hours for FreeSurfer. The average output file size is
 approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
 %\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
+The \reprozip traced files show that approximately PreFreeSurfer opened  
+83K files and created 7.7K processes, and FreeSurfer opened 62K files and 
+created 4K processes in total for a single subject.
 
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
@@ -439,7 +441,6 @@ available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}.
 For each subject, available data consisted of 1 or 2 T1 images, and 1 or 2 T2 images, with 
 256 x 320 x 320 voxels of size 0.7 × 0.7 × 0.7 mm.
 Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
-
 
 % HCP data collected from different types of imaging techniques, including 
 % structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
@@ -539,10 +540,10 @@ computations with FSL maths  (in Anatomical Average).
 A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{fig:complete_pfs}
 \begin{figure}
   \centering
-    \includegraphics[width=\columnwidth]{images/pfs-intransient} 
+    \includegraphics[width=\columnwidth]{images/pfs-labeled.png} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline.
      Full-resolution image is available 
-     \href{https://drive.google.com/file/d/1xonnMq4hLEe6GwMp4P7umikvrIAeflDe/view?usp=sharing}{here}.}
+     \href{https://drive.google.com/file/d/1BKq5ZXIVr3bkij88SmeW7ulWOExSCm7n/view?usp=sharing}{here}.}
     \label{fig:complete_pfs}
 \end{figure}
 % Between subject differences can be a result of different subject types. 
@@ -553,7 +554,7 @@ A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{f
 % make figure in two columns use {figure*}
 \begin{figure*}
 \centering
-  \includegraphics[width=\textwidth]{./data/pfs-20sbj-output/heatmap.png}
+  \includegraphics[width=\textwidth]{./data/pfs-20sbj-output/heatmap.pdf}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
   Each cell represents the occurrence of a particular command line in a
   pipeline step among Anatomical Average (AAve), Anterior/Posterior
