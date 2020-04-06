@@ -19,12 +19,8 @@ Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a 
 
 * `python ./bin/code/provenance_graph.py`
 
-### Fig. 2
-
-* [Source file](https://drive.google.com/file/d/1xonnMq4hLEe6GwMp4P7umikvrIAeflDe/view?usp=sharing)
-
 ### Fig. 3
-* `python ./bin/code/heatmap_plot.py ./data/pfs-20sbj-input/ ./data/pfs-20sbj-output/`
+* `python ./bin/code/heatmap_plot.py`
 
 ### Fig. 4
 

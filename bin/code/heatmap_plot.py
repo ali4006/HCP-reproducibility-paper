@@ -338,7 +338,7 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                             # str(float(a)/float(b))+' ['+str(b)+']')
                 if ch is True:
                     freq_list.append(0)
-                    freq_label.append('0') # ['+str(b)+']')
+                    freq_label.append('') # ['+str(b)+']')
             frequency_matrix.append(freq_list)
             heatmap_label.append(freq_label)
             xlabel_ = [str(x).split(' ')[0] for x in xlabel_]
@@ -383,7 +383,7 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                 axes[j, i].set_ylabel(short_name[element], fontsize=40)
             if j == len(ylabels)-1:
                 axes[j, i].set_xlabel(emp, fontsize=40)
-    plt.savefig(output_folder + 'heatmapn.png', bbox_inches='tight')
+    plt.savefig(os.path.join(output_folder, 'heatmap.pdf'), bbox_inches='tight')
     # plt.show()
 
 
@@ -401,22 +401,13 @@ def plot_totall_items(total_freq, output_folder):
     plt.yticks(fontsize=18, rotation=0)
     # plt.title('Number of occurrences of process in PreFreeSurfer '
     #           'on 100 subjects')
-    plt.savefig(output_folder+'frequency_plot.png')
+    plt.savefig(os.path.join(output_folder, 'frequency_plot.png'))
     # plt.show()
 
 
 def main(args=None):
-    parser = argparse.ArgumentParser(description='Classification of the nodes'
-                                                 ' in the pipeline graph.')
-    parser.add_argument("input_folder",
-                        help='input folder of sqlite databases ')
-    parser.add_argument("output_folder",
-                        help='output folder to save clusters, plots, '
-                             'and figures.')
-
-    args = parser.parse_args(args)
-    input_folder = args.input_folder
-    output_folder = args.output_folder
+    input_folder = 'data/pfs-20sbj-input'
+    output_folder = 'images'
 
     # get frequency of the processes with differences
     total_freq, sep_item_freq = get_item_frequency(input_folder)
