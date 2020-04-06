@@ -15,31 +15,22 @@ Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a 
 
 ## How to generate the figures
 
-### Fig. 1
-
-* [Source file](https://docs.google.com/drawings/d/1OB3sB8kkK17Q516-TcmXKh3TwXSLDToJB11IVfUH5AU/edit?usp=sharing)
-
-### Fig 2
+### Fig 1
 
 * `python ./bin/code/provenance_graph.py`
 
-### Fig. 3
-
-* [Source file](https://docs.google.com/drawings/d/1NWsfILmIaUDlKNkDm3Nm028U1l2zAAYwdtsCoyEJw8g/edit?usp=sharing)
-* `python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/labeled-pg -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json -l ./bin/nonreproducible_captured.json -d`
-
-### Fig. 4
+### Fig. 2
 
 * [Source file](https://drive.google.com/file/d/1xonnMq4hLEe6GwMp4P7umikvrIAeflDe/view?usp=sharing)
 
-### Fig. 5
+### Fig. 3
 * `python ./bin/code/heatmap_plot.py ./data/pfs-20sbj-input/ ./data/pfs-20sbj-output/`
 
-### Fig. 6
+### Fig. 4
 
 * [Source files](Consider:/data/asalari/ali-tests/paper_images/pfs_fnirt_imgs/)
 
-### Fig. 7
+### Fig. 5
 
 1. Create binarized difference images of each subject:
     ```
@@ -56,7 +47,7 @@ Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a 
 
 Note: All the subject images, binarized images and reference image that we used are available in [link](Consider:/data/asalari/ali-tests/paper_images/fs_aseg_imgs) 
 
-### Fig. 8
+### Fig. 6
 
 1. Compute dice value of difference images of each subject in a .csv file:
     ```

@@ -74,20 +74,20 @@ linkbordercolor=blue,% hyperlink border will be blue
 
 \begin{abstract} 
 
-Data analysis pipelines are known to be impacted by operating system
-updates and other infrastructural factors, presumably due to the creation,
-propagation and amplification of numerical errors. However, the precise
-causes of such instabilities and the path along which they propagate in the
-pipelines are unclear, while this process could play a major role in the
-current reproducibility crisis. We present a technique to identify the
-computational processes in a pipeline that create numerical differences
-when executed in different computational conditions. Our technique
-leverages system-call interception to reconstruct processing and file
-graphs without pipeline instrumentation. By applying our tool to the
-structural pre-processing pipelines released by the Human Connectome
-Project, we find that linear and non-linear registration are the cause of
-most numerical instabilities in such pipelines, which confirms previous
-findings. 
+% Data analysis pipelines are known to be impacted by operating system
+% updates and other infrastructural factors, presumably due to the creation,
+% propagation and amplification of numerical errors. However, the precise
+% causes of such instabilities and the path along which they propagate in the
+% pipelines are unclear, while this process could play a major role in the
+% current reproducibility crisis. We present a technique to identify the
+% computational processes in a pipeline that create numerical differences
+% when executed in different computational conditions. Our technique
+% leverages system-call interception to reconstruct processing and file
+% graphs without pipeline instrumentation. By applying our tool to the
+% structural pre-processing pipelines released by the Human Connectome
+% Project, we find that linear and non-linear registration are the cause of
+% most numerical instabilities in such pipelines, which confirms previous
+% findings. 
 
 \end{abstract}
 
@@ -216,22 +216,62 @@ application to pre-processing pipelines of the HCP project.
 \todo{define pipeline}
 \todo{explain the need for reduced instrumentation}
 
+\newpage
+
 \section{Tool description}
 
 \toolname identifies the processes in a pipeline that produce different
 results in different execution conditions. First, a directed
 bipartite provenance graph is recorded for each subject, where nodes
 represent application processes and files, and edges represent read and
-write file accesses (Step 1 in Figure~\ref{fig:overview-tool}). Second,
+write file accesses (Figure~\ref{fig:provenance-graph}). Second,
 transient files, i.e., files that are either deleted during pipeline
-execution or modified by multiple processes, are identified (Step 2) and
+execution or modified by multiple processes, are identified and
 disambiguated, resulting in a provenance DAG (Directed Acyclic
-Graph) in which file nodes have a single parent (in-degree of 1) (Step 3). 
+Graph) in which file nodes have a single parent (in-degree of 1) (Figure~\ref{fig:provenance-dag}). 
 DAGs produced in different conditions are then compared, in
-a step-by-step execution that prevents the propagation of differences in the pipeline (Step
-4). The resulting labeled graph identifies the
+a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
+ The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
 
+\begin{figure*}
+  \begin{subfigure}[t]{0.3\linewidth}
+    \centering
+    \includegraphics[width=.5\linewidth]{images/p-graph.pdf}
+    \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
+    \label{fig:provenance-graph}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.3\linewidth}
+    \centering
+    \includegraphics[width=.4\linewidth]{images/p-graph-dag.pdf}
+    \caption{Provenance DAG, with disambiguated transient files.}
+    \label{fig:provenance-dag}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[t]{0.3\linewidth}
+      \centering
+      \includegraphics[width=.4\linewidth]{images/p-graph-dag-labelled.pdf}
+     \caption{Labeled DAG comparing 2 execution conditions, showing 1 non-reproducible process.}
+     \label{fig:labeled-dag} 
+  \end{subfigure}
+    % \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
+    \caption{Provenance graphs
+    created from the example pipeline in
+    Listing~\ref{listing:sample-script}.
+    Processes are represented with circles, files with rectangles, and read/write accesses 
+    with plain edges. 
+    For visualization purposes, the process tree is represented too, with
+    dashed edges. Every node in the graph is labeled using (1) a process id
+    created by our reconstruction, (2) the name of the executable run by the
+    process or the file name. Process 1 is the initial call to the
+    \texttt{sh} interpreter; the other processes are the calls to FSL bet,
+    stats and maths made in Listing~\ref{listing:sample-script}. Process 73
+    is forked by process 2: it was captured by \reprozip while it did not
+    appear in Listing~\ref{listing:sample-script}.
+  }
+    \label{fig:spot-example}
+  \end{figure*}
 
 To ensure that a file can be unambiguously associated with the process that
 created it, we assume that the pipeline can be transformed such that:
@@ -249,12 +289,12 @@ this file must not be used by any other process. Finally, we also require that p
 associated to a command line (executable and arguments), to facilitate
 process instrumentation.
 
-\begin{figure*}
-  \centering
-    \includegraphics[width=.8\textwidth]{images/spot-diagram}
-    \caption{\toolname overview.}
-    \label{fig:overview-tool}
-  \end{figure*}
+\begin{listing}
+  \inputminted{bash}{"bin/example.sh"}
+  \caption{Example pipeline}
+  \label{listing:sample-script}
+\end{listing}
+\tristan{Ali, I added a file in Listing 1, could you re-generate the trace?}
 
 \subsection{Recording provenance graphs}
 
@@ -282,45 +322,6 @@ particular, it can cluster process trees, where nodes are processes and
 edges are \texttt{fork()} or \texttt{clone()} system calls, using the tree
 edit distance~\cite{zhang1989simple} implemented in Python's \texttt{zss} package.
 
-
-\begin{listing}
-  \inputminted{bash}{"bin/example.sh"}
-  \caption{Example pipeline}
-  \label{listing:sample-script}
-\end{listing}
-
-\begin{figure}
-\begin{subfigure}[t]{0.4\linewidth}
-  \centering
-  \includegraphics[width=.7\linewidth]{images/p-graph.pdf}
-  \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
-  \label{fig:provenance-graph}
-\end{subfigure}
-\hfill
-\begin{subfigure}[t]{0.4\linewidth}
-  \centering
-  \includegraphics[width=.7\linewidth]{images/p-graph-dag.pdf}
-  \caption{Provenance DAG, with disambiguated transient files.}
-  \label{fig:provenance-dag}
-\end{subfigure}
-  % \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
-  \caption{Provenance graphs
-  created from the example pipeline in
-  Listing~\ref{listing:sample-script}.
-  Processes are represented with circles, files with rectangles, and read/write accesses 
-  with plain edges. 
-  For visualization purposes, the process tree is represented too, with
-  dashed edges. Every node in the graph is labeled using (1) a process id
-  created by our reconstruction, (2) the name of the executable run by the
-  process or the file name. Process 0 is the initial call to the
-  \texttt{sh} interpreter; the other processes are the calls to FSL bet,
-  stats and maths made in Listing~\ref{listing:sample-script}. Process 73
-  is forked by process 2: it was captured by \reprozip while it did not
-  appear in Listing~\ref{listing:sample-script}.
-}
-  \label{fig:simple_script}
-\end{figure}
-
 \subsection{Capturing transient files}
 
 We capture temporary files by replacing every
@@ -345,12 +346,12 @@ Files written by multiple processes are disambiguated using a similar technique.
 
 \subsection{Labeling processes} 
 
-After capturing transient files, we re-run the pipeline
-step by step in Condition 2 to label processes. The output files
-produced by a process in Condition 2 are compared to the ones produced
-in Condition 1. If no differences are found, the process is marked as
+After capturing transient files in the first condition, we re-run the pipeline
+step by step in the second one to label processes. The output files
+produced by a process in both conditions are compared.
+ If no differences are found, the process is marked as
 reproducible. Otherwise, the process is marked as non-reproducible, and the
-output files produced in Condition 1 are copied to Condition 2, to ensure
+output files produced in the first condition to the second one, to ensure
 that differences do not propagate further in the pipeline. Processes are
 instrumented transparently, through a modification of the \texttt{PATH}
 variable similar to the one described previously. By default, differences
@@ -360,24 +361,14 @@ instance to ignore file headers or file sections containing timestamps.
 \toolname finally creates a labeled
 provenance graph highlighting non-reproducible processes.
 
-Figure~\ref{fig:iterations} illustrates a hypothetical incremental labeling 
-process for the example in Figure~\ref{fig:simple_script}. 
-At step 1, process \texttt{73\#bet2} is labeled as non-reproducible (red) 
-as it produces files with differences, and the files produced by \texttt{73\#bet2} in  
-Condition 2 are replaced with the files produced by \texttt{73\#bet2} in 
-Condition 1. At step 2, process \texttt{75\#fslmaths} is executed and then labeled 
-as reproducible (green) as it produced files without differences.
-At step 3, \texttt{76\#fslstats} is also labeled as 
-reproducible as it didn't produce any file.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=.8\columnwidth]{images/labelling-process.png}
-  \caption{Illustration of the labeling approach. Non-reproducible processes are shown in red.}
-  \label{fig:iterations}
-\end{figure}
-
-
+Figure~\ref{fig:labeled-dag} illustrates a hypothetical incremental
+labeling of the example in Listing~\ref{listing:sample-script}. Process
+\texttt{73\#bet2} is labeled as non-reproducible (red) as it produces files
+with differences. To prevent the propagation of these differences, the
+files produced by \texttt{73\#bet2} in Condition 2 are replaced with the
+files produced by \texttt{73\#bet2} in Condition 1. Processes
+\texttt{75\#fslmaths} and \texttt{76\#fslstats} are then executed and
+labeled as reproducible (green) as they produce files without differences.
 
 \section{Experiments}
 
