@@ -1,5 +1,4 @@
 import zss
-import argparse
 import os
 import re
 import sqlite3
@@ -97,7 +96,7 @@ def create_provenance_graph(db_path, pid, graph_, pipe_list=[], multi_list={},
         hex_dig_file = hash_object.hexdigest()
         # Read files
         if file[2] == 1 and str(hex_dig_file) in pipe_list:
-            graph_.attr('edge', style='dashed')
+            graph_.attr('edge', style='solid')
             graph_.edge(str(hex_dig_file), str(pid))
 
         # Write files
@@ -110,7 +109,7 @@ def create_provenance_graph(db_path, pid, graph_, pipe_list=[], multi_list={},
             elif fname_ in tmp_list or fname_ in multi_list.keys():
                 graph_.attr('node', style='filled', fillcolor='grey')
             graph_.node(str(hex_dig_file), ''.join([str(pid), '#', fname_]))
-            graph_.attr('edge', style='dashed')
+            graph_.attr('edge', style='solid')
             graph_.edge(str(pid), str(hex_dig_file))
 
     for child in child_list:
@@ -119,7 +118,7 @@ def create_provenance_graph(db_path, pid, graph_, pipe_list=[], multi_list={},
                                 "basename", "remove_ext", "rm", "awk",
                                 "grep", "cp", "cat", "fslval", "fslhead",
                                 "fslhd", "expr", "head", "fslreorient2std"]:
-            graph_.attr('edge', style='solid')
+            graph_.attr('edge', style='dashed')
             graph_.edge(str(pid), str(child))
             create_provenance_graph(db_path, child, graph_, pipe_list,
                                     multi_list, tmp_list, total_proc_diff, dag)
@@ -185,28 +184,10 @@ def parse_labelling(diff_processes):
 
 
 def main(args=None):
-    parser = argparse.ArgumentParser(description='Provenance graph '
-                                                 'representations')
-    parser.add_argument("input_folder",
-                        help='input folder of pipeline results ')
-    parser.add_argument("output_folder",
-                        help='output folder to save the figures each '
-                             'provenance graph using graphviz')
-    parser.add_argument('-r', '--reprozipfile',
-                        help='trace file from reprozip ')
-    parser.add_argument('-t', '--transient',
-                        help='list of transient files ')
-    parser.add_argument('-l', '--labelling',
-                        help='List of processes that create differences')
-    parser.add_argument('-d', '--dag', action='store_true',
-                        help='Create provenance DAG')
-
-    args = parser.parse_args(args)
-    input_folder = args.input_folder
-    output_folder = args.output_folder
-    db_file = args.reprozipfile
-    diff_processes = args.labelling
-    tr_file = args.transient
+    input_folder = 'data/example/input'
+    db_file = 'data/example/trace.sqlite3'
+    diff_processes = 'data/example/nonreproducible_captured.json'
+    tr_file = 'data/example/transient_captured.json'
     multi_list, tmp_list = parse_transient(tr_file)
     total_proc_diff = parse_labelling(diff_processes)
 
@@ -217,13 +198,31 @@ def main(args=None):
             lst_files.append(elem)
     # Create provenance graphs
     graph = Di('Graph',
-               filename=output_folder,
-               format='png',
+               filename='images/p-graph',
+               format='pdf',
                strict=True)
     # graph.attr(compound=True)
     create_provenance_graph(db_file, 1, graph, lst_files, multi_list,
-                            tmp_list, total_proc_diff, args.dag)
+                            tmp_list, [], False)
     graph.render()
+
+    graph = Di('Graph',
+               filename='images/p-graph-dag',
+               format='pdf',
+               strict=True)
+    create_provenance_graph(db_file, 1, graph, lst_files, multi_list,
+                            tmp_list, [], True)
+    graph.render()
+
+    graph = Di('Graph',
+               filename='images/p-graph-dag-labelled',
+               format='pdf',
+               strict=True)
+    create_provenance_graph(db_file, 1, graph, lst_files, multi_list,
+                            tmp_list, total_proc_diff, True)
+    graph.render()
+
+    
 
 
 if __name__ == '__main__':

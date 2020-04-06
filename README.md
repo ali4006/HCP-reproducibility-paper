@@ -15,53 +15,22 @@ Use command ```\note``` in ```paper.tex``` as follows: ```\note{John}{This is a 
 
 ## How to generate the figures
 
-### Fig. 1
+### Fig 1
 
-* [Source file](https://docs.google.com/drawings/d/1OB3sB8kkK17Q516-TcmXKh3TwXSLDToJB11IVfUH5AU/edit?usp=sharing)
+* `python ./bin/code/provenance_graph.py`
 
-### Fig. 2a
-
-From a terminal, run:
-    
-    ```
-    python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/p_graph -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json 
-    ```
-### Fig. 2b
-
-From a terminal, run:
-
-    ```
-    python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/p-graph-dag -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json -d
-    ```
-
-### Fig. 3
-
-* [Source file](https://docs.google.com/drawings/d/1NWsfILmIaUDlKNkDm3Nm028U1l2zAAYwdtsCoyEJw8g/edit?usp=sharing)
-
-From a terminal, run:
-
-    ```
-    python ./bin/code/provenance_graph.py ./bin/exec/ ./bin/figs/labeled-pg -r ./bin/trace.sqlite3 -t ./bin/transient_captured.json -l ./bin/nonreproducible_captured.json -d
-    ```
-
-### Fig. 4
+### Fig. 2
 
 * [Source file](https://drive.google.com/file/d/1xonnMq4hLEe6GwMp4P7umikvrIAeflDe/view?usp=sharing)
 
-### Fig. 5
+### Fig. 3
+* `python ./bin/code/heatmap_plot.py ./data/pfs-20sbj-input/ ./data/pfs-20sbj-output/`
 
-From a terminal, run:
-
-    ```
-    python ./bin/code/heatmap_plot.py ./data/pfs-20sbj-input/ ./data/pfs-20sbj-output/
-    ```
-
-### Fig. 6
+### Fig. 4
 
 * [Source files](Consider:/data/asalari/ali-tests/paper_images/pfs_fnirt_imgs/)
 
-
-### Fig. 7
+### Fig. 5
 
 1. Create binarized difference images of each subject:
     ```
@@ -78,7 +47,7 @@ From a terminal, run:
 
 Note: All the subject images, binarized images and reference image that we used are available in [link](Consider:/data/asalari/ali-tests/paper_images/fs_aseg_imgs) 
 
-### Fig. 8
+### Fig. 6
 
 1. Compute dice value of difference images of each subject in a .csv file:
     ```
@@ -86,11 +55,7 @@ Note: All the subject images, binarized images and reference image that we used 
     ``` 
 Note: All the images are available in [link](Consider:/data/asalari/ali-tests/paper_images/fs_aseg_imgs)
 
-2. From a terminal, run:
-
-    ```
-    python ./bin/code/scatter_plot.py ./data/fs_seg_dice_accumulated_20sbj.csv ./bin/figs/scatter_plot.png
-    ```
+2. * `python bin/code/regions.py`
 
 ## How to generate the pdf
 
