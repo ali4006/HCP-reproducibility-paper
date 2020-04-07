@@ -230,25 +230,25 @@ non-reproducible processes in the pipeline.
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.5\linewidth]{images/p-graph.pdf}
+    \includegraphics[width=.5\linewidth]{figures/p-graph.pdf}
     \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
     \label{fig:provenance-graph}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.4\linewidth]{images/p-graph-dag.pdf}
+    \includegraphics[width=.4\linewidth]{figures/p-graph-dag.pdf}
     \caption{Provenance DAG, with disambiguated transient files.}
     \label{fig:provenance-dag}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
       \centering
-      \includegraphics[width=.4\linewidth]{images/p-graph-dag-labelled.pdf}
+      \includegraphics[width=.4\linewidth]{figures/p-graph-dag-labelled.pdf}
      \caption{Labeled DAG comparing 2 execution conditions, showing 1 non-reproducible process.}
      \label{fig:labeled-dag} 
   \end{subfigure}
-    % \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
+    % \includegraphics[width=.8\columnwidth]{figures/provenance-graphs}
     \caption{Provenance graphs
     created from the example pipeline in
     Listing~\ref{listing:sample-script}.
@@ -283,7 +283,7 @@ associated to a command line (executable and arguments), to facilitate
 process instrumentation.
 
 \begin{listing}
-  \inputminted{bash}{"bin/example.sh"}
+  \inputminted{bash}{"data/example/example.sh"}
   \caption{Example pipeline}
   \label{listing:sample-script}
 \end{listing}
@@ -525,7 +525,7 @@ the observed differences in the entire pipeline, for a given subject.
 \begin{figure*}
 \begin{minipage}{\linewidth}
 \centering
-  \includegraphics[width=\textwidth]{./images/heatmap.pdf}
+  \includegraphics[width=\textwidth]{./figures/heatmap.pdf}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
   Each cell represents the occurrence of a particular command line in a
   pipeline step among Anatomical Average (AAve), Anterior/Posterior
@@ -544,7 +544,7 @@ the observed differences in the entire pipeline, for a given subject.
 
 \begin{minipage}{\linewidth}
   \centering
-    \includegraphics[width=\linewidth]{images/pfs-labeled.png} 
+    \includegraphics[width=\linewidth]{figures/pfs-labeled.png} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline.
      Full-resolution image is available 
      \href{https://drive.google.com/file/d/1BKq5ZXIVr3bkij88SmeW7ulWOExSCm7n/view?usp=sharing}{here}.}
@@ -558,9 +558,9 @@ for a particular subject. Differences appear to be very substantial, in
 particular in the frontal and parietal lobes. 
 \begin{figure}
   \centering
-    \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
+    \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
     \caption{Differences between T2 \fnirt results in PreFreeSurfer's Brain Extraction (CentOS6 vs 
-    CentOS7). An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}{here}.}
+    CentOS7). An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs_t2w_alignment.gif}{here}.}
     \label{fig:fnirt_result}
 \end{figure}
 
@@ -582,12 +582,12 @@ structures have Dice coefficients below 0.9 for some subjects.
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
-  \includegraphics[width=\columnwidth]{images/brain_segmentation_mni.png} 
+  \includegraphics[width=\columnwidth]{figures/brain_segmentation_mni.png} 
   \caption{Sum of binarized differences between whole-brain FreeSurfer
   segmentations obtained from PreFreeSurfer processings in CentOS6 vs CentOS7
    (N=20). Segmentations were resampled and overlaid to the MNI152 volume
   template. An animated comparison of segmentations obtained for a particular subject is available
-\href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
+\href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/fs_brain_segmentation.gif}
 {here}.
 } 
   \label{fig:tissue_class}
@@ -595,7 +595,7 @@ structures have Dice coefficients below 0.9 for some subjects.
 
 \begin{figure}
   \hspace*{-1cm}
-  \includegraphics[width=1.2\linewidth]{images/dice_regions.pdf}
+  \includegraphics[width=1.2\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).}
     \label{fig:scatter_plot}
   \end{figure}
