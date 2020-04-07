@@ -57,7 +57,7 @@ linkbordercolor=blue,% hyperlink border will be blue
 \newcommand{\flirt}[0]{\texttt{flirt}\xspace}
 \newcommand{\fnirt}[0]{\texttt{fnirt}\xspace}
  
-\title{File-based localization of numerical perturbations in data analysis pipelines}
+\title{\toolname: file-based localization of numerical perturbations in data analysis pipelines}
 \begin{document}
 
 \author[1]{Ali Salari}
@@ -70,32 +70,27 @@ linkbordercolor=blue,% hyperlink border will be blue
 \affil[2]{McGill University, Montreal, Canada}
 \affil[3]{Montreal Neurological Institute, Montreal, Canada}
 
-
-
 \maketitle
 
 \begin{abstract} 
-
-% Data analysis pipelines are known to be impacted by operating system
-% updates and other infrastructural factors, presumably due to the creation,
-% propagation and amplification of numerical errors. However, the precise
-% causes of such instabilities and the path along which they propagate in the
-% pipelines are unclear, while this process could play a major role in the
-% current reproducibility crisis. We present a technique to identify the
-% computational processes in a pipeline that create numerical differences
-% when executed in different computational conditions. Our technique
-% leverages system-call interception to reconstruct processing and file
-% graphs without pipeline instrumentation. By applying our tool to the
-% structural pre-processing pipelines released by the Human Connectome
-% Project, we find that linear and non-linear registration are the cause of
-% most numerical instabilities in such pipelines, which confirms previous
-% findings. 
-
+Data analysis pipelines are known to be impacted by computational conditions, presumably due to the creation,
+propagation and amplification of numerical errors. However, the precise
+causes of such instabilities and the path along which they propagate in the
+pipelines are unclear, while this process could play a major role in the
+current reproducibility crisis. We present \toolname, a tool to identify the
+processes in a pipeline that create numerical differences
+when executed in different computational conditions. \toolname
+leverages system-call interception to reconstruct and compare provenance
+graphs without pipeline instrumentation. By applying \toolname to the
+structural pre-processing pipelines of the Human Connectome
+Project, we found that linear and non-linear registration are the cause of
+most numerical instabilities in such pipelines, which confirms previous
+findings. 
 \end{abstract}
 
-\begin{keywords}
-Computational reproducibility; Numerical instability; Neuroimaging.
-\end{keywords}
+% \begin{keywords}
+% Computational reproducibility; Numerical instability; Neuroimaging.
+% \end{keywords}
 
 
 \section{Introduction}
@@ -117,9 +112,9 @@ In neuroimaging, our primary application field, data analyses often consist
 of hundreds of computational processes, sometimes coming from multiple
 toolboxes, that are aggregated to perform a specific function. For
 instance, the fMRIprep pipeline~\cite{esteban2019fmriprep} assembles software blocks
-from FSL~\cite{jenkinson2012fsl}, AFNI~\cite{cox2012afni}, Freesurfer~\cite{fischl2012freesurfer} and ANTs~\cite{avants2009advanced} to provide a state-of-the art
+from FSL~\cite{jenkinson2012fsl}, AFNI~\cite{cox2012afni}, FreeSurfer~\cite{fischl2012freesurfer} and ANTs~\cite{avants2009advanced} to provide a state-of-the art
 functional MRI processing tool with minimal user input. Another example are the pipelines of the Human
-Connectome Project~\cite{glasser2013} that combine tools from FSL and Freesurfer to pre-process
+Connectome Project~\cite{glasser2013} that combine tools from FSL and FreeSurfer to pre-process
 structural, functional and diffusion data from their
 open dataset. In both cases, pipelines leverage toolboxes that are
 widely trusted in the community. At the same time, substantial results
@@ -129,7 +124,7 @@ numerical conditioning is required. For such complex pipelines, a
 lightweight solution has to be found to perform such evaluations with
 limited code instrumentation.
 
-Numerical evaluations are traditionnally performed using techniques such as
+Numerical evaluations are traditionally performed using techniques such as
 interval arithmetics~\cite{hickey2001interval} that require complete code re-writes and are
 therefore barely applicable to complex pipelines. Recently, Monte-Carlo
 Arithmetic~\cite{Parker1997-qq, Denis2016-wo} provided a practical way to
@@ -146,17 +141,16 @@ complete.
 
 We present Spot, a tool to identify the source of numerical differences in
 complex pipelines without instrumentation. Using system-call interception
-through the Reprozip tool~\cite{chirigati2016reprozip}, Spot traverses graphs of processes and
+through the \reprozip tool~\cite{rampin2016reprozip}, Spot traverses graphs of processes and
 intermediary files to pinpoint the pipeline components that are unstable
 across execution conditions. When differences start accumulating,
 effectively masking any further instability, it restores clean data copies
 through a set of wrapper scripts. Wrapper scripts are also used to restore
 temporary data that might have been deleted during the execution, and to
 disambiguate files that have been written by multiple processes. The remainder of this paper 
-presents the design of our tool, and its 
+presents the design of \toolname, and its 
 application to pre-processing pipelines of the HCP project. 
 
-\todo{explain the issue with propagating differences and with transient files}
 
 % % Verificarlo and MCA, require recompilation
 % Numerical instabilities originate in the limited \todo{precision} of floating-point representations. 
@@ -214,9 +208,6 @@ application to pre-processing pipelines of the HCP project.
 % the numerical reproducibility measurement tool named \emph{Spot} to identify 
 % the processes in the pipeline that create numerical differences across different conditions. 
 % Furthermore, we can stabilize the identified processes in the next steps.
-\todo{explain creation vs proSpagation}
-\todo{define pipeline}
-\todo{explain the need for reduced instrumentation}
 
 \newpage
 
@@ -239,25 +230,25 @@ non-reproducible processes in the pipeline.
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.5\linewidth]{images/p-graph.pdf}
+    \includegraphics[width=.5\linewidth]{figures/p-graph.pdf}
     \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
     \label{fig:provenance-graph}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.4\linewidth]{images/p-graph-dag.pdf}
+    \includegraphics[width=.4\linewidth]{figures/p-graph-dag.pdf}
     \caption{Provenance DAG, with disambiguated transient files.}
     \label{fig:provenance-dag}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
       \centering
-      \includegraphics[width=.4\linewidth]{images/p-graph-dag-labelled.pdf}
+      \includegraphics[width=.4\linewidth]{figures/p-graph-dag-labelled.pdf}
      \caption{Labeled DAG comparing 2 execution conditions, showing 1 non-reproducible process.}
      \label{fig:labeled-dag} 
   \end{subfigure}
-    % \includegraphics[width=.8\columnwidth]{images/provenance-graphs}
+    % \includegraphics[width=.8\columnwidth]{figures/provenance-graphs}
     \caption{Provenance graphs
     created from the example pipeline in
     Listing~\ref{listing:sample-script}.
@@ -292,7 +283,7 @@ associated to a command line (executable and arguments), to facilitate
 process instrumentation.
 
 \begin{listing}
-  \inputminted{bash}{"bin/example.sh"}
+  \inputminted{bash}{"data/example/example.sh"}
   \caption{Example pipeline}
   \label{listing:sample-script}
 \end{listing}
@@ -342,8 +333,6 @@ Files written by multiple processes are disambiguated using a similar technique.
  update the provenance graph accordingly, so that all files in the graph
  have an in-degree of 1 (Figure~\ref{fig:provenance-dag}). This operation also makes the provenance graph
  acyclic, since we assumed that a process could only release a single version of a file.
-
-
 
 \subsection{Labeling processes} 
 
@@ -415,7 +404,10 @@ In summary, PreFreeSurfer consists of the following steps:
 \item Alignment and Anatomical Average (AAve), T1w(s), T2w(s),  
 \item Anterior/Posterior Commissure Alignment (ACPC-A), 
 \item Brain Extraction (BExt), 
-\item \tristan{Ali, why isn't BBR cross-modal registration here and in the heatmap?}
+\item \tristan{Ali, why isn't BBR cross-modal registration here and in the heatmap?
+Ali: I found this main sub-pipelines as the separate scripts in PreFreeSurfer github repo, 
+btw, we can add it here. 
+I only reprsent sub-pipelines in the heatmap that at leats include one red process.}
 \item Bias Field Correction (BFC), 
 \item Atlas-Registration (AR).
 \end{itemize}
@@ -474,7 +466,6 @@ or transformations differ. To compare segmentations $X$ and $Y$, we used the Dic
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
 % Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
-
 \section{Results}
 
 % \subsection{Subject clustering}
@@ -488,7 +479,22 @@ or transformations differ. To compare segmentations $X$ and $Y$, we used the Dic
 % are considered: node label modification, node removal, and node insertion.
 % Each operation has an associated cost of 1. 
 % //If threshold is 0, why do we even need the edit distance?//
-
+\begin{table}[b]
+  \centering
+  \begin{threeparttable}
+  \caption{Types of provenance graphs in PreFreeSurfer.}
+  \label{table:data-clusters}
+  \begin{tabular}{cc|cc}
+  \toprule
+  Type   &   \makecell{Number of \\ Subjects}   &  \makecell{Number of \\ T1w images}          & \makecell{Number of \\ T2w images}   \\ \midrule
+  1      &               9                      &  2 & 2 \\
+  2      &               8                      &  1 & 1 \\
+  3      &               1                      &  1 & 2 \\
+  4      &               2                      &  2 & 1\\
+  \bottomrule
+  \end{tabular}
+  \end{threeparttable}
+  \end{table}
 
 \subsubsection{Within-OS differences}
 
@@ -505,54 +511,24 @@ these differences.
 We identified four types of subjects with different PreFreeSurfer
 provenance graphs (Table~\ref{table:data-clusters}). Differences between
 subject types are coming from different  numbers of T1 and T2 images in the
-raw data: subjects of type 1 have 2 T1 images and 2 T2 images, while
-subjects of type 2 only have 1 T1 image and 1 T2 image. We verified that
+raw data. We verified that
 the provenance graphs were identical for all subjects of the same type, for
 both versions of CentOS.
 
-\begin{table}
-\centering
-\begin{threeparttable}
-\caption{Types of provenance graphs in PreFreeSurfer.}
-\label{table:data-clusters}
-
-\begin{tabular}{cc|cc}
-\toprule
-Type   &   \makecell{Number of \\ Subjects}   &  \makecell{Number of \\ T1w images}          & \makecell{Number of \\ T2w images}   \\ \midrule
-1      &               9                      &  2 & 2 \\
-2      &               8                      &  1 & 1 \\
-3      &               1                      &  1 & 2 \\
-4      &               2                      &  2 & 1\\
-\bottomrule
-\end{tabular}
-\end{threeparttable}
-\end{table}
-
-
-Figure~\ref{fig:pfs_freq} shows the frequency of non-reproducible pipeline processes
+Figure~\ref{fig:pfs_heatmap} shows the frequency of non-reproducible pipeline processes
 in PreFreeSurfer. 
 Differences were observed in linear registration 
 with FSL \flirt (in ACPC-Alignment, Brain Extraction, Distortion Correction, and
 Atlas Registration), in non-linear registration with FSL \fnirt (in Brain Extraction 
 and Atlas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
 and Atlas Registration). Differences were also observed in image mean 
-computations with FSL maths  (in Anatomical Average). 
-A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{fig:complete_pfs}
-\begin{figure}
-  \centering
-    \includegraphics[width=\columnwidth]{./images/pfs-labeled.pdf} 
-    \caption{A complete provenance graph from the PreFreesurfer pipeline.}
-    \label{fig:complete_pfs}
-\end{figure}
-% Between subject differences can be a result of different subject types. 
-% For instance, the subjects contain two T1 images need more calculations 
-% to produce an average image between them.
-
-
-% make figure in two columns use {figure*}
+computations with FSL \texttt{maths}  (in Anatomical Average). 
+Figure~\ref{fig:complete_pfs} shows a complete PreFreeSurfer labeled DAG, localizing 
+the observed differences in the entire pipeline, for a given subject.
 \begin{figure*}
+\begin{minipage}{\linewidth}
 \centering
-  \includegraphics[width=\textwidth]{./images/heatmap.pdf}
+  \includegraphics[width=\textwidth]{./figures/heatmap.pdf}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps (N=20). 
   Each cell represents the occurrence of a particular command line in a
   pipeline step among Anatomical Average (AAve), Anterior/Posterior
@@ -564,63 +540,55 @@ A complete provenance graph of the PreFreeSurfer is illustrated in Figure~\ref{f
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects.
         }
-  \label{fig:pfs_freq}
+  \label{fig:pfs_heatmap}
+\end{minipage}
+
+\vspace*{1cm}
+
+\begin{minipage}{\linewidth}
+  \centering
+    \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
+    \caption{A complete provenance graph from the PreFreesurfer pipeline.}
+    \label{fig:complete_pfs}
+\end{minipage}
 \end{figure*}
 
-
-To visually illustrate the observed differences,
+To illustrate the magnitude of the differences,
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
 for a particular subject. Differences appear to be very substantial, in
 particular in the frontal and parietal lobes. 
 \begin{figure}
   \centering
-    \includegraphics[width=\columnwidth]{images/t2w_alignment.png} 
+    \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
     \caption{Differences between T2 \fnirt results in PreFreeSurfer's Brain Extraction (CentOS6 vs 
-    CentOS7). An animated version of the comparison is available 
-    \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/images/pfs_t2w_alignment.gif}
-    {here}.
-} 
+    CentOS7). An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs_t2w_alignment.gif}{here}.}
     \label{fig:fnirt_result}
 \end{figure}
-
 
 \subsubsection{Between-OS differences in FreeSurfer} 
 
 The only non-reproducible process identified by \toolname in FreeSurfer was
 \texttt{mris\_make\_surfaces} (cortical and white matter surfaces
-generation), which is also the only dynamically-linked executable in this pipeline
-\tristan{Ali, could you check that this is indeed the only dynamic
-executable in the pipeline?
-Ali: There is another dynamically-linked executable named mris\_curvature 
-that doesn't create difference when set a seed for that.
-Also, another executables are in directory freesurfer/mni/bin/ such as volume\_hist, 
-mincinfo, mincresample, \dots
-that are dynamically-linked but do not create differences.}. 
-\texttt{mris\_make\_surfaces} produced different results for
+generation), a dynamically-linked executable 
+that produced different results for
 10 out of 20 subjects. 
 
-While by design \toolname only identifies processes that create differences
-between conditions, pipeline results may still differ due to the
-propagation and amplification of differences created at previous processing
-steps, PreFreeSurfer in our case. We observed the effect of this
-propagation in FreeSurfer results, as shown in
-Figure~\ref{fig:tissue_class} for whole-brain segmentations. Furthermore,
-the Dice coefficients associated with the 44 regions segmented by
-FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing, for some subjects, Dice values
-below 0.9 in structures such as the corpus callosum, pallidum, amygdala,
-accumbens area, and ventricles.
-
-
-
+However, FreeSurfer results still differ between conditions, due to the
+propagation and amplification of differences created in PreFreeSurfer. We
+observed the effect of this propagation in FreeSurfer results, as shown in
+Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
+Dice coefficients associated with the 44 regions segmented by
+FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that many 
+structures have Dice coefficients below 0.9 for some subjects.
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
-  \includegraphics[width=\columnwidth]{images/brain_segmentation_mni.png} 
+  \includegraphics[width=\columnwidth]{figures/brain_segmentation_mni.png} 
   \caption{Sum of binarized differences between whole-brain FreeSurfer
   segmentations obtained from PreFreeSurfer processings in CentOS6 vs CentOS7
    (N=20). Segmentations were resampled and overlaid to the MNI152 volume
   template. An animated comparison of segmentations obtained for a particular subject is available
-\href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/images/fs_brain_segmentation.gif}
+\href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/fs_brain_segmentation.gif}
 {here}.
 } 
   \label{fig:tissue_class}
@@ -628,7 +596,7 @@ accumbens area, and ventricles.
 
 \begin{figure}
   \hspace*{-1cm}
-  \includegraphics[width=1.2\linewidth]{images/dice_regions.pdf}
+  \includegraphics[width=1.2\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).}
     \label{fig:scatter_plot}
   \end{figure}
@@ -649,62 +617,56 @@ Linear and non-linear registration with FSL were found to
 frequently lead to differences between results obtained with different
 operating systems. This does not come as a surprise given the instabilities
 associated with these processes. It also corroborates our previous findings
-in~\cite{Glatard2015} where fMRI pre-processing using FSL was found to be
-non-reproducible across operating systems starting from the motion
+in~\cite{Glatard2015}, where fMRI pre-processing with FSL was found to vary across operating systems 
+starting from the motion
 correction step, a step that uses FSL's \flirt tool internally. It
 would be relevant to investigate if the observed instability of
-registration processes generalizes to other toolkits, or if it is specific
+registration processes generalizes to other toolkits, or if it remains specific
 to FSL. In view of the effect of small data perturbations in a variety of
 toolboxes and processes, such as cortical surface extraction using
 FreeSurfer and CIVET~\cite{Lewis2017-ll} or connectome estimation using
-Dipy~\cite{kiar2019comparing}, it is possible that this observation
+Dipy~\cite{kiar2019comparing}, it is probable that this observation
 generalizes widely across toolboxes and requires a deeper investigation of
 the stability of linear and non-linear registration.
 
 While only a handful or processes were found non-reproducible across the
-tested operating systems, including most notably linear and non-linear
-registration, the effect of such instabilities were found to propagate
-widely in the pipelines, resulting in Dice coefficients frequently below
-0.9 for the amygdala or ventricles. This illustrates the need to conduct such 
-reproducibility studies for entire pipelines rather than isolated processes.
+tested operating systems, the effect of such instabilities were found to
+propagate widely in the pipelines, and to substantially impact FreeSurfer's
+segmentations. This illustrates the need to conduct reproducibility studies
+on entire pipelines rather than isolated processes. It also highlights the need 
+for a deeper stability analysis of pipeline processes.
 
-Furthermore, as shown in Figure~\ref{fig:pfs_freq}, the reproducibility of
+Furthermore, as shown in Figure~\ref{fig:pfs_heatmap}, the reproducibility of
 a given tool may vary across subjects and across processing parameters. For
 instance, linear registration with \flirt seems to be fully reproducible in
 the Anatomical Average sub-pipeline, while it is highly non-reproducible in
 ACPC Alignment. In Brain Extraction, the same tool was found reproducible
 for some subjects only. Therefore, reproducibility studies need to be
-performed on several representative subjects rather than only a couple of
-them. While this is common practice in neurosciences, it is common that
-software tests be executed only on a single dataset, to reduce the
-associated computational load. It is likely, however, that the observed
-instabilities stem from numerical edge cases that may not manifest in all
-datasets. 
+performed on several subjects. While this is common practice in neurosciences, 
+software tests are often executed only on a single dataset, to reduce the
+associated computational load. Our results show that pipeline tests should 
+encompass enough subjects to cover execution paths adequately.
 
-While our findings give insight on the reasons why image analysis processes
-are unstable across operating systems, they do not provide a complete
-uncertainty quantification for neuroimaging pipelines across operating
-systems. Although CentOS is a popular distribution in
-neurosciences~\cite{hanke2011neuroscience}, different observations could be
-made on other operating systems. The numerical noise introduced by
-operating system updates is a realistic one, as such updates are likely to
-occur throughout the time span of a neuroscience study, but it is also
-uncontrolled, as it originates in updates of low-level libraries by
-third-party developers. A possible method to study this problem more
-comprehensively would be to introduce controlled numerical perturbations in
-pipelines, which could be done either using data noise, or through
-computational noise introduced by Monte-Carlo
-Arithmetic~\cite{Parker1997-qq}. The work in~\cite{kiar2019comparing}
-discusses and compares these two techniques.
+Our results illustrate the type of variability that can be introduced in
+ neuroimaging results due to operating system updates. The
+ numerical noise introduced by operating system updates is realistic, as
+ such updates are likely to occur throughout the time span of a
+ neuroscience study, but it is also uncontrolled, as it originates in
+ updates of low-level libraries by third-party developers. A possible
+ method to study this problem more comprehensively would be to introduce
+ controlled numerical perturbations in pipelines, which could be done by
+ introducing noise either in the data, or in floating-point computations
+ through Monte-Carlo Arithmetic~\cite{Parker1997-qq}. The work
+ in~\cite{kiar2019comparing} discusses and compares these two techniques.
 
 \subsection{\toolname evaluation}
 
 The processes identified by \toolname as non-reproducible were all
 associated with dynamically-linked executables. 
-This makes complete sense as statically-linked executables wouldn't
-be impacted by library updates. Moreover, the hypothetical effects of
+This makes complete sense as statically-linked executables are not
+impacted by library updates. Moreover, the hypothetical effects of
 hardware or Linux kernel updates were not measured, as the different
-operating sytems were deployed in Docker containers on the same host, that
+operating systems were deployed in Docker containers on the same host, that
 is, using the same kernel and hardware.
 
 To evaluate the reproducibility of a pipeline, \toolname needs to execute
@@ -739,44 +701,36 @@ that is processed in this way would not be detected by \toolname.
 
 \section{Conclusion}
 
-Summary of key findings. 
+We presented \toolname, a tool to detect the source of numerical
+differences in complex pipelines executed in different computational
+conditions. \toolname leverages system-call interception through the
+\reprozip tool, and therefore can be applied to the most complex pipelines
+without requiring their instrumentation. 
 
-Mention non-instrumentation / reprozip
+By applying \toolname to the pre-processing pipelines of the Human
+Connectome Project, compared in different operating systems, we showed that
+between-OS differences are mostly originating in linear and non-linear
+image registration tools. Moreover, differences introduced during image
+registration propagate widely in the pipelines, leading to important
+variability in whole-brain segmentations.
 
-Spot works well but is a first step toward deeper investigation of 
-particular processes.
+Future work will investigate in more details the numerical stability of
+registration algorithms. Besides, we plan on using Monte-Carlo arithmetic
+to inject controlled amounts of noise in the pipelines, and monitory
+uncertainty propagation and amplification in the pipelines.
 
 \section{Acknowledgments}
 
-This research was enabled in part by support provided by 
-Calcul Quebec (http://www.calculquebec.ca) and 
-Compute Canada (http://www.computecanada.ca).
-Also, data were provided by the Human Connectome Project, WU-Minn 
+We warmly thank Compute Canada (\url{http://www.computecanada.ca}) and Calcul
+Qu\'ebec (\url{http://www.calculquebec.ca}) for providing the infrastructure used in our experiments.
+Data and pipelines were provided by the Human Connectome Project, WU-Minn 
 Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil; 
 1U54MH091657) funded by the 16 NIH Institutes and Centers that support 
 the NIH Blueprint for Neuroscience Research; and by the McDonnell 
 Center for Systems Neuroscience at Washington University.
-
-
-% \begin{figure*}
-% \centering
-%   \includegraphics[width=.9\textwidth]{images/graph}
-%   \caption{A complete process graph from the PreFreeSurfer pipeline.
-% Full-resolution image available at \url{https://drive.google.com/open?id=174yyn8SuVOUcK5aRVw0bagjDanLD0FLt}.}
-%   \label{fig:complete-graph}
-% \end{figure*}
-
-% \begin{figure*}
-% \centering
-%   \includegraphics[width=.8\textwidth]{images/hclusters}
-%   \caption{Different data types clustered among 100 subjects.}
-%   \label{fig:subj-clusters}
-% \end{figure*}
-
-
+\tristan{check ethics}
 
 \bibliographystyle{plain}
 \bibliography{biblio}
-
 
 \end{document}
