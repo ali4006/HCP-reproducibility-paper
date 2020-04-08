@@ -74,18 +74,18 @@ linkbordercolor=blue,% hyperlink border will be blue
 
 \begin{abstract} 
 Data analysis pipelines are known to be impacted by computational conditions, presumably due to the creation,
-propagation and amplification of numerical errors. However, the precise
-causes of such instabilities and the path along which they propagate in the
-pipelines are unclear, while this process could play a major role in the
-current reproducibility crisis. We present \toolname, a tool to identify the
-processes in a pipeline that create numerical differences
+propagation, and amplification of numerical errors. While this process could
+play a major role in the current reproducibility crisis, the precise
+causes of such instabilities and the path along which they propagate in
+pipelines are unclear. We present \toolname, a tool to identify which
+processes in a pipeline create numerical differences
 when executed in different computational conditions. \toolname
 leverages system-call interception to reconstruct and compare provenance
 graphs without pipeline instrumentation. By applying \toolname to the
 structural pre-processing pipelines of the Human Connectome
 Project, we found that linear and non-linear registration are the cause of
-most numerical instabilities in such pipelines, which confirms previous
-findings. 
+most numerical instabilities in these pipelines, which confirms previous
+findings.
 \end{abstract}
 
 % \begin{keywords}
@@ -99,27 +99,27 @@ findings.
 % Containerization isn't the solution
 
 Numerical stability is believed to play a central role in the differences
-observed in data analysis pipelines across computational infrastructures.
+observed in data analysis pipelines across computational infrastructures. \note{Greg}{cite or soften claim}
 Variability resulting from operating system upgrades, parallelization, or
 even minor data perturbations may originate in errors that accumulate in
-numerical computations, with important consequences on the reproducibility
-of data analysis results. However, it remains challenging to identify the
+numerical computations with important consequences on the reproducibility
+of analytical results. However, it remains challenging to identify the
 exact elements in a complex pipeline that are prone to numerical instability,
 leaving pipeline developers and users with the daunting task to manually
-compare results obtained in different conditions. 
+compare results obtained across different conditions. 
 
 In neuroimaging, our primary application field, data analyses often consist
-of hundreds of computational processes, sometimes coming from multiple
-toolboxes, that are aggregated to perform a specific function. For
+of hundreds of computational processes -- often coming from multiple
+toolboxes -- that are aggregated to perform a specific function. For
 instance, the fMRIprep pipeline~\cite{esteban2019fmriprep} assembles software blocks
 from FSL~\cite{jenkinson2012fsl}, AFNI~\cite{cox2012afni}, FreeSurfer~\cite{fischl2012freesurfer} and ANTs~\cite{avants2009advanced} to provide a state-of-the art
 functional MRI processing tool with minimal user input. Another example are the pipelines of the Human
 Connectome Project~\cite{glasser2013} that combine tools from FSL and FreeSurfer to pre-process
 structural, functional and diffusion data from their
-open dataset. In both cases, pipelines leverage toolboxes that are
-widely trusted in the community. At the same time, substantial results
-variations have been observed in these toolboxes resulting from minor data
-or infrastructure perturbations~\cite{Glatard2015, Gronenschild2012, Lewis2017-ll}, which suggests that further investigation of their
+uniquely high-fidelity open dataset. In both cases, pipelines leverage toolboxes that are
+widely trusted in the community, yet, at the same time substantial variations in results
+have been observed in these toolboxes resulting from minor data
+or infrastructure perturbations~\cite{Glatard2015, Gronenschild2012, Lewis2017-ll}, suggesting that further investigation of their
 numerical conditioning is required. For such complex pipelines, a
 lightweight solution has to be found to perform such evaluations with
 limited code instrumentation.
@@ -139,9 +139,9 @@ always feasible. Second, it multiplies the execution time by a factor of 10
 to 100, which is impractical when executions already take a few hours to
 complete. 
 
-We present Spot, a tool to identify the source of numerical differences in
+We present \toolname, a tool to identify the source of numerical differences in
 complex pipelines without instrumentation. Using system-call interception
-through the \reprozip tool~\cite{rampin2016reprozip}, Spot traverses graphs of processes and
+through the \reprozip tool~\cite{rampin2016reprozip}, \toolname traverses graphs of processes and
 intermediary files to pinpoint the pipeline components that are unstable
 across execution conditions. When differences start accumulating,
 effectively masking any further instability, it restores clean data copies
@@ -213,9 +213,9 @@ application to pre-processing pipelines of the HCP project.
 
 \section{Tool description}
 
-\toolname identifies the processes in a pipeline that produce different
+\toolname identifies the components in a pipeline, as the resolution level of a system process, that produce different
 results in different execution conditions. First, a directed
-bipartite provenance graph is recorded for each subject, where nodes
+bipartite provenance graph is recorded for each pipeline execution, where nodes
 represent application processes and files, and edges represent read and
 write file accesses (Figure~\ref{fig:provenance-graph}). Second,
 transient files, i.e., files that are either deleted during pipeline
@@ -225,7 +225,7 @@ Graph) in which file nodes have a single parent (in-degree of 1) (Figure~\ref{fi
 DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
  The resulting labeled graph identifies the
-non-reproducible processes in the pipeline. 
+non-reproducible processes in the pipeline. \note{Greg}{clarify why many processes don't appear in the graph as shown}
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
@@ -290,7 +290,7 @@ process instrumentation.
 
 \subsection{Recording provenance graphs}
 
-We use the \reprozip tool~\cite{rampin2016reprozip}
+We use \reprozip~\cite{rampin2016reprozip}
 to capture: (1) the set of processes created by the
 pipeline, and
 (2) the set of files read and written by each process, including
@@ -300,17 +300,18 @@ Using the \reprozip trace, \toolname reconstructs a provenance graph by creating
 nodes and by adding directed edges corresponding
 to file reads and writes (Figure~\ref{fig:provenance-graph}).
 
-Provenance graphs are often subject-dependent, due to variations in input data among subjects.
+Provenance graphs are often data-dependent, due to variations in input data that
+may trigger differing branching or looping patterns across executions, for example.
 %, which justifies the processing
 % of multiple subjects. For instance, data acquisitions may be
 % repeated a different number of times in each subject, for noise-reduction
 % purposes. 
-Some of these differences can be neglected, for instance when a data
+Some of these differences can be neglected: for instance, when a data
 decompression step is present at the beginning of the execution for some
-subjects only, but other differences cannot, for instance when complete
-different processing paths are used in different subjects. \toolname
-includes helpers to identify different instances of provenance graphs. In
-particular, it can cluster process trees, where nodes are processes and
+subjects only. Other differences cannot: for instance, when entirely
+different processing paths are used for different datasets. \toolname
+includes helpers to identify different instances of provenance graphs, 
+such as supporting the clustering of process trees, where nodes are processes and
 edges are \texttt{fork()} or \texttt{clone()} system calls, using the tree
 edit distance~\cite{zhang1989simple} implemented in Python's \texttt{zss} package.
 
