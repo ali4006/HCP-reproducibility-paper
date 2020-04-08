@@ -502,21 +502,21 @@ FreeSurfer, we identified 2 processes leading to within-OS differences due
 to the use of pseudo-random numbers: image registration with
 \texttt{mri\_segreg}, and cortical surface curvature estimations with
 \texttt{mris\_curvature}. Fixing the random seed used in FreeSurfer removed
-these differences. 
+these differences. \note{Greg}{can you make some statement on the magnitude of these differences?} 
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
 
 We identified four types of subjects with different PreFreeSurfer
 provenance graphs (Table~\ref{table:data-clusters}). Differences between
-subject types are coming from different  numbers of T1 and T2 images in the
+subject types came from different numbers of T1 and T2 images in the
 raw data. We verified that
 the provenance graphs were identical for all subjects of the same type, for
 both versions of CentOS.
 
 Figure~\ref{fig:pfs_heatmap} shows the frequency of non-reproducible pipeline processes
 in PreFreeSurfer. 
-Differences were observed in linear registration 
+The processes identified as non-reproducible were observed in linear registration 
 with FSL \flirt (in ACPC-Alignment, Brain Extraction, Distortion Correction, and
 Atlas Registration), in non-linear registration with FSL \fnirt (in Brain Extraction 
 and Atlas Registration), and in image warping with FSL \texttt{new\_invwarp} (in Brain Extraction 
@@ -537,7 +537,8 @@ the observed differences in the entire pipeline, for a given subject.
   the \flirt tool was invoked 6 times in step DC for each of the 20
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
-  17 subjects.
+  17 subjects. \note{Greg}{colorbar doesn't match the numbers: it's from 0-1 but the numbers are 
+  subject counts. I don't really have a preference on which, but harmonizing them to be the same unit should happen.}
         }
   \label{fig:pfs_heatmap}
 \end{minipage}
@@ -557,7 +558,8 @@ the observed differences in the entire pipeline, for a given subject.
 To illustrate the magnitude of the differences,
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
 for a particular subject. Differences appear to be very substantial, in
-particular in the frontal and parietal lobes. 
+particular in the frontal and parietal lobes.\note{Greg}{This is very hard to see from the figure because the
+luminosity of the two colormaps are so different - the contrast moving from orange to grayscale is difficult. Perhaps use two colors, green and purple for instance, with the same intensity to see if this is more easily seen?} 
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
@@ -580,7 +582,7 @@ observed the effect of this propagation in FreeSurfer results, as shown in
 Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
 FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that many 
-structures have Dice coefficients below 0.9 for some subjects.
+structures have Dice coefficients below 0.9 for some subjects. \note{Greg}{awkward "many" followed by "some". reword?}
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
@@ -598,7 +600,9 @@ structures have Dice coefficients below 0.9 for some subjects.
 \begin{figure}
   \hspace*{-1cm}
   \includegraphics[width=1.2\linewidth]{figures/dice_regions.pdf}
-    \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).}
+    \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).
+\note{Greg}{I don't think the legend is important here. Focus on having values legible and removing those which
+don't really illustrate the "point".}}
     \label{fig:scatter_plot}
   \end{figure}
 
@@ -613,7 +617,8 @@ structures have Dice coefficients below 0.9 for some subjects.
 \section{Discussion}
 
 \subsection{Key findings}
-
+\note{Greg}{feel free to ignore, but a peeve of mine is one heading directly following another. Is there some
+kind of high-level summary you could put above this, or just omit the key-findings label?}
 Linear and non-linear registration with FSL were found to
 frequently lead to differences between results obtained with different
 operating systems. This does not come as a surprise given the instabilities
@@ -632,19 +637,19 @@ the stability of linear and non-linear registration.
 
 While only a handful or processes were found non-reproducible across the
 tested operating systems, the effect of such instabilities were found to
-propagate widely in the pipelines, and to substantially impact FreeSurfer's
-segmentations. This illustrates the need to conduct reproducibility studies
+propagate widely in the pipelines, and to substantially impact the segmentations
+created by FreeSurfer. This illustrates the need to conduct reproducibility studies
 on entire pipelines rather than isolated processes. It also highlights the need 
 for a deeper stability analysis of pipeline processes.
 
-Furthermore, as shown in Figure~\ref{fig:pfs_heatmap}, the reproducibility of
+As is shown in Figure~\ref{fig:pfs_heatmap}, the reproducibility of
 a given tool may vary across subjects and across processing parameters. For
 instance, linear registration with \flirt seems to be fully reproducible in
 the Anatomical Average sub-pipeline, while it is highly non-reproducible in
 ACPC Alignment. In Brain Extraction, the same tool was found reproducible
 for some subjects only. Therefore, reproducibility studies need to be
-performed on several subjects. While this is common practice in neurosciences, 
-software tests are often executed only on a single dataset, to reduce the
+performed on several subjects. While this is common practice to some extent in neuroimaging, 
+software tests are often executed only on a single dataset to reduce the
 associated computational load. Our results show that pipeline tests should 
 encompass enough subjects to cover execution paths adequately.
 
@@ -674,7 +679,7 @@ To evaluate the reproducibility of a pipeline, \toolname needs to execute
 it 3 times in order to (1) record a first \reprozip trace, (2) save
 transient files, and (3) compare results in the second condition. This is
 one more execution than the theoretical minimum of 2. It might be possible
-to further reduce this overhead, by executing at step (2) only the
+to further reduce this overhead by executing at step (2) only the
 processes depending on transient files.
 
 We demonstrated the applicability of our approach by evaluating two of the
@@ -686,7 +691,7 @@ without requiring their instrumentation, which saved a very substantial
 technical effort. The assumptions made on the pipeline structure, related
 to the absence of concurrent writes, were not violated in our analysis, and
 are likely to not impede \toolname's applicability to the most common
-neuroimaging pipelines. 
+neuroimaging pipelines.
 
 However, file-based analyses also have limitations related to the
 granularity at which they operate. Indeed, differences can only be
@@ -716,9 +721,9 @@ registration propagate widely in the pipelines, leading to important
 variability in whole-brain segmentations.
 
 Future work will investigate in more details the numerical stability of
-registration algorithms. Besides, we plan on using Monte-Carlo arithmetic
-to inject controlled amounts of noise in the pipelines, and monitory
-uncertainty propagation and amplification in the pipelines.
+registration algorithms. Additionally, we plan on using Monte-Carlo arithmetic
+to inject controlled amounts of noise in pipelines and monitor
+uncertainty propagation and amplification in their results.
 
 \section{Acknowledgments}
 
