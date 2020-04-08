@@ -318,32 +318,33 @@ edit distance~\cite{zhang1989simple} implemented in Python's \texttt{zss} packag
 \subsection{Capturing transient files}
 
 We capture temporary files by replacing every
-process P by a wrapper that first calls P and then saves the produced
+process $P$ by a wrapper that first calls $P$ and then saves the produced
 temporary files to a read-only directory. This process replacement is done by pre-pending
  to the \texttt{PATH} environment
 variable a directory that contains a wrapper script named after the executable
-called by P.
+called by $P$.
 
 Files written by multiple processes are disambiguated using a similar technique. For a
- file F written by the processes in \textbf{P} = \{$P_{1}$, \ldots,
+ file $F$ written by the processes in \textbf{P} = \{$P_{1}$, \ldots,
  $P_{n}$\}, we first check that processes in \textbf{P} do not
- write concurrently to F, which would violate our assumptions. Then, we
+ write concurrently to $F$, which would violate our assumptions. Then, we
  replace every process $P_{i}$ by a \texttt{PATH}-based wrapper that first
- calls $P_{i}$ and then saves F to a read-only directory. In this way,
- successive versions of F are preserved for comparison. We finally
+ calls $P_{i}$ and then saves $F$ to a read-only directory. In this way,
+ successive versions of $F$ are preserved for comparison. We finally
  update the provenance graph accordingly, so that all files in the graph
  have an in-degree of 1 (Figure~\ref{fig:provenance-dag}). This operation also makes the provenance graph
  acyclic, since we assumed that a process could only release a single version of a file.
 
 \subsection{Labeling processes} 
 
-After capturing transient files in the first condition, we re-run the pipeline
+After capturing transient files in the first condition (i.e. operating system, library version, etc.),
+we re-run the pipeline
 step by step in the second one to label processes. The output files
-produced by a process in both conditions are compared: if no differences are found, the process is marked as
+created by a process in both conditions are compared: if no differences are found, the process is marked as
 reproducible; otherwise, the process is marked as non-reproducible, and the
 output files produced in the first condition are copied to the second one, to ensure
 that differences do not propagate further in the pipeline. Processes are
-instrumented transparently, through a modification of the \texttt{PATH}
+instrumented transparently through a modification of the \texttt{PATH}
 variable similar to the one described previously. By default, differences
 in output files are identified by comparing file checksums. Other
 comparison functions can also be defined for specific file types, for
@@ -365,7 +366,7 @@ labeled as reproducible (green) as they produce files without differences.
 We applied \toolname to the minimal
 pre-processing pipelines released by the Human Connectome Project
 (\href{https://www.humanconnectome.org}{HCP}), a leading initiative in
-neurosciences. 
+neuroimaging. 
 
 % In this experiment, we analyse the numerical reproducibility of computational pipelines 
 % and identify the origin of differences across the operating systems. 
@@ -399,7 +400,7 @@ pre-processing pipelines for structural data, and particularly
 on PreFreeSurfer and FreeSurfer. 
 A detailed description of the analyses done by these
 pipelines is available in~\cite{glasser2013}. 
-In summary, PreFreeSurfer consists of the following steps: 
+In summary, the PreFreeSurfer pipeline consists of the following steps: 
 \begin{itemize}
 \item Gradient Distortion Correction (DC), 
 \item Alignment and Anatomical Average (AAve), T1w(s), T2w(s),  
@@ -409,7 +410,7 @@ In summary, PreFreeSurfer consists of the following steps:
 \item Bias Field Correction (BFC), 
 \item Atlas-Registration (AR).
 \end{itemize}
-And FreeSurfer consists of the following ones:
+And the FreeSurfer pipeline consists of the following:
 \begin{itemize}
 \item Image downsampling, 
 \item T1w image registration, 
@@ -423,13 +424,13 @@ approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
 %\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
 The \reprozip traced files show that approximately PreFreeSurfer opened  
 83K files and created 7.7K processes, and FreeSurfer opened 62K files and 
-created 4K processes in total for a single subject.
+created 4K processes in total for a single execution, in this case corresponding to a single subject.
 
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
 available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
-For each subject, available data consisted of 1 or 2 T1 images, and 1 or 2 T2 images, with 
-256 x 320 x 320 voxels of size 0.7 × 0.7 × 0.7 mm.
+For each subject, available data consisted of 1 or 2 T1w images and 1 or 2 T2w images, with 
+$256 \times 320 \times 320$ voxels of size $0.7 \times 0.7 \times 0.7$ mm.
 Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
 
 % HCP data collected from different types of imaging techniques, including 
