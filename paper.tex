@@ -51,7 +51,7 @@ linkbordercolor=blue,% hyperlink border will be blue
 \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
-\newcommand{\tristan}[1]{\color{blue}\textbf{From Tristan:}#1\color{black}}
+\newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
 \newcommand{\english}[1]{\uwave{#1}}
 \newcommand{\toolname}[0]{Spot\xspace}
 \newcommand{\flirt}[0]{\texttt{flirt}\xspace}
@@ -98,7 +98,10 @@ findings.
 % Reproducibility: crisis, numerical stability
 % Containerization isn't the solution
 
-Numerical stability is believed to play a central role in the differences
+Computational infrastructures 
+are known to impact data analysis pipelines, but it remains difficult to 
+\tristan{I will finish this.}
+Numerical stability may play a central role in the differences
 observed in data analysis pipelines across computational infrastructures. \note{Greg}{cite or soften claim}
 Variability resulting from operating system upgrades, parallelization, or
 even minor data perturbations may originate in errors that accumulate in
@@ -225,7 +228,8 @@ Graph) in which file nodes have a single parent (in-degree of 1) (Figure~\ref{fi
 DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
  The resulting labeled graph identifies the
-non-reproducible processes in the pipeline. \note{Greg}{clarify why many processes don't appear in the graph as shown}
+non-reproducible processes in the pipeline. \note{Greg}{clarify why many processes don't appear in the graph as shown} \tristan{Ali, 
+do you pre-process the reprozip trace to remove some processes, or does the figure show all the processes in this trace?}
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
@@ -502,7 +506,7 @@ FreeSurfer, we identified 2 processes leading to within-OS differences due
 to the use of pseudo-random numbers: image registration with
 \texttt{mri\_segreg}, and cortical surface curvature estimations with
 \texttt{mris\_curvature}. Fixing the random seed used in FreeSurfer removed
-these differences. \note{Greg}{can you make some statement on the magnitude of these differences?} 
+these differences. \note{Greg}{can you make some statement on the magnitude of these differences?} \tristan{Ali, that's for you.}
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
@@ -538,7 +542,11 @@ the observed differences in the entire pipeline, for a given subject.
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects. \note{Greg}{colorbar doesn't match the numbers: it's from 0-1 but the numbers are 
-  subject counts. I don't really have a preference on which, but harmonizing them to be the same unit should happen.}
+  subject counts. I don't really have a preference on which, but harmonizing them to be the same unit should happen.} \tristan{
+    Ali, it looks like this figure is still unclear, and that other people may still misunderstand it. To better 
+    show that the number is a number of subjects, I'd suggest to replace number "x" with "(n=x)",
+    write it in smaller font size, and at the bottom-right of the cell instead of in the middle. 
+  }
         }
   \label{fig:pfs_heatmap}
 \end{minipage}
@@ -560,6 +568,7 @@ Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
 for a particular subject. Differences appear to be very substantial, in
 particular in the frontal and parietal lobes.\note{Greg}{This is very hard to see from the figure because the
 luminosity of the two colormaps are so different - the contrast moving from orange to grayscale is difficult. Perhaps use two colors, green and purple for instance, with the same intensity to see if this is more easily seen?} 
+\tristan{Ali, I can't find the script to generate this figure in the repo. Could you fix the colors and contrast as per Greg's suggestion?}
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
@@ -583,6 +592,7 @@ Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
 FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that many 
 structures have Dice coefficients below 0.9 for some subjects. \note{Greg}{awkward "many" followed by "some". reword?}
+\tristan{Will do.}
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
@@ -597,14 +607,14 @@ structures have Dice coefficients below 0.9 for some subjects. \note{Greg}{awkwa
   \label{fig:tissue_class}
 \end{figure}
 
-\begin{figure}
+\begin{figure*}
   \hspace*{-1cm}
   \includegraphics[width=1.2\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).
 \note{Greg}{I don't think the legend is important here. Focus on having values legible and removing those which
 don't really illustrate the "point".}}
     \label{fig:scatter_plot}
-  \end{figure}
+  \end{figure*}
 
   % We formulated the linear regression model for the Dice and region size variables as:
   % \[D=1 + T\epsilon ;    T=\frac{-1}{\overline{R}}\]
@@ -618,7 +628,7 @@ don't really illustrate the "point".}}
 
 \subsection{Key findings}
 \note{Greg}{feel free to ignore, but a peeve of mine is one heading directly following another. Is there some
-kind of high-level summary you could put above this, or just omit the key-findings label?}
+kind of high-level summary you could put above this, or just omit the key-findings label?} \tristan{will do}
 Linear and non-linear registration with FSL were found to
 frequently lead to differences between results obtained with different
 operating systems. This does not come as a surprise given the instabilities
