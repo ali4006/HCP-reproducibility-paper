@@ -227,6 +227,9 @@ a step-by-step execution that prevents the propagation of differences in the pip
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. \note{Greg}{clarify why many processes don't appear in the graph as shown} \tristan{Ali, 
 do you pre-process the reprozip trace to remove some processes, or does the figure show all the processes in this trace?}
+\note{Ali}{It only shows processes that belong to the pipeline (e.g. /usr/local/src/freesurfer/) 
+by making a query on the traced DB file. 
+We exclude processes like [cp, awk, sed, tee, date\dots].}
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
@@ -433,7 +436,10 @@ created 4K processes in total for a single execution, in this case corresponding
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
 available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. \tristan{Ali, I can't find any S500 
-data release there, please confirm}
+data release there, please confirm.}
+\note{Ali}{The Dataset is: \emph{WU-Minn HCP Data - 1200 Subjects} in the project of 
+\emph{HCP 1200 Subject Release}.
+There is a group name \emph{S500 Release Subjects} that my data is downloaded from.}
 For each subject, available data consisted of 1 or 2 T1w images and 1 or 2 T2w images, with 
 $256 \times 320 \times 320$ voxels of size $0.7 \times 0.7 \times 0.7$ mm.
 Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
@@ -508,6 +514,28 @@ to the use of pseudo-random numbers: image registration with
 \texttt{mri\_segreg}, and cortical surface curvature estimations with
 \texttt{mris\_curvature}. Fixing the random seed used in FreeSurfer removed
 these differences. \note{Greg}{can you make some statement on the magnitude of these differences?} \tristan{Ali, that's for you.}
+\note{Ali}{
+\texttt{mris\_curvature} produces surfaces like lh.inflated.K and lh.inflated.H, 
+I only can see differences using \texttt{mri\_diff} command that it shows:
+  
+  Volumes differ in pixel data
+  
+  maxdiff   0.18604827 at 130715 0 0 0
+  
+for lh.inflated.H and 
+  
+  Volumes differ in pixel data
+  
+  maxdiff   0.85469627 at 130682 0 0 0
+  
+for lh.inflated.K
+  
+If you know other ways to check magnitude of differences please let me know.
+\texttt{mri\_segreg} produces different sum files (ASCII file in which summary statistics are saved), 
+but differences belong to meta-data like hostname, date, and SynthSeed. We should remove \texttt{mri\_segreg}
+because it doesn't create data differences.
+The outputs of both executables are in Consider:/data/asalari/ali-tests/paper\_images/
+}
 
 \subsubsection{Between-OS differences in PreFreeSurfer}
 %\subsubsection{PreFreeSurfer pipeline analysis} 
@@ -568,6 +596,10 @@ for a particular subject. Differences appear to be very substantial, in
 particular in the frontal and parietal lobes.\note{Greg}{This is very hard to see from the figure because the
 luminosity of the two colormaps are so different - the contrast moving from orange to grayscale is difficult. Perhaps use two colors, green and purple for instance, with the same intensity to see if this is more easily seen?} 
 \tristan{Ali, I can't find the script to generate this figure in the repo. Could you fix the colors and contrast as per Greg's suggestion?}
+\note{Ali}{Image is updated.
+I made this figure manually using ImageMagick tool and other scripts that you can find them in 
+Consider:/data/asalari/ali-tests/paper\_images/pfs\_fnirt\_imgs.}
+
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 

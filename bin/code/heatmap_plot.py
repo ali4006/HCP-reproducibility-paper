@@ -334,7 +334,10 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                         ch = False
                         a, b = subsets_dic[x][y][lab].split(' outof ')
                         freq_list.append(float(a)/float(b))
-                        freq_label.append(str(a))
+                        if a == '0':
+                            freq_label.append("")
+                        else:
+                            freq_label.append("(n={})".format(a))
                             # str(float(a)/float(b))+' ['+str(b)+']')
                 if ch is True:
                     freq_list.append(0)
@@ -343,7 +346,7 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
             heatmap_label.append(freq_label)
             xlabel_ = [str(x).split(' ')[0] for x in xlabel_]
             sns.set(font_scale=1.1)
-            my_annot_kws = {"size": 30}  # , "weight":"bold"
+            my_annot_kws = {"size": 14}  # , "weight":"bold"
             # counted_ = list(Counter(frequency_matrix[0]).values())
             # frequency_matrix = [list(Counter(frequency_matrix[0]).keys())]
             # heatmap_label = [Counter(heatmap_label[0]).keys()]
@@ -359,12 +362,19 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
             #                 heatmap_label2[0].append(val_c)
             #             break
 
-            sns.heatmap(frequency_matrix, cbar=first == 0,
+            ax = sns.heatmap(frequency_matrix, cbar=first == 0,
                         cbar_ax=None if first else cbar_ax, vmin=0, vmax=1,
                         annot=np.array(heatmap_label), fmt='',
                         annot_kws=my_annot_kws, linewidths=2,
                         xticklabels='', yticklabels='', cmap=own_cmap1,
                         ax=axes[j, i])
+
+            for t in ax.texts:
+                trans = t.get_transform()
+                offs = matplotlib.transforms.ScaledTranslation(0, 0.43,
+                                matplotlib.transforms.IdentityTransform())
+                t.set_transform( offs + trans )
+
             # linewidths=.1
             first = first + 1
             if i == 0:
@@ -407,7 +417,7 @@ def plot_totall_items(total_freq, output_folder):
 
 def main(args=None):
     input_folder = 'data/pfs-20sbj-input'
-    output_folder = 'images'
+    output_folder = 'figures'
 
     # get frequency of the processes with differences
     total_freq, sep_item_freq = get_item_frequency(input_folder)
