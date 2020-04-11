@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib._color_data as mcd
 import random
 
-
+plt.rcParams.update({'font.size': 16})
 plt.figure(figsize=(15,15))
 
 with open('./data/fs_seg_dice_accumulated_20sbj.csv') as f:
@@ -35,14 +35,22 @@ data = [ dices[region] for region in sorted_regions ]
 mean_sizes = [ [ mean(sizes[region]) for x in sizes[region]] for region in sorted_regions ]
 
 from math import log
-plt.boxplot(data, showfliers=False,
+bplot = plt.boxplot(data, showfliers=False, patch_artist=True,
             labels = range(len(sorted_regions)))
-plt.gca().xaxis.grid(True)
+
+#print(bplot)
+# fill with colors
+for i, patch in enumerate(bplot['boxes']):
+    region = sorted_regions[i]
+    rs = mean(sizes[region])
+    bs = mean(sizes['Background'])
+    a = log(rs)/log(bs)
+    patch.set_facecolor((0, 0, 0, a))
 
 for i, region in enumerate(sorted_regions):
     plt.scatter( [i+1 for x in dices[region]], dices[region],
-                 s=30,
-                 #c=colors[region], 
+                 s=35,
+                 color='black',
                  label=f'{i} - {region}',
                  marker='.')
 
@@ -50,5 +58,28 @@ plt.yticks([i/10 for i in range(11)])
 # plt.ylim(0,1.1)
 plt.ylabel('Dice coefficient')
 plt.xlabel('Region')
-plt.legend(fontsize=10)
-plt.savefig('images/dice_regions.pdf')
+plt.legend(handlelength=0, handletextpad=0, 
+           fontsize=14,
+           bbox_to_anchor=(0.98, 0),
+           loc="lower right",
+           bbox_transform=plt.gcf().transFigure,
+           ncol=4)
+plt.subplots_adjust(bottom=0.25)
+leg = plt.gca().get_legend()
+for i in range(len(sorted_regions)):
+    leg.legendHandles[i].set_visible(False)
+plt.gca().xaxis.tick_top()
+plt.gca().xaxis.set_ticks_position('top')
+plt.gca().xaxis.set_label_position('top')
+plt.gca().xaxis.grid(True, alpha=0.3)
+
+import matplotlib.ticker as plticker
+#locs, labels = plt.xticks()
+import numpy as np
+plt.xticks(np.arange(1, 45, step=4), labels=np.arange(1, 45, step=4)-1)
+yticks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+ylabels = [0, "", 0.2, "", 0.4, "", 0.6, "", 0.8, "", 1]
+plt.yticks(yticks, labels=ylabels)
+
+
+plt.savefig('figures/dice_regions.pdf')

@@ -80,7 +80,7 @@ causes of such instabilities and the path along which they propagate in
 pipelines are unclear. We present \toolname, a tool to identify which
 processes in a pipeline create numerical differences
 when executed in different computational conditions. \toolname
-leverages system-call interception to reconstruct and compare provenance
+leverages system-call interception through \reprozip to reconstruct and compare provenance
 graphs without pipeline instrumentation. By applying \toolname to the
 structural pre-processing pipelines of the Human Connectome
 Project, we found that linear and non-linear registration are the cause of
@@ -98,18 +98,15 @@ findings.
 % Reproducibility: crisis, numerical stability
 % Containerization isn't the solution
 
-Computational infrastructures 
-are known to impact data analysis pipelines, but it remains difficult to 
-\tristan{I will finish this.}
-Numerical stability may play a central role in the differences
-observed in data analysis pipelines across computational infrastructures. \note{Greg}{cite or soften claim}
-Variability resulting from operating system upgrades, parallelization, or
-even minor data perturbations may originate in errors that accumulate in
-numerical computations with important consequences on the reproducibility
-of analytical results. However, it remains challenging to identify the
-exact elements in a complex pipeline that are prone to numerical instability,
-leaving pipeline developers and users with the daunting task to manually
-compare results obtained across different conditions. 
+Vibrations in computational infrastructures impact data
+analyses in various fields, but identifying the origin of these effects in complex pipelines
+remains challenging.  In some cases, most likely due to numerical
+instabilities, small perturbations resulting from changes in operating
+system versions~\cite{Glatard2015}, hardware~\cite{jezequel2015estimation}, or parallelization parameters~\cite{diethelm2011limits},
+may result in substantially different analysis outcomes. To better understand and 
+correct these effects, efficient tools are 
+needed to assist pipeline developers
+in the comparison of results obtained across different conditions. 
 
 In neuroimaging, our primary application field, data analyses often consist
 of hundreds of computational processes -- often coming from multiple
@@ -122,7 +119,7 @@ structural, functional and diffusion data from their
 uniquely high-fidelity open dataset. In both cases, pipelines leverage toolboxes that are
 widely trusted in the community, yet, at the same time substantial variations in results
 have been observed in these toolboxes resulting from minor data
-or infrastructure perturbations~\cite{Glatard2015, Gronenschild2012, Lewis2017-ll}, suggesting that further investigation of their
+or infrastructure perturbations~\cite{Gronenschild2012, Glatard2015, Lewis2017-ll}, suggesting that further investigation of their
 numerical conditioning is required. For such complex pipelines, a
 lightweight solution has to be found to perform such evaluations with
 limited code instrumentation.
@@ -435,7 +432,8 @@ created 4K processes in total for a single execution, in this case corresponding
 
 We randomly selected 20 unprocessed subjects 
 from the HCP data release S500 
-available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. 
+available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}. \tristan{Ali, I can't find any S500 
+data release there, please confirm}
 For each subject, available data consisted of 1 or 2 T1w images and 1 or 2 T2w images, with 
 $256 \times 320 \times 320$ voxels of size $0.7 \times 0.7 \times 0.7$ mm.
 Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
@@ -591,9 +589,8 @@ propagation and amplification of differences created in PreFreeSurfer. We
 observed the effect of this propagation in FreeSurfer results, as shown in
 Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
-FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that many 
-structures have Dice coefficients below 0.9 for some subjects. \note{Greg}{awkward "many" followed by "some". reword?}
-\tristan{Will do.}
+FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficents below 0.9 are 
+observed in most regions, and particularly in the smallest ones.
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
@@ -610,10 +607,9 @@ structures have Dice coefficients below 0.9 for some subjects. \note{Greg}{awkwa
 
 \begin{figure*}
   \hspace*{-1cm}
-  \includegraphics[width=1.2\linewidth]{figures/dice_regions.pdf}
-    \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20).
-\note{Greg}{I don't think the legend is important here. Focus on having values legible and removing those which
-don't really illustrate the "point".}}
+  \includegraphics[width=1.1\linewidth]{figures/dice_regions.pdf}
+    \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20), ordered by increasing 
+    median values. Boxes brightness is proportional to the logarithm of the corresponding brain region size.}
     \label{fig:scatter_plot}
   \end{figure*}
 
@@ -627,9 +623,11 @@ don't really illustrate the "point".}}
 
 \section{Discussion}
 
+Results from our experiments provide insights on the reproducibility of
+neuroimaging pipelines. They also allow us to evaluate the approach adopted
+in \toolname.
+
 \subsection{Key findings}
-\note{Greg}{feel free to ignore, but a peeve of mine is one heading directly following another. Is there some
-kind of high-level summary you could put above this, or just omit the key-findings label?} \tristan{will do}
 Linear and non-linear registration with FSL were found to
 frequently lead to differences between results obtained with different
 operating systems. This does not come as a surprise given the instabilities
@@ -722,7 +720,7 @@ We presented \toolname, a tool to detect the source of numerical
 differences in complex pipelines executed in different computational
 conditions. \toolname leverages system-call interception through the
 \reprozip tool, and therefore can be applied to the most complex pipelines
-without requiring their instrumentation. 
+without requiring their instrumentation. \toolname is available at \url{https://github.com/big-data-lab-team/spot} under MIT license.
 
 By applying \toolname to the pre-processing pipelines of the Human
 Connectome Project, compared in different operating systems, we showed that
