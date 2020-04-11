@@ -77,8 +77,9 @@ import matplotlib.ticker as plticker
 #locs, labels = plt.xticks()
 import numpy as np
 plt.xticks(np.arange(1, 45, step=4), labels=np.arange(1, 45, step=4)-1)
-yticks = [0.1, 0.3, 0.5, 0.7, 0.9]
-plt.yticks(yticks, labels=yticks)
+yticks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+ylabels = [0, "", 0.2, "", 0.4, "", 0.6, "", 0.8, "", 1]
+plt.yticks(yticks, labels=ylabels)
 
 
 plt.savefig('figures/dice_regions.pdf')
