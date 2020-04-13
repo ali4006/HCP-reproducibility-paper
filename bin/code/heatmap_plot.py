@@ -269,19 +269,19 @@ def get_item_frequency(input_folder):
 
 
 def set_annot_position(heatmap_label):
-    my_annot_kws = {"size": 14}  # , "weight":"bold"
-    ver_ = 0.43
-    hor_ = 0.45
-    if len(heatmap_label[0]) == 2:
-        hor_ = 0.40
-    if len(heatmap_label[0]) == 6:
-        hor_ = 0.20
-    if len(heatmap_label[0]) == 10:
-        hor_ = 0
-    if len(heatmap_label[0]) > 10:
-        ver_ = 0.30
-        hor_ = 0.2
-        my_annot_kws = {"size": 14, "rotation":90}  # , "weight":"bold"
+    my_annot_kws = {"size": 24}  # , "weight":"bold"
+    ver_ = 0.4
+    hor_ = 0
+    # if len(heatmap_label[0]) == 2:
+    #     hor_ = 0.20
+    # if len(heatmap_label[0]) == 6:
+    #     hor_ = 0.10
+    # if len(heatmap_label[0]) == 10:
+    #     hor_ = 0
+    if len(heatmap_label[0]) >= 10:
+        ver_ = 0.25
+        # hor_ = 0.2
+        my_annot_kws = {"size": 24, "rotation":90}  # , "weight":"bold"
     return my_annot_kws, hor_, ver_
 
 
@@ -351,7 +351,7 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                         ch = False
                         a, b = subsets_dic[x][y][lab].split(' outof ')
                         freq_list.append(float(a)/float(b))
-                        freq_label.append("(n={})".format(b))
+                        freq_label.append(f"({a}/{b})")
                         # str(float(a)/float(b))+' ['+str(b)+']')
                 if ch is True:
                     freq_list.append(0)
@@ -367,7 +367,8 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                         annot=np.array(heatmap_label), fmt='',
                         annot_kws=my_annot_kws, linewidths=2, 
                         xticklabels='', yticklabels='', cmap=own_cmap1,
-                        ax=axes[j, i])
+                        ax=axes[j, i], cbar_kws={'label': 'Fraction of non-reproducible processes'})
+            ax.figure.axes[-1].yaxis.label.set_size(36)
 
             for t in ax.texts:
                 trans = t.get_transform()
