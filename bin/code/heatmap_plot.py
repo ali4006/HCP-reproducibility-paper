@@ -268,6 +268,23 @@ def get_item_frequency(input_folder):
     return total_freq, process_freq
 
 
+def set_annot_position(heatmap_label):
+    my_annot_kws = {"size": 14}  # , "weight":"bold"
+    ver_ = 0.43
+    hor_ = 0.45
+    if len(heatmap_label[0]) == 2:
+        hor_ = 0.40
+    if len(heatmap_label[0]) == 6:
+        hor_ = 0.20
+    if len(heatmap_label[0]) == 10:
+        hor_ = 0
+    if len(heatmap_label[0]) > 10:
+        ver_ = 0.30
+        hor_ = 0.2
+        my_annot_kws = {"size": 14, "rotation":90}  # , "weight":"bold"
+    return my_annot_kws, hor_, ver_
+
+
 def plot_heatmap(subsets_dic, interesting_p, output_folder):
     ylabels = list(subsets_dic.keys())
     for ind, item in enumerate(ylabels):
@@ -334,8 +351,8 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
                         ch = False
                         a, b = subsets_dic[x][y][lab].split(' outof ')
                         freq_list.append(float(a)/float(b))
-                        freq_label.append(str(a))
-                            # str(float(a)/float(b))+' ['+str(b)+']')
+                        freq_label.append("(n={})".format(b))
+                        # str(float(a)/float(b))+' ['+str(b)+']')
                 if ch is True:
                     freq_list.append(0)
                     freq_label.append('') # ['+str(b)+']')
@@ -343,28 +360,21 @@ def plot_heatmap(subsets_dic, interesting_p, output_folder):
             heatmap_label.append(freq_label)
             xlabel_ = [str(x).split(' ')[0] for x in xlabel_]
             sns.set(font_scale=1.1)
-            my_annot_kws = {"size": 30}  # , "weight":"bold"
-            # counted_ = list(Counter(frequency_matrix[0]).values())
-            # frequency_matrix = [list(Counter(frequency_matrix[0]).keys())]
-            # heatmap_label = [Counter(heatmap_label[0]).keys()]
-            # heatmap_label2 = [[]]
-            # for ind, val in enumerate(frequency_matrix[0]):
-            #     for val_c in heatmap_label[0]:
-            #         hh = val_c.split(' ')[0]
-            #         if val_c.split(' ')[0] == str(val):
-            #             if counted_[ind] > 1:
-            #                 val_c = val_c + ' x ' + str(counted_[ind])
-            #                 heatmap_label2[0].append(val_c)
-            #             else:
-            #                 heatmap_label2[0].append(val_c)
-            #             break
 
-            sns.heatmap(frequency_matrix, cbar=first == 0,
+            my_annot_kws, hor_, ver_ = set_annot_position(heatmap_label)
+            ax = sns.heatmap(frequency_matrix, cbar=first == 0,
                         cbar_ax=None if first else cbar_ax, vmin=0, vmax=1,
                         annot=np.array(heatmap_label), fmt='',
-                        annot_kws=my_annot_kws, linewidths=2,
+                        annot_kws=my_annot_kws, linewidths=2, 
                         xticklabels='', yticklabels='', cmap=own_cmap1,
                         ax=axes[j, i])
+
+            for t in ax.texts:
+                trans = t.get_transform()
+                offs = matplotlib.transforms.ScaledTranslation(hor_, ver_,
+                                matplotlib.transforms.IdentityTransform())
+                t.set_transform( offs + trans )
+
             # linewidths=.1
             first = first + 1
             if i == 0:
@@ -407,7 +417,7 @@ def plot_totall_items(total_freq, output_folder):
 
 def main(args=None):
     input_folder = 'data/pfs-20sbj-input'
-    output_folder = 'images'
+    output_folder = 'figures'
 
     # get frequency of the processes with differences
     total_freq, sep_item_freq = get_item_frequency(input_folder)
