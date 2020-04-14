@@ -231,6 +231,9 @@ do you pre-process the reprozip trace to remove some processes, or does the figu
 by making a query on the traced DB file. 
 We exclude processes like [cp, awk, sed, tee, date\dots]. \tristan{Several points here: (1) freesurfer is obviously not used in this example, so what filtering was actually done? (2) where is this implemented in the code? (3) 
 how do you know that you're not breaking the graph by removing these processes?}}
+\note{Ali}{In fact, I excluded processes in /usr/bin/ like [cp, sed, awk, tee, ...] in \emph{get\_processes\_list} function in \emph{auto\_spot.py} script. These processes will not affect the outputs as the results are shown. 
+Spot will stop the procedure of labeling if any excluded processes create differences as it cannot labels included processed that read and write files with differences. It didn't happen in my experiments.
+}
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
@@ -258,9 +261,9 @@ how do you know that you're not breaking the graph by removing these processes?}
     created from the example pipeline in
     Listing~\ref{listing:sample-script}.
     Processes are represented with circles, files with rectangles, and read/write accesses 
-    with plain edges. 
+    with dashed edges. 
     For visualization purposes, the process tree is represented too, with
-    dashed edges. Every node in the graph is labeled using (1) a process id
+    plain edges. Every node in the graph is labeled using (1) a process id
     created by our reconstruction, (2) the name of the executable run by the
     process or the file name. Process 1 is the initial call to the
     \texttt{sh} interpreter; the other processes are the calls to FSL bet,
@@ -578,7 +581,7 @@ the observed differences in the entire pipeline, for a given subject.
   \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline. \tristan{Ali, the process tree needs to be in dashed and the file
-    dependencies in plain.}}
+    dependencies in plain.} \note{Ali}{This figure is consistent with Fig.1. plain edges show process tree and dashed edges are read/write accesses. I just changed the caption in Fig.1.}}
     \label{fig:complete_pfs}
 \end{minipage}
 \end{figure*}
