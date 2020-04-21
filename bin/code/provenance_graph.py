@@ -33,7 +33,7 @@ def get_the_processes_name(executed_cursor, pid):
     executed_cursor.execute(process_name_query % pid)
     process_name = executed_cursor.fetchall()
     if process_name != []:
-        process_name = str(process_name[0][0]).split('/')[-1:][0]
+        process_name = str(process_name[0][0]) #.split('/')[-1:][0]
     else:
         process_name = ""
     return process_name
@@ -63,65 +63,67 @@ def create_provenance_graph(db_path, pid, graph_, pipe_list=[], multi_list={},
     child_list = get_the_child_processes(process_cursor, pid)
     # Get the process name
     process_name = get_the_processes_name(executed_cursor, pid)
-    # Get the list of opened files (w/r) from pid
-    process_ofiles = get_opened_files_list(openfile_cursor, pid)
 
-    # graph_.attr('node', shape='circle', style='filled', fillcolor='white')
-    if pid in total_proc_diff:
-        graph_.node(str(pid), ''.join([str(pid), '#', process_name]),
-                    shape='circle', style='filled', fillcolor='red')
-    elif total_proc_diff != []:
-        graph_.node(str(pid), ''.join([str(pid), '#', process_name]),
-                    shape='circle', style='filled', fillcolor='green')
-    else:
-        graph_.node(str(pid), ''.join([str(pid), '#', process_name]),
-                    shape='circle', style='filled', fillcolor='white')
+    if "/usr/bin" not in process_name and process_name != "":
+        # Get the list of opened files (w/r) from pid
+        process_ofiles = get_opened_files_list(openfile_cursor, pid)
 
-    for file in process_ofiles:
-        fname_ = str(os.path.basename(file[1]))
-        file_code = str(file[1])
-        if dag and fname_ in multi_list.keys():
-            if file[2] == 2:
-                file_code = str(file[1]) + str(pid)
-            else:
-                sorted_ = sorted(multi_list[fname_])
-                set_pid = pid
-                for pid_lst in sorted_:
-                    if pid > pid_lst:
-                        set_pid = pid_lst
-                        continue
-                file_code = str(file[1]) + str(set_pid)
+        p_name = process_name.split('/')[-1:][0]
+        # graph_.attr('node', shape='circle', style='filled', fillcolor='white')
+        if pid in total_proc_diff:
+            graph_.node(str(pid), ''.join([str(pid), '#', p_name]),
+                        shape='circle', style='filled', fillcolor='red')
+        elif total_proc_diff != []:
+            graph_.node(str(pid), ''.join([str(pid), '#', p_name]),
+                        shape='circle', style='filled', fillcolor='green')
+        else:
+            graph_.node(str(pid), ''.join([str(pid), '#', p_name]),
+                        shape='circle', style='filled', fillcolor='white')
 
-        hash_object = hashlib.sha1(file_code.encode('utf-8'))
-        hex_dig_file = hash_object.hexdigest()
-        # Read files
-        if file[2] == 1 and str(hex_dig_file) in pipe_list:
-            graph_.attr('edge', style='solid')
-            graph_.edge(str(hex_dig_file), str(pid))
+        for file in process_ofiles:
+            fname_ = str(os.path.basename(file[1]))
+            file_code = str(file[1])
+            if dag and fname_ in multi_list.keys():
+                if file[2] == 2:
+                    file_code = str(file[1]) + str(pid)
+                else:
+                    sorted_ = sorted(multi_list[fname_])
+                    set_pid = pid
+                    for pid_lst in sorted_:
+                        if pid > pid_lst:
+                            set_pid = pid_lst
+                            continue
+                    file_code = str(file[1]) + str(set_pid)
 
-        # Write files
-        elif file[2] == 2 and (fname_ in pipe_list or fname_ in tmp_list):
-            if str(hex_dig_file) not in pipe_list:
-                pipe_list.append(str(hex_dig_file))
-            graph_.attr('node', shape='box', style='filled', fillcolor='white')
-            if dag and (fname_ in tmp_list or fname_ in multi_list.keys()):
-                graph_.attr('node', style='filled', fillcolor='grey')
-            elif fname_ in tmp_list or fname_ in multi_list.keys():
-                graph_.attr('node', style='filled', fillcolor='grey')
-            graph_.node(str(hex_dig_file), ''.join([str(pid), '#', fname_]))
-            graph_.attr('edge', style='solid')
-            graph_.edge(str(pid), str(hex_dig_file))
+            hash_object = hashlib.sha1(file_code.encode('utf-8'))
+            hex_dig_file = hash_object.hexdigest()
+            # Read files
+            if file[2] == 1 and str(hex_dig_file) in pipe_list:
+                graph_.attr('edge', style='solid')
+                graph_.edge(str(hex_dig_file), str(pid))
+
+            # Write files
+            elif file[2] == 2 and (fname_ in pipe_list or fname_ in tmp_list):
+                if str(hex_dig_file) not in pipe_list:
+                    pipe_list.append(str(hex_dig_file))
+                graph_.attr('node', shape='box', style='filled', fillcolor='white')
+                if dag and (fname_ in tmp_list or fname_ in multi_list.keys()):
+                    graph_.attr('node', style='filled', fillcolor='grey')
+                elif fname_ in tmp_list or fname_ in multi_list.keys():
+                    graph_.attr('node', style='filled', fillcolor='grey')
+                graph_.node(str(hex_dig_file), ''.join([str(pid), '#', fname_]))
+                graph_.attr('edge', style='solid')
+                graph_.edge(str(pid), str(hex_dig_file))
 
     for child in child_list:
         p_name_child = get_the_processes_name(executed_cursor, child)
-        if p_name_child not in ["", "date", "imtest", "mkdir", "imcp",
-                                "basename", "remove_ext", "rm", "awk",
-                                "grep", "cp", "cat", "fslval", "fslhead",
-                                "fslhd", "expr", "head", "fslreorient2std"]:
+        # find node in graph
+        x_node = [True for v in graph_.body if '\t{} '.format(pid) in v]
+        if "/usr/bin" not in p_name_child and x_node and p_name_child != "":
             graph_.attr('edge', style='dashed')
             graph_.edge(str(pid), str(child))
-            create_provenance_graph(db_path, child, graph_, pipe_list,
-                                    multi_list, tmp_list, total_proc_diff, dag)
+        create_provenance_graph(db_path, child, graph_, pipe_list,
+                                multi_list, tmp_list, total_proc_diff, dag)
 
 
 def parse_transient(tr_file):
