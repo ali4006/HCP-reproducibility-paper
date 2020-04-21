@@ -226,7 +226,7 @@ DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
-\note{The graphs show all executed processes captured by the \reprozip tool
+\note{Ali}{The graphs show all executed processes captured by the \reprozip tool
 except those that their binaries are placed in directory \texttt{/usr/bin/}. 
 We excluded these processes for a better representation of the pipeline execution.}
 
@@ -576,7 +576,8 @@ the observed differences in the entire pipeline, for a given subject.
 \begin{minipage}{\linewidth}
   \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
-    \caption{A complete provenance graph from the PreFreesurfer pipeline.}
+    \caption{A complete provenance graph from the PreFreesurfer pipeline.
+    \note{Ali}Full-resolution image is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs-labeled-orig.pdf}{here}.}
     \label{fig:complete_pfs}
 \end{minipage}
 \end{figure*}
