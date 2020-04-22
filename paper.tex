@@ -225,34 +225,30 @@ Graph) in which file nodes have a single parent (in-degree of 1) (Figure~\ref{fi
 DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
  The resulting labeled graph identifies the
-non-reproducible processes in the pipeline. \note{Greg}{clarify why many processes don't appear in the graph as shown} \tristan{Ali, 
-do you pre-process the reprozip trace to remove some processes, or does the figure show all the processes in this trace?}
-\note{Ali}{It only shows processes that belong to the pipeline (e.g. /usr/local/src/freesurfer/) 
-by making a query on the traced DB file. 
-We exclude processes like [cp, awk, sed, tee, date\dots]. \tristan{Several points here: (1) freesurfer is obviously not used in this example, so what filtering was actually done? (2) where is this implemented in the code? (3) 
-how do you know that you're not breaking the graph by removing these processes?}}
-\note{Ali}{In fact, I excluded processes in /usr/bin/ like [cp, sed, awk, tee, ...] in \emph{get\_processes\_list} function in \emph{auto\_spot.py} script. These processes will not affect the outputs as the results are shown. 
-Spot will stop the procedure of labeling if any excluded processes create differences as it cannot labels included processed that read and write files with differences. It didn't happen in my experiments.
-}
+non-reproducible processes in the pipeline. 
+\note{Ali}{The graphs show all executed processes captured by the \reprozip tool
+except those that their binaries are placed in directory \texttt{/usr/bin/}. 
+We excluded these processes for a better representation of the pipeline execution.}
+
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.5\linewidth]{figures/p-graph.pdf}
+    \includegraphics[width=.9\linewidth]{figures/p-graph.pdf}
     \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
     \label{fig:provenance-graph}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
-    \includegraphics[width=.4\linewidth]{figures/p-graph-dag.pdf}
+    \includegraphics[width=.7\linewidth]{figures/p-graph-dag.pdf}
     \caption{Provenance DAG, with disambiguated transient files.}
     \label{fig:provenance-dag}
   \end{subfigure}
   \hfill
   \begin{subfigure}[t]{0.3\linewidth}
       \centering
-      \includegraphics[width=.4\linewidth]{figures/p-graph-dag-labelled.pdf}
+      \includegraphics[width=.7\linewidth]{figures/p-graph-dag-labelled.pdf}
      \caption{Labeled DAG comparing 2 execution conditions, showing 1 non-reproducible process.}
      \label{fig:labeled-dag} 
   \end{subfigure}
@@ -580,7 +576,8 @@ the observed differences in the entire pipeline, for a given subject.
 \begin{minipage}{\linewidth}
   \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
-    \caption{A complete provenance graph from the PreFreesurfer pipeline.}
+    \caption{A complete provenance graph from the PreFreesurfer pipeline.
+    \note{Ali}Full-resolution image is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs-labeled-orig.pdf}{here}.}
     \label{fig:complete_pfs}
 \end{minipage}
 \end{figure*}
