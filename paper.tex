@@ -227,7 +227,7 @@ a step-by-step execution that prevents the propagation of differences in the pip
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
 \note{Ali}{The graphs show all executed processes captured by the \reprozip tool
-except those that their binaries are placed in directory \texttt{/usr/bin/}. 
+except those that their binaries are placed in directory \texttt{/usr/bin/} or \texttt{/bin/}.
 We excluded these processes for a better representation of the pipeline execution.}
 
 
@@ -259,13 +259,11 @@ We excluded these processes for a better representation of the pipeline executio
     Processes are represented with circles, files with rectangles, and read/write accesses 
     with plain edges. 
     For visualization purposes, the process tree is represented too, with
-    dashed edges. Every node in the graph is labeled using (1) a process id
-    created by our reconstruction, (2) the name of the executable run by the
-    process or the file name. Process 1 is the initial call to the
-    \texttt{sh} interpreter; the other processes are the calls to FSL bet,
-    stats and maths made in Listing~\ref{listing:sample-script}. Process 73
-    is forked by process 2: it was captured by \reprozip while it did not
-    appear in Listing~\ref{listing:sample-script}.
+    dashed edges. \note{Ali}{Every node in the graph is labeled using the name of the executable run by the
+    process or the file name. All the processes are the calls to FSL bet,
+    stats and maths made in Listing~\ref{listing:sample-script}. Process \texttt{bet2}
+    is forked by process \texttt{bet}: it was captured by \reprozip while it did not
+    appear in Listing~\ref{listing:sample-script}}.
   }
     \label{fig:spot-example}
   \end{figure*}
@@ -575,9 +573,10 @@ the observed differences in the entire pipeline, for a given subject.
 
 \begin{minipage}{\linewidth}
   \centering
-    \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
+    \includegraphics[width=.6\linewidth]{figures/pfs-labeled.pdf} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline.
-    \note{Ali}Full-resolution image is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs-labeled-orig.pdf}{here}.}
+   \note{Ali}{ We excluded six more processes in the pipeline for better visualization, including:
+\texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}}
     \label{fig:complete_pfs}
 \end{minipage}
 \end{figure*}
