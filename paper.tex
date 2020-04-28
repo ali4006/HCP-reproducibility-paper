@@ -555,7 +555,6 @@ computations with FSL \texttt{maths}  (in Anatomical Average).
 Figure~\ref{fig:complete_pfs} shows a complete PreFreeSurfer labeled DAG, localizing 
 the observed differences in the entire pipeline, for a given subject.
 \begin{figure*}
-\begin{minipage}{\linewidth}
 \centering
   \includegraphics[width=\textwidth]{./figures/heatmap.pdf}
   \caption{Heatmap of non-reproducible processes across PreFreeSurfer pipeline steps.
@@ -569,17 +568,14 @@ the observed differences in the entire pipeline, for a given subject.
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects. }
   \label{fig:pfs_heatmap}
-\end{minipage}
+\end{figure*}
 
-\vspace*{1cm}
-
-\begin{minipage}{\linewidth}
-  \centering
+\begin{figure*} 
+   \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline.
     \note{Ali}Full-resolution image is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs-labeled-orig.pdf}{here}.}
     \label{fig:complete_pfs}
-\end{minipage}
 \end{figure*}
 
 To illustrate the magnitude of the differences,
