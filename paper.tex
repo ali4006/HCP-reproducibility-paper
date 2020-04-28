@@ -48,16 +48,15 @@ linkbordercolor=blue,% hyperlink border will be blue
 
 
 %%%% Commands %%%%
-\newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
-\newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
+% \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
+% \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
-\newcommand{\english}[1]{\uwave{#1}}
 \newcommand{\toolname}[0]{Spot\xspace}
 \newcommand{\flirt}[0]{\texttt{flirt}\xspace}
 \newcommand{\fnirt}[0]{\texttt{fnirt}\xspace}
  
-\title{\toolname: file-based localization of numerical perturbations in data analysis pipelines}
+\title{File-based localization of numerical perturbations in data analysis pipelines}
 \begin{document}
 
 \author[1]{Ali Salari}
@@ -226,16 +225,12 @@ DAGs produced in different conditions are then compared, in
 a step-by-step execution that prevents the propagation of differences in the pipeline (Figure~\ref{fig:labeled-dag}).
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
-\note{Ali}{The graphs show all executed processes captured by the \reprozip tool
-except those that their binaries are placed in directory \texttt{/usr/bin/} or \texttt{/bin/}.
-We excluded these processes for a better representation of the pipeline execution.}
-
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
     \includegraphics[width=.9\linewidth]{figures/p-graph.pdf}
-    \caption{Raw provenance graph (\reprozip output), with transient files shown in gray.}
+    \caption{Raw provenance graph (\reprozip output), with transient files shown in gray boxes.}
     \label{fig:provenance-graph}
   \end{subfigure}
   \hfill
@@ -253,17 +248,13 @@ We excluded these processes for a better representation of the pipeline executio
      \label{fig:labeled-dag} 
   \end{subfigure}
     % \includegraphics[width=.8\columnwidth]{figures/provenance-graphs}
-    \caption{Provenance graphs
-    created from the example pipeline in
-    Listing~\ref{listing:sample-script}.
-    Processes are represented with circles, files with rectangles, and read/write accesses 
-    with plain edges. 
-    For visualization purposes, the process tree is represented too, with
-    dashed edges. \note{Ali}{Every node in the graph is labeled using the name of the executable run by the
-    process or the file name. All the processes are the calls to FSL bet,
-    stats and maths made in Listing~\ref{listing:sample-script}. Process \texttt{bet2}
-    is forked by process \texttt{bet}: it was captured by \reprozip while it did not
-    appear in Listing~\ref{listing:sample-script}}.
+    \caption{Provenance graphs created from the example pipeline in
+    Listing~\ref{listing:sample-script}. Processes are represented with
+    circles, files with rectangles, and read/write accesses with plain edges. For convenience, the process tree 
+    is also shown, with gray dashed edges. Processes forked by
+    \texttt{bet} were captured by \reprozip while they did not appear in
+    Listing~\ref{listing:sample-script}. Processed associated with
+    executables located in \texttt{/usr/bin/} or \texttt{/bin/} are not shown.
   }
     \label{fig:spot-example}
   \end{figure*}
@@ -356,11 +347,11 @@ provenance graph highlighting non-reproducible processes.
 
 Figure~\ref{fig:labeled-dag} illustrates a hypothetical incremental
 labeling of the example in Listing~\ref{listing:sample-script}. Process
-\texttt{73\#bet2} is labeled as non-reproducible (red) as it produces files
+\texttt{bet2} is labeled as non-reproducible (red) as it produces files
 with differences. To prevent the propagation of these differences, the
-files produced by \texttt{73\#bet2} in Condition 2 are replaced with the
-files produced by \texttt{73\#bet2} in Condition 1. Processes
-\texttt{75\#fslmaths} and \texttt{76\#fslstats} are then executed and
+files produced by \texttt{bet2} in Condition 2 are replaced with the
+files produced by \texttt{bet2} in Condition 1. Processes
+\texttt{fslmaths} and \texttt{fslstats} are then executed and
 labeled as reproducible (green) as they produce files without differences.
 
 \section{Experiments}
@@ -408,10 +399,6 @@ In summary, the PreFreeSurfer pipeline consists of the following steps:
 \item Alignment and Anatomical Average (AAve), T1w(s), T2w(s),  
 \item Anterior/Posterior Commissure Alignment (ACPC-A), 
 \item Brain Extraction (BExt), 
-\item \tristan{Ali, why isn't BBR cross-modal registration here and in the heatmap?
-Ali: I found this main sub-pipelines as the separate scripts in PreFreeSurfer github repo, 
-btw, we can add it here. 
-I only reprsent sub-pipelines in the heatmap that at leats include one red process.}
 \item Bias Field Correction (BFC), 
 \item Atlas-Registration (AR).
 \end{itemize}
@@ -423,20 +410,14 @@ And the FreeSurfer pipeline consists of the following:
 \item Surface placement, 
 \item Surface registration.
 \end{itemize}
-The average processing time per subject is approximately 2~hours for
-PreFreeSurfer and 8~hours for FreeSurfer. The average output file size is
-approximately 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
-%\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
-The \reprozip traced files show that approximately PreFreeSurfer opened  
-83K files and created 7.7K processes, and FreeSurfer opened 62K files and 
-created 4K processes in total for a single execution, in this case corresponding to a single subject.
 
-We randomly selected 20 unprocessed subjects 
-from the HCP data release S500 
-available in \href{https://db.humanconnectome.org}{the ConnectomDB repository} as a subset of the 1200 Subject Release.
-For each subject, available data consisted of 1 or 2 T1w images and 1 or 2 T2w images, with 
-$256 \times 320 \times 320$ voxels of size $0.7 \times 0.7 \times 0.7$ mm.
-Acquisition protocols and parameters are detailed in~\cite{van2013wu}. 
+We randomly selected 20 unprocessed subjects from the HCP data release S500
+available in \href{https://db.humanconnectome.org}{the ConnectomDB
+repository} as a subset of the 1200 Subject Release. For each subject,
+available data consisted of 1 or 2 T1-weighted images and 1 or 2
+T2-weighted images, with $256 \times 320 \times 320$ voxels of size $0.7
+\times 0.7 \times 0.7$ mm. Acquisition protocols and parameters are
+detailed in~\cite{van2013wu}. 
 
 % HCP data collected from different types of imaging techniques, including 
 % structural imaging (sMRI), functional imaging (fMRI), and diffusion imaging (dMRI).
@@ -461,16 +442,23 @@ Connectome Workbench (version 1.0).
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2
 CentOS versions. Each subject was processed twice on the same operating
 system to detect within-OS variability coming from pseudo-random
-operations. We ignored execution-specific information such as file path or
-timestamps by using FreeSurfer tools \texttt{mri\_diff},
-\texttt{mris\_diff}, and \texttt{lta\_diff} that determine if MRI volumes
-or transformations differ. To compare segmentations $X$ and $Y$, we used the Dice coefficient defined as follows:
+operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_diff},
+\texttt{mris\_diff}, and \texttt{lta\_diff}, to ignore execution-specific information such as file path or
+timestamps. To compare segmentations $X$ and $Y$, we used the Dice coefficient defined as follows:
 \[DICE=\frac{2|X \cap Y|}{|X| + |Y|}\]
 
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
 % Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
 \section{Results}
+
+The average processing time per subject was approximately 2~hours for
+PreFreeSurfer and 8~hours for FreeSurfer. The average output file size was
+2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
+%\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
+For each subject, PreFreeSurfer accessed
+83K files and created 7.7K processes, and FreeSurfer accessed 62K files and 
+created 4K processes.
 
 % \subsection{Subject clustering}
 
@@ -571,16 +559,16 @@ the observed differences in the entire pipeline, for a given subject.
 \begin{figure*} 
    \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
-    \caption{A complete provenance graph from the PreFreesurfer pipeline.
-   \note{Ali}{ We excluded six more processes in the pipeline for better visualization, including:
-\texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}}
+    \caption{A complete provenance graph from the PreFreesurfer pipeline. For better visualization, processes associated with commands 
+    in \texttt{/bin} or \texttt{/usr/bin} were ommitted, as well as 
+  \texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}
     \label{fig:complete_pfs}
 \end{figure*}
 
 To illustrate the magnitude of the differences,
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
-for a particular subject. Differences appear to be very substantial, in
-particular in areas framed in red.
+for a particular subject. Differences appear to be important, in
+particular in the areas framed in red.
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
@@ -636,9 +624,9 @@ observed in most regions, and particularly in the smallest ones.
 
 \section{Discussion}
 
-Results from our experiments provide insights on the reproducibility of
-neuroimaging pipelines. They also allow us to evaluate the approach adopted
-in \toolname.
+Our results provide insights on the reproducibility of
+neuroimaging pipelines, and on the relevance of the approach implemented
+in \toolname for reproducibility studies.
 
 \subsection{Key findings}
 Linear and non-linear registration with FSL were found to
@@ -715,17 +703,16 @@ to the absence of concurrent writes, were not violated in our analysis, and
 are likely to not impede \toolname's applicability to the most common
 neuroimaging pipelines.
 
-However, file-based analyses also have limitations related to the
+File-based analyses also have limitations related to the
 granularity at which they operate. Indeed, differences can only be
 identified at the level of an entire operating-system process, which can
 correspond to arbitrary amounts of code. Narrowing down the analysis to
 particular libraries, functions, or even code sections would require
 another approach. Similarly, \toolname would not be able to detect
-differences in data not saved in files, and passed to subsequent processes
+differences in data not saved in files but instead passed to subsequent processes
 in memory. A common scenario in neuroimaging pipelines is that tools return
 results in their standard output, which is parsed by the calling process
-and passed to subsequent ones through variables. Differences that occur in data 
-that is processed in this way would not be detected by \toolname.  
+and passed to subsequent ones through variables. 
 
 \section{Conclusion}
 
@@ -733,7 +720,8 @@ We presented \toolname, a tool to detect the source of numerical
 differences in complex pipelines executed in different computational
 conditions. \toolname leverages system-call interception through the
 \reprozip tool, and therefore can be applied to the most complex pipelines
-without requiring their instrumentation. \toolname is available at \url{https://github.com/big-data-lab-team/spot} under MIT license.
+without requiring their instrumentation. It is available at
+\url{https://github.com/big-data-lab-team/spot} under MIT license.
 
 By applying \toolname to the pre-processing pipelines of the Human
 Connectome Project, compared in different operating systems, we showed that
