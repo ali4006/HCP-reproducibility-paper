@@ -200,7 +200,7 @@ def main(args=None):
             lst_files.append(elem)
     # Create provenance graphs
     graph = Di('Graph',
-               filename='images/p-graph',
+               filename='figures/p-graph',
                format='pdf',
                strict=True)
     # graph.attr(compound=True)
@@ -209,7 +209,7 @@ def main(args=None):
     graph.render()
 
     graph = Di('Graph',
-               filename='images/p-graph-dag',
+               filename='figures/p-graph-dag',
                format='pdf',
                strict=True)
     create_provenance_graph(db_file, 1, graph, lst_files, multi_list,
@@ -217,7 +217,7 @@ def main(args=None):
     graph.render()
 
     graph = Di('Graph',
-               filename='images/p-graph-dag-labelled',
+               filename='figures/p-graph-dag-labelled',
                format='pdf',
                strict=True)
     create_provenance_graph(db_file, 1, graph, lst_files, multi_list,
