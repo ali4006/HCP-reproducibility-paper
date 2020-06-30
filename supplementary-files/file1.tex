@@ -1,0 +1,60 @@
+\documentclass[11pt,a4paper]{osa-supplemental}
+\setboolean{shortarticle}{false}
+\usepackage{threeparttable}
+
+\title{File-based localization of numerical perturbations in data analysis pipelines}
+
+\author{Ali Salari*, Gregory Kiar, Lindsay Lewis, Alan C. Evans, Tristan Glatard}
+
+\begin{document}
+
+\maketitle
+
+\section{supplementary material}
+
+We used unprocessed data from 20 subjects from the HCP data releases of the 1200 Subject project available in \href{https://db.humanconnectome.org}{the ConnectomDB repository}.
+Table \ref{tab:dataset} shows a summary of the subjects. 
+
+\begin{table}[htbp]
+\centering
+\begin{threeparttable}
+\caption{\bf Summary of the subjects used in the experiments.}
+\begin{tabular}{ccccc}
+\hline
+Subject & Release\tnote{1} & Acquisition\tnote{2} & Gender & Age \\
+\hline
+101309 & S500 & Q06 & M & 26-30 \\
+102008 & S500 & Q06 & M & 22-25 \\ 
+102311 & S500 & Q06 & F & 26-30 \\
+103414 & Q2 & Q02 & F & 22-25 \\
+103515 & Q1 & Q02 & F & 26-30 \\
+103818 & Q1 & Q01 & F & 31-35 \\
+105014 & S500 & Q05 & F & 26-30 \\
+105115 & Q2 & Q02 & M & 31-35 \\
+106319 & Q3 & Q03 & M & 26-30 \\
+106521 & S500 & Q06 & F & 26-30 \\
+107321 & S500 & Q04 & F & 22-25 \\
+107422 & S500 & Q07 & M & 22-25 \\
+108121 & S500 & Q04 & F & 26-30 \\
+108323 & S500 & Q04 & F & 26-30 \\
+113922 & S500 & Q04 & M & 31-35 \\
+140420 & Q2 & Q02 & F & 26-30 \\
+140824 & Q3 & Q04 & M & 31-35 \\
+140925 & S500 & Q04 & F & 22-25 \\
+142424 & Q3 & Q03 & M & 26-30 \\
+142828 & Q1 & Q01 & M & 31-35 \\
+\hline
+\end{tabular}
+  \label{tab:dataset}
+  \begin{tablenotes}
+  \footnotesize
+    \item[1] Release refers to the HCP data release in which this subject's data was initially published to ConnectomeDB such as the initial Quarter releases (Q1, Q2, Q3)
+    \item[2] Acquisition indicates the Quarter in which this subject's data was initially acquired
+  \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+% Quarter Released(Release)
+% Acquisition Quarter(Acquisition)
+
+\end{document}
