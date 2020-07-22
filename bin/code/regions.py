@@ -34,6 +34,15 @@ sorted_regions = sorted(regions, key=lambda x: median(dices[x]))
 data = [ dices[region] for region in sorted_regions ]
 mean_sizes = [ [ mean(sizes[region]) for x in sizes[region]] for region in sorted_regions ]
 
+# Print Pearson's correlation
+from scipy import stats
+x = []
+y = []
+for r in regions:
+    x.append(mean(dices[r]))
+    y.append(mean(sizes[r]))
+print(stats.pearsonr(y, x))
+
 from math import log
 bplot = plt.boxplot(data, showfliers=False, patch_artist=True,
             labels = range(len(sorted_regions)))

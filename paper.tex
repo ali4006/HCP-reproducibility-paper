@@ -50,12 +50,14 @@ linkbordercolor=blue,% hyperlink border will be blue
 %%%% Commands %%%%
 % \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 % \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
+\newcommand{\revision}[1]{\color{purple}\textbf{REVISION:}#1\color{black}}
+\newcommand{\revised}[1]{\color{blue}\textbf{REVISED:}#1\color{black}}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
 \newcommand{\toolname}[0]{Spot\xspace}
 \newcommand{\flirt}[0]{\texttt{flirt}\xspace}
 \newcommand{\fnirt}[0]{\texttt{fnirt}\xspace}
- 
+
 \title{File-based localization of numerical perturbations in data analysis pipelines}
 \begin{document}
 
@@ -72,8 +74,8 @@ linkbordercolor=blue,% hyperlink border will be blue
 \maketitle
 
 \begin{abstract} 
-Data analysis pipelines are known to be impacted by computational conditions, presumably due to the creation,
-propagation, and amplification of numerical errors. While this process could
+Data analysis pipelines are known to be impacted by computational conditions, presumably due to the creation 
+and propagation of numerical errors. While this process could
 play a major role in the current reproducibility crisis, the precise
 causes of such instabilities and the path along which they propagate in
 pipelines are unclear. We present \toolname, a tool to identify which
@@ -226,6 +228,19 @@ a step-by-step execution that prevents the propagation of differences in the pip
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
 
+\revised{
+The labeled graph can be different depending on the condition that we obtained \reprozip trace as it can produce 
+different DAGs. Even using the same DAGs, it depends on the order of executions in which condition 
+we execute pipeline to pinpoint the propagation of differences. 
+Therefore, any permutation of these two factors can produce different results.
+% Pinpointing differences in one condition can be different than other condition.
+
+% add a paragraph to the methods, to explain that the order matters, due to:
+% 1. possible differences in the reprozip trace
+% 2. the way the comparison is done
+}
+
+
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
     \centering
@@ -255,7 +270,7 @@ non-reproducible processes in the pipeline.
     \texttt{bet} were captured by \reprozip while they did not appear in
     Listing~\ref{listing:sample-script}. Processed associated with
     executables located in \texttt{/usr/bin/} or \texttt{/bin/} are not shown.
-  }
+    \revised{Node labels are enlarged.}}
     \label{fig:spot-example}
   \end{figure*}
 
@@ -277,7 +292,8 @@ process instrumentation.
 
 \begin{listing}
   \inputminted{bash}{"data/example/example.sh"}
-  \caption{Example pipeline}
+  \caption{\revised{Example pipeline: computes the volume and number 
+  of voxels of the brain from a T1 image.}}
   \label{listing:sample-script}
 \end{listing}
 
@@ -353,6 +369,24 @@ files produced by \texttt{bet2} in Condition 2 are replaced with the
 files produced by \texttt{bet2} in Condition 1. Processes
 \texttt{fslmaths} and \texttt{fslstats} are then executed and
 labeled as reproducible (green) as they produce files without differences.
+
+\subsection{Implementation}
+\revised{ 
+The tool is implemented in Python programming language and supports the Python version 3.5 and higher.
+It utilizes the Python modules including NumPy~\cite{oliphant2006guide} and Pandas~\cite{mckinney2011pandas}, 
+which allow data processing, 
+SciPy~\cite{2020SciPy-NMeth} and Scikit-learn~\cite{pedregosa2011scikit} packages 
+for clustering the subjects, and Zss~\cite{zhang1989simple} package to calculate the tree distances.
+Also, the Python APIs of Docker and Boutiques~\cite{glatard2018boutiques} tools were used to create the container 
+images and simplify the pipeline executions.
+
+We used the latest version of Boutiques tool v0.5.25 for creating descriptors 
+to execute pipelines across the operating systems automatically.
+In a JSON schema, the descriptors define inputs, outputs, error codes, containers, and the command line for running pipelines.
+
+Besides, we used \reprozip tool version 1.0.16 to collect the pipeline system call processes and 
+files in an SQLite file format.
+}
 
 \section{Experiments}
 
@@ -440,18 +474,34 @@ Container images contain the HCP software dependencies, including FSL
 Connectome Workbench (version 1.0).
 
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2
-CentOS versions. Each subject was processed twice on the same operating
+CentOS versions. 
+\revised{Using the \reprozip trace obtained from CentOS7, 
+we captured transient files in CentOS6 and labeled pipeline processes in CentOS7.}
+Each subject was processed twice on the same operating
 system to detect within-OS variability coming from pseudo-random
 operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_diff},
 \texttt{mris\_diff}, and \texttt{lta\_diff}, to ignore execution-specific information such as file path or
 timestamps. To compare segmentations $X$ and $Y$, we used the Dice coefficient defined as follows:
 \[DICE=\frac{2|X \cap Y|}{|X| + |Y|}\]
 
+\revised{
+The Dice coefficient~\cite{dice1945measures} is a commonly used metric in validating medical image segmentation.
+The Dice value ranges from 0 to 1, with 1 indicating a complete overlap between two segmentation results.
+Besides, the Jaccard coefficient~\cite{jaccard1912distribution} can be considered an equivalent metric 
+to measure the overlap between images.
+
+% Also, we used the Pearson correlation coefficient to establish the relationship between Dice value and segmented region size.
+% Like other correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. 
+% Correlations of -1 or +1 imply an exact linear relationship. 
+}
+
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
 % Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
 \section{Results}
-
+\revised{
+All experiments were run on the machine with a 3.4GHz Intel Core i7 processor 
+and 32GB memory under the CentOS7 operating system.
 The average processing time per subject was approximately 2~hours for
 PreFreeSurfer and 8~hours for FreeSurfer. The average output file size was
 2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
@@ -459,7 +509,9 @@ PreFreeSurfer and 8~hours for FreeSurfer. The average output file size was
 For each subject, PreFreeSurfer accessed
 83K files and created 7.7K processes, and FreeSurfer accessed 62K files and 
 created 4K processes.
-
+The scripts and analyses used to create the figures in this section are available at 
+\url{https://github.com/big-data-lab-team/HCP-reproducibility-paper}.
+}
 % \subsection{Subject clustering}
 
 % To reduce the number of provenance graphs to be examined, we cluster
@@ -552,28 +604,40 @@ the observed differences in the entire pipeline, for a given subject.
   the \flirt tool was invoked 6 times in step DC for each of the 20
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
-  17 subjects. }
+  17 subjects. 
+  \revised{Grey cells show that any command line of the process did not occur in the pipeline step.}}
   \label{fig:pfs_heatmap}
 \end{figure*}
 
 \begin{figure*} 
    \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
-    \caption{A complete provenance graph from the PreFreesurfer pipeline. For better visualization, processes associated with commands 
-    in \texttt{/bin} or \texttt{/usr/bin} were ommitted, as well as 
+    \caption{A complete provenance graph from the PreFreesurfer pipeline. 
+    \revised{Node labels show the same abbreviations as in Figure~\ref{fig:pfs_heatmap}.}
+    For better visualization, processes associated with commands 
+    in \texttt{/bin} or \texttt{/usr/bin} were omitted, as well as 
   \texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}
     \label{fig:complete_pfs}
 \end{figure*}
 
-To illustrate the magnitude of the differences,
+\revised{
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
-for a particular subject. Differences appear to be important, in
-particular in the areas framed in red.
+for a particular subject using the checkerboard pattern.
+Differences appear to be visually important, in particular in the areas framed in red.
+The checkerboard representation is a common method to illustrate the magnitude of the differences in registration results.
+Although differences are more clearly represented in the animations linked in this figure.}
+
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png} 
     \caption{Differences between T2 \fnirt results in PreFreeSurfer's Brain Extraction (CentOS6 vs 
-    CentOS7). An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs_t2w_alignment.gif}{here}.}
+    CentOS7). 
+    \revised{
+    The colored squares indicate result images obtained from CentOS6 (in purple) and CentOS7 (in green), 
+    and the red boxes highlight regions with significant differences.}
+    % Result images obtained from CentOS6 and CentOS7 are colored in purple and green squares.
+    % The red boxes highlight regions with significant differences.}
+    An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs_t2w_alignment.gif}{here}.}
     \label{fig:fnirt_result}
 \end{figure}
 
@@ -586,12 +650,19 @@ that produced different results for
 10 out of 20 subjects. 
 
 However, FreeSurfer results still differ between conditions, due to the
-propagation and amplification of differences created in PreFreeSurfer. We
+propagation of differences created in PreFreeSurfer. We
 observed the effect of this propagation in FreeSurfer results, as shown in
 Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
 FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficents below 0.9 are 
 observed in most regions, and particularly in the smallest ones.
+\revised{
+The correlation between the Dice values and region sizes computed as the Pearson's correlation coefficient 
+was 0.12 (\emph{P}=.43). 
+The positive correlation implies that as region size increases, Dice value increases. 
+% This is an average Dice values over 20 subjects for each 44 regions.
+}
+
 \begin{figure}
 %  \includegraphics{brain\_classification}
 \centering
@@ -599,10 +670,13 @@ observed in most regions, and particularly in the smallest ones.
   \caption{Sum of binarized differences between whole-brain FreeSurfer
   segmentations obtained from PreFreeSurfer processings in CentOS6 vs CentOS7
    (N=20). Segmentations were resampled and overlaid to the MNI152 volume
-  template. An animated comparison of segmentations obtained for a particular subject is available
+  template. 
+  \revised{Each voxel shows the number of subjects that created different results. 
+  The color bar ranges from 1 to 7 as the minimum and the maximum number of subjects in each voxel.
+  Voxels are not colored if the identical results were produced in all 20 subjects.}
+  An animated comparison of segmentations obtained for a particular subject is available
 \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/fs_brain_segmentation.gif}
-{here}.
-} 
+{here}.} 
   \label{fig:tissue_class}
 \end{figure}
 
@@ -610,7 +684,9 @@ observed in most regions, and particularly in the smallest ones.
   \hspace*{-1cm}
   \includegraphics[width=1.1\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20), ordered by increasing 
-    median values. Boxes brightness is proportional to the logarithm of the corresponding brain region size.}
+    median values. 
+    \revised{Each point indicates the Dice value in a particular region for a single subject.}
+    Boxes brightness is proportional to the logarithm of the corresponding brain region size.}
     \label{fig:scatter_plot}
   \end{figure*}
 
@@ -623,6 +699,12 @@ observed in most regions, and particularly in the smallest ones.
   
 
 \section{Discussion}
+
+\revision{
+Discuss irreproducibility in 2 parts:
+1. code coverage 
+2. statistics, see eq 1 in https://ieeexplore.ieee.org/abstract/document/7152570
+}
 
 Our results provide insights on the reproducibility of
 neuroimaging pipelines, and on the relevance of the approach implemented

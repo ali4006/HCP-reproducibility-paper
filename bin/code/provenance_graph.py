@@ -52,9 +52,9 @@ def get_opened_files_list(openfile_cursor, pid):
 
 def add_edge(graph_, from_, to_, mode):
     if mode == 'file':
-        graph_.attr('edge', style='solid',color='black', penwidth='1')
+        graph_.attr('edge', style='solid',color='black', penwidth='3')
     elif mode == 'ptree':
-        graph_.attr('edge', style='dashed', color='grey', penwidth='1')
+        graph_.attr('edge', style='dashed', color='grey', penwidth='3')
     graph_.edge(str(from_), str(to_))
     return graph_
 
@@ -62,29 +62,32 @@ def add_edge(graph_, from_, to_, mode):
 def add_node(graph_, id, name, mode, color):
     # with graph_.subgraph(name='cluster_{}'.format(cluster)) as ngraph_:
     if mode == 'process':
+        if name == 'remove_ext':
+                name = 'remove\next'
         if color == 'red':
             if name == 'fslmaths':
                 name = 'fsl\nmaths'
             if name == 'new_invwarp':
                 name = 'new\ninvwarp'
-            graph_.node(str(id), name.upper(), width='1.5', fontsize='16',fontname="Helvetica bold",
+            graph_.node(str(id), name.upper(), width='2.3', fontsize='26',fontname="Helvetica bold",
                         fontcolor='black', shape='circle',
-                        style='filled', fillcolor='#EDB9B8', penwidth='1')
+                        style='filled', fillcolor='#EDB9B8', penwidth='.5')
         elif color == 'green':
-            graph_.node(str(id), name, width='1.5', penwidth='1', fontsize='16', shape='circle',
+            graph_.node(str(id), name.upper(), width='2.3', penwidth='.5', fontsize='26', shape='circle',
                         style='filled', fillcolor='#7FCDB1', fontname="Helvetica bold")
         elif color == 'subgreen':
-            graph_.node(str(id), name, width='1.5', fontsize='16',fontname="Helvetica bold",
+            graph_.node(str(id), name.upper(), width='2.3', fontsize='26',fontname="Helvetica bold",
                         shape='circle', style='filled', fillcolor='#7FCDB1')
         elif color == 'white':
-            graph_.node(str(id), name, width='1.5', shape='circle', style='filled', fontsize='16',
+            graph_.node(str(id), name.upper(), width='2.3', shape='circle', style='filled', fontsize='26',
                         fontname="Helvetica bold", fillcolor='white')
     elif mode == 'file':
         if name != '':
             graph_.node(str(id), name, shape='box', style='filled', fillcolor=color, penwidth='1',
-                        fontsize='16', fontname="Helvetica bold")
+                        fontsize='26', fontname="Helvetica bold")
         else:
-            graph_.node(str(id), name, shape='box', style='filled', fillcolor=color, penwidth='1')
+            graph_.node(str(id), name, shape='box', style='filled', fillcolor=color, penwidth='1',
+                        fontsize='26')
     # graph_.node(str(id), name) 
     return graph_
 
