@@ -99,12 +99,19 @@ findings.
 % Reproducibility: crisis, numerical stability
 % Containerization isn't the solution
 
-Vibrations in computational infrastructures impact data
-analyses in various fields, but identifying the origin of these effects in complex pipelines
-remains challenging.  In some cases, most likely due to numerical
-instabilities, small perturbations resulting from changes in operating
-system versions~\cite{Glatard2015}, hardware~\cite{jezequel2015estimation}, or parallelization parameters~\cite{diethelm2011limits},
-may result in substantially different analysis outcomes. To better understand and 
+\revised{Numerical perturbations resulting from variations in computational
+environments} impact data analyses in various fields, but identifying the
+origin of these perturbations in complex pipelines remains challenging.  In
+some cases, small perturbations resulting from changes in operating system
+versions~\cite{Glatard2015}, hardware~\cite{jezequel2015estimation}, or
+parallelization parameters~\cite{diethelm2011limits}, result in
+substantially different analysis outcomes, \revised{due to the propagation
+and amplification of floating-point errors. While the existence of such
+numerical errors is well known~\cite{stoer2013introduction}, their impact
+on scientific computations has multiplied with the rise of the Big Data
+era, due to the sustained growth of data sets, the increasing complexity of
+analysis pipelines, and the diversification of computing infrastructures.}
+To better understand and 
 correct these effects, efficient tools are 
 needed to assist pipeline developers
 in the comparison of results obtained across different conditions. 
@@ -808,6 +815,30 @@ differences in data not saved in files but instead passed to subsequent processe
 in memory. A common scenario in neuroimaging pipelines is that tools return
 results in their standard output, which is parsed by the calling process
 and passed to subsequent ones through variables. 
+
+\revised{
+Computational environments are only one of many factors contributing to the
+on-going reproducibility crisis. In fact, sample size selection,
+publication bias, or methodological flexibility in the analysis are likely
+to have a stronger effect than numerical perturbations, although
+to our knowledge no evidence of this is available. We refer to the
+studies in~\cite{botvinik2020variability,bowring2019exploring,bhagwat2020understanding,kennedy2019everything} for deeper
+analyses of the associated effects on neuroimaging analyses. It should also be
+noted that the effects of computational environments and these other
+factors manifest at different levels: referring to the terminology used
+in~\cite{peng2011reproducible}, computational environments are associated with
+\emph{reproducibility}, the minimal standard by which identical results
+should be obtainable from identical data and parameters, while the other
+aforementioned factors belong to \emph{replicability}, the ultimate
+standard by which independent experimenters should be able to draw similar
+conclusions from similar experiments. In practice, variability resulting
+from computational environments manifests during software testing (test
+results depend on execution platform), deployment on HPC systems (results
+obtained on local vs HPC systems differ), or software version updates
+(results obtained before vs after the update differ), while factors related
+to replicability impact the community more broadly. Ultimately, both
+reproducibility and replicability should be understood and improved.
+}
 
 \section{Conclusion}
 
