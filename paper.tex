@@ -627,7 +627,7 @@ the observed differences in the entire pipeline, for a given subject.
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects. 
-  \revised{Grey cells show that the process did not occur in the pipeline step.}}
+  \revised{Grey cells indicate that the process did not occur in the corresponding pipeline step.}}
   \label{fig:pfs_heatmap}
 \end{figure*}
 
@@ -635,7 +635,7 @@ the observed differences in the entire pipeline, for a given subject.
    \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf} 
     \caption{A complete provenance graph from the PreFreesurfer pipeline. 
-    \revised{Node labels show the same abbreviations as in Figure~\ref{fig:pfs_heatmap}.}
+    \revised{Node labels use the same abbreviations as in Figure~\ref{fig:pfs_heatmap}.}
     For better visualization, processes associated with commands 
     in \texttt{/bin} or \texttt{/usr/bin} were omitted, as well as 
   \texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}
@@ -704,7 +704,7 @@ observed in most regions, and particularly in the smallest ones.
   \includegraphics[width=1.1\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20), ordered by increasing 
     median values. 
-    \revised{Each point indicates the Dice value in a particular region for a single subject.}
+    \revised{Each point represents the Dice coefficient between segmentations of a particular region obtained in CentOS 6 vs CentOS 7 for a given subject.}
     Boxes brightness is proportional to the logarithm of the corresponding brain region size.}
     \label{fig:scatter_plot}
   \end{figure*}
