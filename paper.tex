@@ -235,18 +235,6 @@ a step-by-step execution that prevents the propagation of differences in the pip
  The resulting labeled graph identifies the
 non-reproducible processes in the pipeline. 
 
-\revised{
-The labeled graph can be different depending on the condition that we obtained \reprozip trace as it can produce 
-different DAGs. Even using the same DAGs, it depends on the order of executions in which condition 
-we execute pipeline to pinpoint the propagation of differences. 
-Therefore, any permutation of these two factors can produce different results.
-% Pinpointing differences in one condition can be different than other condition.
-
-% add a paragraph to the methods, to explain that the order matters, due to:
-% 1. possible differences in the reprozip trace
-% 2. the way the comparison is done
-}
-
 
 \begin{figure*}
   \begin{subfigure}[t]{0.3\linewidth}
@@ -276,8 +264,7 @@ Therefore, any permutation of these two factors can produce different results.
     is also shown, with gray dashed edges. Processes forked by
     \texttt{bet} were captured by \reprozip while they did not appear in
     Listing~\ref{listing:sample-script}. Processed associated with
-    executables located in \texttt{/usr/bin/} or \texttt{/bin/} are not shown.
-    \revised{Node labels are enlarged.}}
+    executables located in \texttt{/usr/bin/} or \texttt{/bin/} are not shown.}
     \label{fig:spot-example}
   \end{figure*}
 
@@ -315,6 +302,8 @@ temporary files. \reprozip collects this information through the
 Using the \reprozip trace, \toolname reconstructs a provenance graph by creating process and file
 nodes and by adding directed edges corresponding
 to file reads and writes (Figure~\ref{fig:provenance-graph}).
+\revised{We assume that provenance graphs are identical for the \reprozip traces obtained from 
+the same subjects in different operating systems.}
 
 Provenance graphs are often data-dependent, due to variations in input data that
 may trigger differing branching or looping patterns across executions, for example.
@@ -376,6 +365,13 @@ files produced by \texttt{bet2} in Condition 2 are replaced with the
 files produced by \texttt{bet2} in Condition 1. Processes
 \texttt{fslmaths} and \texttt{fslstats} are then executed and
 labeled as reproducible (green) as they produce files without differences.
+
+\revised{
+The labeled graph can be different depending on the order of executions in which condition 
+we execute pipeline to pinpoint the propagation of differences. 
+Therefore, we label processes in two order of executions, and then aggregate findings so that label processes 
+as non-reproducible (red) if it creates different results in both order of executions.
+}
 
 \subsection{Implementation}
 \revised{ 
@@ -480,10 +476,10 @@ Container images contain the HCP software dependencies, including FSL
 (version 5.0.6), FreeSurfer (version 5.3.0-HCP, CentOS4 build), and
 Connectome Workbench (version 1.0).
 
+% \revision{Using the \reprozip trace obtained from CentOS7, 
+% we captured transient files in CentOS6 and labeled pipeline processes in CentOS7.}
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2
 CentOS versions. 
-\revised{Using the \reprozip trace obtained from CentOS7, 
-we captured transient files in CentOS6 and labeled pipeline processes in CentOS7.}
 Each subject was processed twice on the same operating
 system to detect within-OS variability coming from pseudo-random
 operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_diff},
@@ -496,10 +492,6 @@ The Dice coefficient~\cite{dice1945measures} is a commonly used metric in valida
 The Dice value ranges from 0 to 1, with 1 indicating a complete overlap between two segmentation results.
 Besides, the Jaccard coefficient~\cite{jaccard1912distribution} can be considered an equivalent metric 
 to measure the overlap between images.
-
-% Also, we used the Pearson correlation coefficient to establish the relationship between Dice value and segmented region size.
-% Like other correlation coefficients, this one varies between -1 and +1 with 0 implying no correlation. 
-% Correlations of -1 or +1 imply an exact linear relationship. 
 }
 
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method. 
@@ -507,18 +499,42 @@ to measure the overlap between images.
 
 \section{Results}
 \revised{
-All experiments were run on the machine with a 3.4GHz Intel Core i7 processor 
-and 32GB memory under the CentOS7 operating system.
-The average processing time per subject was approximately 2~hours for
-PreFreeSurfer and 8~hours for FreeSurfer. The average output file size was
-2.7~GB for PreFreeSurfer and 4.1~GB for FreeSurfer.
-%\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
-For each subject, PreFreeSurfer accessed
-83K files and created 7.7K processes, and FreeSurfer accessed 62K files and 
-created 4K processes.
+All experiments were run on a machine with a 3.4GHz Intel Core i7 processor and 32GB memory 
+under the CentOS7 operating system. 
+The details of the computation of the PreFreeSurfer and FreeSurfer pipelines are illustrated 
+in~Table~\ref{table:pipeline-stats}.
 The scripts and analyses used to create the figures in this section are available at 
 \url{https://github.com/big-data-lab-team/HCP-reproducibility-paper}.
+
+\begin{table*}[ht]
+  \centering
+  \begin{threeparttable}
+  \caption{The computation details of the pipelines per subject.}
+  \label{table:pipeline-stats}
+  \begin{tabular}{ccc|cc}
+  \toprule
+  \multicolumn{1}{c}{} & \multicolumn{2}{c}{PreFreeSurfer } &   \multicolumn{2}{c}{FreeSurfer } \\ 
+  
+   &        \makecell{Mean}   &  \makecell{Standard error}  & \makecell{Mean}   &  \makecell{Standard error}   \\ \midrule
+  Processing time (mins)      &     106.67     &     2.68     &     nd     &     nd     \\
+  Output file size (GB)       &     2.8        &     0.10     &     nd     &     nd     \\
+  Number of file accesses     &     94089      &     2644.99  &     nd     &     nd     \\
+  Number of processes         &     8731       &     198.18   &     nd     &     nd     \\
+  \bottomrule
+  \end{tabular}
+  \end{threeparttable}
+  \end{table*}
 }
+% All experiments were run on a machine with a 3.4GHz Intel Core i7 processor 
+% and 32GB memory under the CentOS7 operating system.
+% The average processing time per subject was approximately 2~hours (with standard error X) 
+% for PreFreeSurfer and 8~hours (with standard error X) for FreeSurfer. 
+% The average output file size was 2.7~GB (with standard error Y) for PreFreeSurfer 
+% and 4.1~GB (with standard error Y) for FreeSurfer.
+%\tristan{Ali, are these numbers per subject or for 20 subjects? it's an average of 20 subjects}
+% For each subject, PreFreeSurfer accessed 83K files and created 7.7K processes, and FreeSurfer accessed 62K files and 
+% created 4K processes.
+
 % \subsection{Subject clustering}
 
 % To reduce the number of provenance graphs to be examined, we cluster
@@ -612,7 +628,7 @@ the observed differences in the entire pipeline, for a given subject.
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects. 
-  \revised{Grey cells show that any command line of the process did not occur in the pipeline step.}}
+  \revised{Grey cells show that the process did not occur in the pipeline step.}}
   \label{fig:pfs_heatmap}
 \end{figure*}
 
@@ -629,10 +645,9 @@ the observed differences in the entire pipeline, for a given subject.
 
 \revised{
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
-for a particular subject using the checkerboard pattern.
-Differences appear to be visually important, in particular in the areas framed in red.
-The checkerboard representation is a common method to illustrate the magnitude of the differences in registration results.
-Although differences are more clearly represented in the animations linked in this figure.}
+for a particular subject using the checkerboard pattern, 
+a common method to illustrate the magnitude of the differences in registration results.
+Differences appear to be visually important, in particular in the areas framed in red.}
 
 \begin{figure}
   \centering
@@ -663,12 +678,7 @@ Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
 FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficents below 0.9 are 
 observed in most regions, and particularly in the smallest ones.
-\revised{
-The correlation between the Dice values and region sizes computed as the Pearson's correlation coefficient 
-was 0.12 (\emph{P}=.43). 
-The positive correlation implies that as region size increases, Dice value increases. 
-% This is an average Dice values over 20 subjects for each 44 regions.
-}
+\revised{However, there is no significant correlation between Dice value and region size.}
 
 \begin{figure}
 %  \includegraphics{brain\_classification}
@@ -678,8 +688,11 @@ The positive correlation implies that as region size increases, Dice value incre
   segmentations obtained from PreFreeSurfer processings in CentOS6 vs CentOS7
    (N=20). Segmentations were resampled and overlaid to the MNI152 volume
   template. 
-  \revised{Each voxel shows the number of subjects that created different results. 
-  The color bar ranges from 1 to 7 as the minimum and the maximum number of subjects in each voxel.
+  \revised{
+  The binary images are created based on the intensity differences between result images in CentOS6 and CentOS7. 
+  The voxel is 1 if the intensity value of the corresponding voxel in the images is different, otherwise it is 0.
+  Each voxel shows the number of subjects that created different results. 
+  % The color bar ranges from 1 to 7 as the minimum and the maximum number of subjects in each voxel.
   Voxels are not colored if the identical results were produced in all 20 subjects.}
   An animated comparison of segmentations obtained for a particular subject is available
 \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/fs_brain_segmentation.gif}
@@ -774,12 +787,12 @@ hardware or Linux kernel updates were not measured, as the different
 operating systems were deployed in Docker containers on the same host, that
 is, using the same kernel and hardware.
 
-To evaluate the reproducibility of a pipeline, \toolname needs to execute
+\revision{To evaluate the reproducibility of a pipeline, \toolname needs to execute
 it 3 times in order to (1) record a first \reprozip trace, (2) save
 transient files, and (3) compare results in the second condition. This is
 one more execution than the theoretical minimum of 2. It might be possible
 to further reduce this overhead by executing at step (2) only the
-processes depending on transient files.
+processes depending on transient files.}
 
 We demonstrated the applicability of our approach by evaluating two of the
 arguably most complex pipelines in neuroimaging. Technically, these
@@ -858,6 +871,7 @@ Consortium (Principal Investigators: David Van Essen and Kamil Ugurbil;
 the NIH Blueprint for Neuroscience Research; and by the McDonnell 
 Center for Systems Neuroscience at Washington University.
 %\tristan{check ethics}
+
 
 \bibliographystyle{plain}
 \bibliography{biblio}
