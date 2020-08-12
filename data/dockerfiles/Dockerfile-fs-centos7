@@ -1,0 +1,15 @@
+# The base image includes FSL and FreeSurfer tools, and FreeSurfer pipeline on CentOS7
+FROM bigdatalabteam/hcp-prefreesurfer:exec-centos7.freesurferbuild-centos4-latest
+
+# Installing spot tool
+#RUN yum -y update; yum clean all 
+RUN yum clean all &&\
+    yum -y install epel-release which; yum clean all &&\
+    yum -y install python3-pip; yum clean all
+
+RUN cd /tmp/ &&\
+    git clone https://github.com/ali4006/spot.git; yum clean all &&\
+    pip3 install --no-cache-dir spot/lightspot/
+
+RUN chown 1000:1000 /tmp
+ENV LD_LIBRARY_PATH=/usr/local/src/tools/workbench/libs_rh_linux64/

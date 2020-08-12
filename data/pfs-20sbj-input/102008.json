@@ -1,84 +1,97 @@
 {
-    "certain_cmd": {}, 
+    "certain_cmd": {},
     "execution_info": {
-        "captured_list": "/data/asalari/ali-tests/nurm-out/PFS_resutls/7/commands_captured.json", 
-        "conditions": "/data/asalari/ali-tests/nurm-out/PFS_resutls/7/conditions.txt", 
-        "exclude_items": "/data/asalari/ali-tests/nurm-out/PFS_resutls/7/exclude_items.txt", 
-        "sqlite_db": "/data/asalari/ali-tests/nurm-out/PFS_resutls/7/trace.sqlite3", 
+        "captured_list": "/data/asalari/revision-tests/pfs-test/7/commands_captured.json",
+        "conditions": "/data/asalari/revision-tests/pfs-test/7/conditions.txt",
+        "exclude_items": "/data/asalari/revision-tests/pfs-test/7/exclude_items.txt",
+        "sqlite_db": "/data/asalari/revision-tests/pfs-test/7/trace.sqlite3",
         "subject_name": "102008"
-    }, 
+    },
     "ignored_multi": [
-        2851, 
-        2852, 
-        3558, 
-        3559, 
-        5610, 
-        5613, 
-        5618, 
-        5727, 
-        5728, 
-        5881, 
-        5882, 
-        6081, 
-        6082, 
-        6302, 
-        6303, 
-        6668, 
-        6672, 
-        7731, 
-        7732, 
-        7735, 
+        2851,
+        2852,
+        3558,
+        3559,
+        5610,
+        5613,
+        5618,
+        5727,
+        5728,
+        5881,
+        5882,
+        6081,
+        6082,
+        6302,
+        6303,
+        6668,
+        7731,
+        7732,
+        7735,
         7736
-    ], 
-    "multiWrite_cmd": {}, 
+    ],
+    "multiWrite_cmd": {},
     "total_commands": {
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u000012\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/T1w_acpc_dc_restore_brain\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_0.7mm_brain.nii.gz\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/MNINonLinear/xfms/acpc2MNILinear.mat\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/MNINonLinear/xfms/T1w_acpc_dc_restore_brain_to_MNILinear\u0000": {
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u000012\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/T1w_acpc\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_2mm.nii.gz\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/roughlin.mat\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/T1w_acpc_to_MNI_roughlin.nii.gz\u0000-nosearch\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/MNINonLinear/xfms/acpc2MNILinear.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/MNINonLinear/xfms/T1w_acpc_dc_restore_brain_to_MNILinear.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/roughlin.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/T1w_acpc_to_MNI_roughlin.nii.gz"
+            ],
+            "id": 2850
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u000012\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/T1w_acpc_dc_restore_brain\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_0.7mm_brain.nii.gz\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/MNINonLinear/xfms/acpc2MNILinear.mat\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/MNINonLinear/xfms/T1w_acpc_dc_restore_brain_to_MNILinear\u0000": {
+            "files": [
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/MNINonLinear/xfms/acpc2MNILinear.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/MNINonLinear/xfms/T1w_acpc_dc_restore_brain_to_MNILinear.nii.gz"
+            ],
             "id": 7725
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u000012\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2w_acpc\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T2_2mm.nii.gz\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/BrainExtraction_FNIRTbased/roughlin.mat\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/BrainExtraction_FNIRTbased/T2w_acpc_to_MNI_roughlin.nii.gz\u0000-nosearch\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u000012\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2w_acpc\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T2_2mm.nii.gz\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/BrainExtraction_FNIRTbased/roughlin.mat\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/BrainExtraction_FNIRTbased/T2w_acpc_to_MNI_roughlin.nii.gz\u0000-nosearch\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/BrainExtraction_FNIRTbased/roughlin.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/BrainExtraction_FNIRTbased/T2w_acpc_to_MNI_roughlin.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/BrainExtraction_FNIRTbased/roughlin.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/BrainExtraction_FNIRTbased/T2w_acpc_to_MNI_roughlin.nii.gz"
+            ],
             "id": 3557
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u00006\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w\u0000-ref\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/T1w_acpc\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w2T1w_acpc\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T1w_acpc.mat\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u00006\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w\u0000-ref\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/T1w_acpc\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w2T1w_acpc\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T1w_acpc.mat\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T1w_acpc.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w2T1w_acpc.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T1w_acpc.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT1w2T1w_acpc.nii.gz"
+            ],
             "id": 5722
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u00006\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w\u0000-ref\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2w_acpc\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w2T2w_acpc\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T2w_acpc.mat\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-dof\u00006\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w\u0000-ref\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2w_acpc\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w2T2w_acpc\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T2w_acpc.mat\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T2w_acpc.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w2T2w_acpc.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Fieldmap2T2w_acpc.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/Magnitude_warppedT2w2T2w_acpc.nii.gz"
+            ],
             "id": 5876
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/ACPCAlignment/robustroi.nii.gz\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_0.7mm.nii.gz\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/ACPCAlignment/roi2std.mat\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/ACPCAlignment/acpc_final.nii.gz\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/ACPCAlignment/robustroi.nii.gz\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_0.7mm.nii.gz\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/ACPCAlignment/roi2std.mat\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/ACPCAlignment/acpc_final.nii.gz\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/ACPCAlignment/roi2std.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T1w/ACPCAlignment/acpc_final.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/ACPCAlignment/roi2std.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/ACPCAlignment/acpc_final.nii.gz"
+            ],
             "id": 2600
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/ACPCAlignment/robustroi.nii.gz\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T2_0.7mm.nii.gz\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/ACPCAlignment/roi2std.mat\u0000-out\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/ACPCAlignment/acpc_final.nii.gz\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-interp\u0000spline\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/ACPCAlignment/robustroi.nii.gz\u0000-ref\u0000/usr/local/src/projects/Pipelines/global/templates/MNI152_T2_0.7mm.nii.gz\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/ACPCAlignment/roi2std.mat\u0000-out\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/ACPCAlignment/acpc_final.nii.gz\u0000-searchrx\u0000-30\u000030\u0000-searchry\u0000-30\u000030\u0000-searchrz\u0000-30\u000030\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/ACPCAlignment/roi2std.mat", 
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/ACPCAlignment/acpc_final.nii.gz"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/ACPCAlignment/roi2std.mat",
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/ACPCAlignment/acpc_final.nii.gz"
+            ],
             "id": 3307
-        }, 
-        "/usr/local/src/fsl/bin/flirt\u0000-ref\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T1w_acpc_brain\u0000-in\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w_acpc_brain\u0000-dof\u00006\u0000-omat\u0000/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w2T1w/T2w_reg_init.mat\u0000": {
+        },
+        "/usr/local/src/fsl/bin/flirt\u0000-ref\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T1w_acpc_brain\u0000-in\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w_acpc_brain\u0000-dof\u00006\u0000-omat\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w2T1w/T2w_reg_init.mat\u0000": {
             "files": [
-                "/data/asalari/ali-tests/trace_files/7/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w2T1w/T2w_reg_init.mat"
-            ], 
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T2w/T2wToT1wDistortionCorrectAndReg/T2w2T1w/T2w_reg_init.mat"
+            ],
             "id": 6080
+        },
+        "/usr/local/src/fsl/bin/new_invwarp\u0000--ref=/usr/local/src/projects/Pipelines/global/templates/MNI152_T1_2mm.nii.gz\u0000-w\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/str2standard.nii.gz\u0000-o\u0000/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/standard2str.nii.gz\u0000": {
+            "files": [
+                "/data/asalari/revision-tests/pfs-test/7/centos6/exec/102008/T1w/BrainExtraction_FNIRTbased/standard2str.nii.gz"
+            ],
+            "id": 2854
         }
-    }
+    },
+    "total_commands_multi": {}
 }

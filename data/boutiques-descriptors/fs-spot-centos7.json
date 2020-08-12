@@ -1,0 +1,86 @@
+{
+    "command-line": "cd [SUBJECT_PATH];rm -rf exec [SUBJECT_FOLDER]-[NAME];freesurfer-command-line-script.sh [SUBJECT_FOLDER] [NAME] [LICENSE]",
+    "container-image": {
+        "image": "fs-spot-centos7",
+        "type": "docker"
+    },
+    "description": "FreeSurferPipelineBatch HCP pipeline",
+    "inputs": [
+        {
+            "description": "HCP subject folder directory",
+            "id": "subject_path",
+            "name": "HCP subject path",
+            "optional": false,
+            "type": "String",
+            "value-key": "[SUBJECT_PATH]"
+        },
+        {
+            "description": "HCP subject folder, downloaded from http://www.humanconnectome.org/documentation/S500.",
+            "id": "subject_folder",
+            "name": "HCP subject folder",
+            "optional": false,
+            "type": "File",
+            "value-key": "[SUBJECT_FOLDER]"
+        },
+        {
+            "default-value": "Exec-CentOS-[X]-FreeSurferbuild-CentOS-[Y]",
+            "description": "Use this parameter to give a name to the execution. Example: \"Exec-CentOS7-FreeSurferbuild-CentOS4\". The results will be written in a folder named [SUBJECT]-[EXECUTION-NAME] (a unique identifier will be appended in case a file with the same name already exists).",
+            "id": "execution_name",
+            "name": "Execution name",
+            "optional": false,
+            "type": "String",
+            "value-key": "[NAME]"
+        },
+        {
+            "default-value": "",
+            "description": "Use this parameter to add the content of the license file in the freesurfer directory",
+            "id": "freesurfer_license",
+            "name": "FreeSurfer License",
+            "optional": false,
+            "type": "File",
+            "value-key": "[LICENSE]"
+        }
+    ],
+    "invocation-schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "dependencies": {},
+        "description": "Invocation schema for freesurferpipelinebatch-centos7.",
+        "properties": {
+            "execution_name": {
+                "type": "string"
+            },
+            "freesurfer_license": {
+                "type": "string"
+            },
+            "subject_folder": {
+                "type": "string"
+            },
+            "subject_path": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "subject_folder",
+            "execution_name",
+            "freesurfer_license"
+        ],
+        "title": "FreeSurferPipelineBatch-CentOS7.invocationSchema",
+        "type": "object"
+    },
+    "name": "FreeSurferPipelineBatch-CentOS7",
+    "output-files": [
+        {
+            "description": "This directory will contain 3 directories (T1w, T2w and MNINonLinear), a monitoring file (monitor.txt) and the input data.",
+            "id": "results",
+            "name": "Results",
+            "optional": false,
+            "path-template": "[SUBJECT_FOLDER]-[NAME]"
+        }
+    ],
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "walltime-estimate": 25200
+    },
+    "tool-version": "3.19.0-centos7"
+}
