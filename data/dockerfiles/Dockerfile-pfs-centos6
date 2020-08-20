@@ -1,0 +1,33 @@
+# The base image includes FSL tool and PreFreeSurfer pipeline on CentOS6
+FROM bigdatalabteam/hcp-prefreesurfer:exec-centos6-fslbuild-centos5-latest
+
+# Packages to install reprozip 
+RUN yum install -y \
+    which \
+    gcc \
+    python \
+    python-devel \
+    sqlite-devel \
+    gcc-c++ \
+    python-argparse \
+    freetype-devel \
+    libpng-devel \
+    python-pip \
+    epel-release
+
+# Instaling pip and ReproZip
+RUN curl 'https://setup.ius.io/' -o setup-ius.sh
+RUN sh setup-ius.sh
+RUN yum --enablerepo=ius install -y python36u \
+    python36u-devel \
+    python36u-pip
+
+RUN pip3.6 install -U reprozip
+      
+# Installing spot tool
+RUN cd /tmp/ && \
+    git clone https://github.com/ali4006/spot.git &&\
+    python3.6 -m pip install --no-cache-dir spot/lightspot/ &&\
+    ln -s /usr/bin/python3.6 /usr/bin/python3
+    
+RUN chown 1000:1000 /tmp

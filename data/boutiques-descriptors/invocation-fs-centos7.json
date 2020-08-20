@@ -1,0 +1,6 @@
+{
+        "subject_path": "./centos7/",
+	"subject_folder": "101309",
+	"freesurfer_license": "../license.txt",
+	"execution_name": "FS" 
+}

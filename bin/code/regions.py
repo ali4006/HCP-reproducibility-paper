@@ -41,7 +41,21 @@ y = []
 for r in regions:
     x.append(mean(dices[r]))
     y.append(mean(sizes[r]))
-print(stats.pearsonr(y, x))
+print("Corr between Dice and region-sizes: {}".format(stats.pearsonr(y, x)))
+
+# Print the correlation between subject Dices, runtimes and number of file accesses 
+sbj_dice = []
+for i in range(20):
+    sum_ = 0
+    for j in dices:
+        sum_ = dices[j][i] + sum_
+    sbj_dice.append(sum_/len(dices))
+sbj_run_time = [692, 668, 643, 569, 628, 642, 679, 682, 644, 688, 645, 641,
+            589, 625, 684, 576, 667, 638, 689, 716]
+print("Corr between Dice and run-times: {}".format(stats.pearsonr(sbj_run_time, sbj_dice)))
+sbj_file_acc = [62204, 66518, 61995, 60516, 60012, 67951, 62248, 55564, 61213, 59021, 
+                65238, 61994, 75390, 64728, 58294, 59763, 59281, 63653, 64384, 55727]
+print("Corr between Dice and accessed files: {}".format(stats.pearsonr(sbj_file_acc, sbj_dice)))
 
 from math import log
 bplot = plt.boxplot(data, showfliers=False, patch_artist=True,
