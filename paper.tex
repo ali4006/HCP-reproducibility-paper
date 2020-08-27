@@ -29,6 +29,7 @@
 \usepackage{amsmath}
 \usepackage{ulem}
 \usepackage{pifont}
+\usepackage{pdfpages}
 
 \hypersetup{
 colorlinks=true,% hyperlinks will be coloured
@@ -50,7 +51,6 @@ linkbordercolor=blue,% hyperlink border will be blue
 %%%% Commands %%%%
 % \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 % \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
-\newcommand{\revision}[1]{\color{purple}\textbf{REVISION:}#1\color{black}}
 \newcommand{\revised}[1]{\color{blue}#1\color{black}\xspace}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
@@ -367,13 +367,12 @@ labeled as reproducible (green) as they produce files without differences.
 
 \revised{
 The labeled graph can differ depending on the order of executions in which condition we capture transient files 
-or execute the pipeline to pinpoint the propagation of differences. Therefore, we label processes in two orders 
-of execution, and then aggregate findings so that label processes as non-reproducible (red) if it creates 
-different results in either order of executions.}
+or execute the pipeline to pinpoint the propagation of differences. Therefore, we run the comparison in both condition orders, 
+and we label a process as non-reproducible (red) if it creates different results in at least one condition order.}
 
 \subsection{Implementation}
 \revised{
-\toolname is implemented in Python (>=3.5). In this work we used \toolname version 0.2 and the following version of
+\toolname is implemented in Python (>=3.6). In this work we used \toolname version 0.2 and the following version of
 the Python package dependencies: NumPy v1.19.0~\cite{oliphant2006guide} and Pandas v1.0.5~\cite{mckinney2011pandas},
 for data manipulations, SciPy v1.5.1~\cite{2020SciPy-NMeth} and Scikit-learn v.0.23.1~\cite{pedregosa2011scikit}
 for the clustering of provenance graphs, Zss v1.2.0~\cite{zhang1989simple} for tree distances,
@@ -474,12 +473,9 @@ Container images contain the HCP software dependencies, including FSL
 (version 5.0.6), FreeSurfer (version 5.3.0-HCP, CentOS4 build), and
 Connectome Workbench (version 1.0).
 
-% \revision{Using the \reprozip trace obtained from CentOS7,
-% we captured transient files in CentOS6 and labeled pipeline processes in CentOS7.}
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2 CentOS versions.
-\revised{First, PreFreeSurfer was utilized to analyze the unprocessed data, and then its results 
-from CentOS6 were used as the input of FreeSurfer in both conditions. 
-We also used the ReproZip trace file captured in CentOS6 for labeling the processes in both pipelines.}
+\revised{The PreFreesurfer results obtained in CentOS6 were used as the input of FreeSurfer in both conditions. 
+We also used the \reprozip trace file captured in CentOS6 for labeling the processes in both pipelines.}
 Each subject was processed twice on the same operating
 system to detect within-OS variability coming from pseudo-random
 operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_diff},
@@ -489,7 +485,7 @@ timestamps. To compare segmentations $X$ and $Y$, we used the Dice coefficient d
 
 \revised{
 The Dice coefficient~\cite{dice1945measures} is a commonly used metric to validate medical image segmentation.
-Dice values range from 0 to 1, with 1 indicating a perfect overlap between two segmentation results and 0 indicates no overlap.
+Dice values range from 0 to 1, with 1 indicating a perfect overlap between two segmentation results and 0 indicating no overlap.
 Alternatively, the Jaccard coefficient~\cite{jaccard1912distribution} could be used;
 there is a direct correspondence between both metrics.}
 
@@ -498,8 +494,8 @@ there is a direct correspondence between both metrics.}
 
 \section{Results}
 \revised{
-All experiments were run on a machine with a 3.4GHz Intel Core i7 processor using 8 cores and 32GB of RAM running
-the CentOS7 operating system and Linux kernel version 3.10.
+All experiments were run on a machine with a 3.4GHz, 8-core  Intel Core i7 processor, 32GB of RAM, 
+CentOS 7.3.1611, and Linux kernel version 3.10.
 The processing time, output file size, number of file accesses and number of processes observed in PreFreeSurfer
 and FreeSurfer are shown in~Table~\ref{table:pipeline-stats}.
 The scripts and analyses used to create the figures in this section are available at
@@ -518,7 +514,7 @@ The scripts and analyses used to create the figures in this section are availabl
   Processing time (mins)  &     106.67       &     2.68                    &     650.25        &     8.88     \\
   Output file size (GB)   &     2.8          &     0.10                    &     4.15          &     0.15     \\
   Number of file accesses &     94,089       &     2,645                   &     62,729        &     984     \\
-  Number of processes     &     8731         &     198                     &     4031          &     47     \\
+  Number of processes     &     8,731         &     198                     &     4,031          &     47     \\
   \bottomrule
   \end{tabular}
   \end{threeparttable}
@@ -646,7 +642,8 @@ the observed differences in the entire pipeline, for a given subject.
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
 for a particular subject using the checkerboard pattern,
 a common method to illustrate the magnitude of the differences in registration results.
-Differences appear to be visually important, in particular in the areas framed in red.}
+Differences appear to be visually important, in particular in the areas framed in red, 
+to the point that most experimenters would likely reject such a registration following visual quality control.}
 
 \begin{figure}
   \centering
@@ -672,7 +669,7 @@ propagation of differences created in PreFreeSurfer. We
 observed the effect of this propagation in FreeSurfer results, as shown in
 Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
-FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficents below 0.9 are
+FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficients below 0.9 are
 observed in most regions, and particularly in the smallest ones.
 \revised{However, no significant correlation between the Dice values and the region sizes was found
 (Pearson's coefficient = 0.12, p-value = 0.43).}
@@ -793,28 +790,17 @@ are likely to not impede \toolname's applicability to the most common
 neuroimaging pipelines.
 
 \revised{
-% Furthermore, we can use methods to ensure that enough tests have been performed for labeling a tool as reproducible.
-% We approved the irreproducibility of the tools, but we cannot say a tool is reproducible since
-\toolname labels pipeline processes based on the tested dataset, 
-while the reproducibility of the tools can be changed over the new datasets. 
-In this regard, we need to confirm the reproducibility of the tools over all the possible 
-subject diversity and processing parameters. 
-We can rely on the code coverage to measure the proportion of the code covered by the tests. 
-Ideally, the code coverage as close to 100\% as possible ensures that most of the code is fully tested. 
-This is a key principle of reproducibility to guarantee the appropriate testing of the tools. 
-Having sufficient subject tests so that covers most of the code could increase confidence to confirm 
-the reproducibility of the tools.
-As another solution, we can estimate the probability of the tool reproducibility based on 
-the number of subjects that the tool was tested as reproducible. To this order, 
-we refer to the probability measurement used in~\cite{glatard2015classifications}, which can state that the probability 
-to observe all reproducible results among $N’$ future tests given that $n$ non-reproducible results happened among $N$ 
-previous tests is:
-
-\[p(N',n,N)=\frac{N+1}{N+N'+1}\frac{\binom Nn}{\binom {N+N'}n}\]
-
-This formula gives a high probability to see reproducible results from the tools have been tested on a high series of 
-subjects as reproducible.
-}
+\toolname only tests pipeline reproducibility in the scope of a particular dataset. However, it is very plausible 
+for pipeline processes to exhibit different reproducibility behaviors when executed on different datasets. 
+Therefore, only the lack of reproducibility of a pipeline process could be guaranteed from an analysis with \toolname, 
+since proving reproducibility would require testing the pipeline on all possible datasets, in all possible environments, 
+which is not feasible. Two elements could be considered in future work to address this issue. 
+First, similar to conventional software testing, a code coverage metric could be developed to assess 
+the fraction of the pipeline code involved in the tested dataset and parameters. This would quantify 
+the representativity of the dataset and pipeline parameters used in the evaluation. Second, statistical 
+risk models could be used to estimate the probability for a process to be reproducible, given a set of 
+observations with no numerical differences. For instance, models similar to the work in~\cite{beauzamy2004methodes} 
+could be leveraged for this purpose.}
 
 File-based analyses also have limitations related to the
 granularity at which they operate. Indeed, differences can only be
@@ -884,7 +870,9 @@ uncertainty propagation and amplification in their results.
   \item Other requirements: Python 3.6 or higher, \reprozip, Docker, and Boutiques
   \item License: MIT License
   \item Biotools identifier: \href{https://bio.tools/spottool}{spottool}
-  \item SciCrunch ID: RRID:SCR\_018915
+  \item SciCrunch ID: \href{https://scicrunch.org/scicrunch/Resources/record/nlx_144509-1/SCR_018915/resolver}{RRID:SCR\_018915}
+  \item DOI: \href{https://doi.org/10.5281/zenodo.3873219}{10.5281/zenodo.3873219}
+
 
 \end{itemize}
 
@@ -906,5 +894,7 @@ Center for Systems Neuroscience at Washington University.
 
 \bibliographystyle{plain}
 \bibliography{biblio}
+
+\includepdf[pages=-]{supplementary-files/file1.pdf}
 
 \end{document}
