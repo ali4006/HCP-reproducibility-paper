@@ -51,7 +51,6 @@ linkbordercolor=blue,% hyperlink border will be blue
 %%%% Commands %%%%
 % \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 % \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
-\newcommand{\revision}[1]{\color{purple}\textbf{REVISION:}#1\color{black}}
 \newcommand{\revised}[1]{\color{blue}#1\color{black}\xspace}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
@@ -474,8 +473,6 @@ Container images contain the HCP software dependencies, including FSL
 (version 5.0.6), FreeSurfer (version 5.3.0-HCP, CentOS4 build), and
 Connectome Workbench (version 1.0).
 
-% \revision{Using the \reprozip trace obtained from CentOS7,
-% we captured transient files in CentOS6 and labeled pipeline processes in CentOS7.}
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2 CentOS versions.
 \revised{The PreFreesurfer results obtained in CentOS6 were used as the input of FreeSurfer in both conditions. 
 We also used the \reprozip trace file captured in CentOS6 for labeling the processes in both pipelines.}
@@ -898,6 +895,6 @@ Center for Systems Neuroscience at Washington University.
 \bibliographystyle{plain}
 \bibliography{biblio}
 
-\includepdf[pages=-]{supplementary-files/subject-details.pdf}
+\includepdf[pages=-]{supplementary-files/file1.pdf}
 
 \end{document}
