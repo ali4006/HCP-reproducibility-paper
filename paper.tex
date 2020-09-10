@@ -135,7 +135,7 @@ limited code instrumentation.
 Numerical evaluations are traditionally performed using techniques such as
 interval arithmetics~\cite{hickey2001interval} that require complete code re-writes and are
 therefore barely applicable to complex pipelines. Recently, Monte-Carlo
-Arithmetic~\cite{Parker1997-qq, Denis2016-wo} provided a practical way to
+Arithmetic~\cite{Parker1997-qq, denis2015verificarlo} provided a practical way to
 evaluate the uncertainty of numerical results without the need to rewrite
 the application in a different paradigm. By perturbating floating-point
 computations, it introduces a controllable amount of noise in the
@@ -727,7 +727,7 @@ registration processes generalizes to other toolkits, or if it remains specific
 to FSL. In view of the effect of small data perturbations in a variety of
 toolboxes and processes, such as cortical surface extraction using
 FreeSurfer and CIVET~\cite{Lewis2017-ll} or connectome estimation using
-Dipy~\cite{kiar2019comparing}, it is probable that this observation
+Dipy~\cite{kiar2020comparing}, it is probable that this observation
 generalizes widely across toolboxes and requires a deeper investigation of
 the stability of linear and non-linear registration.
 
@@ -759,7 +759,7 @@ Our results illustrate the type of variability that can be introduced in
  controlled numerical perturbations in pipelines, which could be done by
  introducing noise either in the data, or in floating-point computations
  through Monte-Carlo Arithmetic~\cite{Parker1997-qq}. The work
- in~\cite{kiar2019comparing} discusses and compares these two techniques.
+ in~\cite{kiar2020comparing} discusses and compares these two techniques.
 
 \subsection{\toolname evaluation}
 
@@ -778,6 +778,8 @@ in order to (1) record a first \reprozip trace, (2) save transient files in the 
 It might be possible to further reduce this overhead by executing at step (2) only the processes 
 depending on transient files, and capturing the transient files for the second condition simultaneously at step (3).}
 
+\revised{The target users of the \toolname tool are primarily pipeline developers and users who have 
+technical skills for creating Docker containers and Boutiques JSON files.}
 We demonstrated the applicability of our approach by evaluating two of the
 arguably most complex pipelines in neuroimaging. Technically, these
 pipelines consist of a mix of tools assembled from different toolboxes
@@ -799,7 +801,7 @@ First, similar to conventional software testing, a code coverage metric could be
 the fraction of the pipeline code involved in the tested dataset and parameters. This would quantify 
 the representativity of the dataset and pipeline parameters used in the evaluation. Second, statistical 
 risk models could be used to estimate the probability for a process to be reproducible, given a set of 
-observations with no numerical differences. For instance, models similar to the work in~\cite{beauzamy2004methodes} 
+observations with no numerical differences. For instance, models described in~\cite{beauzamy2004methodes} 
 could be leveraged for this purpose.}
 
 File-based analyses also have limitations related to the
