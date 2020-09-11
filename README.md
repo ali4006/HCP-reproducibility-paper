@@ -16,7 +16,7 @@ python ./bin/code/provenance_graph.py
 To generate Figure 2, run:
 
 ```
-python ./bin/code/heatmap_plot.py
+python3 ./bin/code/heatmap_plot.py
 ```
 
 ### Fig. 4
@@ -25,7 +25,7 @@ python ./bin/code/heatmap_plot.py
 
 ### Fig. 5
 
-To generate Figure 5, run:
+To generate Figure 5, first, make sure you downloaded [binarized images](data/fs-20sbj-output/in_bin_img/) using git-lfs. Then run:
 
 ```
 python bin/code/binarized_heatmap_img.py
@@ -42,7 +42,7 @@ fslmaths subj1_diff.nii.gz -bin subj1_diff_bin.nii.gz
 To generate Figure 6, run:
 
 ```
-python bin/code/regions.py
+python3 bin/code/regions.py
 ```
 
 We already created a CSV [file](./data/fs_seg_dice_accumulated_20sbj.csv) containing all the Dice values between segmented regions for all subjects in CetOS6 vs. CentOS7. You can compute Dice values for each subject using the following command:
