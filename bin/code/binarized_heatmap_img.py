@@ -18,27 +18,21 @@ def log_error(message):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Computes a \
-                                     binarized heatmap of the images.")
-    parser.add_argument("input_imgs",
-                        help='Input folder of binarized difference images')
-    parser.add_argument("output_image_file",
-                        help='output folder')
-    parser.add_argument("ref_image_file",
-                        help='reference image like MNI-152')
+    input_imgs = 'data/fs-20sbj-output/in_bin_img/'
+    output_image_file = 'figures/brain_segmentation_mni.png'
+    ref_image_file = 'data/fs-20sbj-output/mni_reference.nii'
 
-    args = parser.parse_args()
     # Load images using nibabel
     img_sum = ''
-    for img in os.listdir(args.input_imgs):
+    for img in os.listdir(input_imgs):
         if os.path.splitext(os.path.basename(img))[1] in ['.nii', '.gz']:
-            img1 = nibabel.load(os.path.join(args.input_imgs, img))
+            img1 = nibabel.load(os.path.join(input_imgs, img))
             data1 = img1.get_data()
             if img_sum == '':
                 img_sum = data1
                 continue
             img_sum = img_sum + data1
-    im_ref = nibabel.load(args.ref_image_file)
+    im_ref = nibabel.load(ref_image_file)
     im_data_ref = im_ref.get_data()
 
     # Check that both images have the same dimensions
@@ -78,7 +72,7 @@ def main():
     hmax3 = sns.heatmap(np.rot90(axi_view), cmap=own_cmap1, xticklabels='', yticklabels='', cbar=False, ax=ax1, vmin=1, vmax=8)
     hmax3.imshow(np.rot90(axi_view_ref), cmap='gray', aspect='equal', extent=hmax3.get_xlim() + hmax3.get_ylim())
     plt.rcParams['axes.facecolor'] = 'black'
-    plt.savefig(args.output_image_file, facecolor=fig.get_facecolor(), bbox_inches='tight')
+    plt.savefig(output_image_file, facecolor=fig.get_facecolor(), bbox_inches='tight')
     # plt.show()
 
 if __name__ == '__main__':
