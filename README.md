@@ -5,41 +5,51 @@ A repository for the HCP reproducibility paper
 
 ### Fig 1
 
-* `python ./bin/code/provenance_graph.py`
+To generate Figure 1, run:
 
-### Fig. 3
-* `python ./bin/code/heatmap_plot.py`
+```
+python ./bin/code/provenance_graph.py
+```
+
+### Fig. 2
+
+To generate Figure 2, run:
+
+```
+python3 ./bin/code/heatmap_plot.py
+```
 
 ### Fig. 4
 
-* [Source files](Consider:/data/asalari/ali-tests/paper_images/pfs_fnirt_imgs/)
+* [Source file](./figures/t2w_alignment.png)
 
 ### Fig. 5
 
-1. Create binarized difference images of each subject:
-    ```
-    mri_convert aseg.hires_1-1.mgz aseg.hires_1-1.nii.gz
-    fslmaths aseg.hires_1-1.nii.gz -sub aseg.hires_1-2.nii.gz diff1.nii.gz
-    fslmaths diff1.nii.gz -bin diff_bin1.nii.gz
-    ```
+To generate Figure 5, first, make sure you downloaded [binarized images](data/fs-20sbj-output/in_bin_img/) using git-lfs. Then run:
 
-2. From a terminal, run:
+```
+python bin/code/binarized_heatmap_img.py
+```
+We already created the folder of [binarized images](data/fs-20sbj-output/in_bin_img/) between segmentation results in CetOS6 vs. CentOS7 for all subjects. You can create the binarized image for each subject using the following commands:
 
-    ```
-    python ./bin/code/binarized_heatmap_img.py input_folder_of_bin_imgs ./bin/figs/binarized.png reference_img.nii.gz
-    ```
-
-Note: All the subject images, binarized images and reference image that we used are available in [link](Consider:/data/asalari/ali-tests/paper_images/fs_aseg_imgs) 
+```
+fslmaths subj1_os6.nii.gz -sub subj1_os7.nii.gz subj1_diff.nii.gz
+fslmaths subj1_diff.nii.gz -bin subj1_diff_bin.nii.gz
+```
 
 ### Fig. 6
 
-1. Compute dice value of difference images of each subject in a .csv file:
-    ```
-    python ./bin/code/Dice_region_csv.py first_img.nii.gz second_img.nii.gz fs_seg_dice_accumulated_20sbj.csv
-    ``` 
-Note: All the images are available in [link](Consider:/data/asalari/ali-tests/paper_images/fs_aseg_imgs)
+To generate Figure 6, run:
 
-2. * `python bin/code/regions.py`
+```
+python3 bin/code/regions.py
+```
+
+We already created a CSV [file](./data/fs_seg_dice_accumulated_20sbj.csv) containing all the Dice values between segmented regions for all subjects in CetOS6 vs. CentOS7. You can compute Dice values for each subject using the following command:
+
+```
+python ./bin/code/Dice_region_csv.py subj1_os6.nii.gz subj1_os7.nii.gz fs_seg_dice_accumulated_20sbj.csv
+``` 
 
 ## How to generate the pdf
 
@@ -49,3 +59,6 @@ Note: All the images are available in [link](Consider:/data/asalari/ali-tests/pa
 1. Compile the document: ```pdflatex -shell-escape paper ; pdflatex -shell-escape paper``` (yes, twice).
 2. Generate the bibliography: ```bibtex paper ; pdflatex -shell-escape paper``` (yes, once again).
 
+## License
+
+[MIT](LICENSE) © /bin Lab
