@@ -51,7 +51,7 @@ linkbordercolor=blue,% hyperlink border will be blue
 %%%% Commands %%%%
 % \newcommand{\todo}[1]{\color{red}\textbf{TODO:}#1\color{black}}
 % \newcommand{\note}[2]{\color{blue}Note from \textsc{#1}: #2\color{black}}
-\newcommand{\revised}[1]{\color{blue}#1\color{black}\xspace}
+% \newcommand{\revised}[1]{\color{blue}#1\color{black}\xspace}
 \newcommand{\reprozip}[0]{ReproZip\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:}#1\color{black}}
 \newcommand{\toolname}[0]{Spot\xspace}
@@ -99,18 +99,18 @@ findings.
 % Reproducibility: crisis, numerical stability
 % Containerization isn't the solution
 
-\revised{Numerical perturbations resulting from variations in computational
-environments} impact data analyses in various fields, but identifying the
+Numerical perturbations resulting from variations in computational
+environments impact data analyses in various fields, but identifying the
 origin of these perturbations in complex pipelines remains challenging.  In
 some cases, small perturbations resulting from changes in operating system
 versions~\cite{Glatard2015}, hardware~\cite{jezequel2015estimation}, or
 parallelization parameters~\cite{diethelm2011limits}, result in
-substantially different analysis outcomes, \revised{due to the propagation
+substantially different analysis outcomes, due to the propagation
 and amplification of floating-point errors. While the existence of such
 numerical errors is well known~\cite{stoer2013introduction}, their impact
 on scientific computations has multiplied with the rise of the Big Data
 era, due to the sustained growth of data sets, the increasing complexity of
-analysis pipelines, and the diversification of computing infrastructures.}
+analysis pipelines, and the diversification of computing infrastructures.
 To better understand and
 correct these effects, efficient tools are
 needed to assist pipeline developers
@@ -286,7 +286,7 @@ process instrumentation.
 
 \begin{listing}
   \inputminted{bash}{"data/example/example.sh"}
-  \caption{\revised{Example pipeline that computes the volume of the brain from a T1 image.}}
+  \caption{Example pipeline that computes the volume of the brain from a T1 image.}
   \label{listing:sample-script}
 \end{listing}
 
@@ -301,8 +301,8 @@ temporary files. \reprozip collects this information through the
 Using the \reprozip trace, \toolname reconstructs a provenance graph by creating process and file
 nodes and by adding directed edges corresponding
 to file reads and writes (Figure~\ref{fig:provenance-graph}).
-\revised{We assume that provenance graphs are identical for the \reprozip traces obtained from
-the same subjects in different operating systems.}
+We assume that provenance graphs are identical for the \reprozip traces obtained from
+the same subjects in different operating systems.
 
 Provenance graphs are often data-dependent, due to variations in input data that
 may trigger differing branching or looping patterns across executions, for example.
@@ -365,13 +365,11 @@ files produced by \texttt{bet2} in Condition 1. Processes
 \texttt{fslmaths} and \texttt{fslstats} are then executed and
 labeled as reproducible (green) as they produce files without differences.
 
-\revised{
 The labeled graph can differ depending on the order of executions in which condition we capture transient files 
 or execute the pipeline to pinpoint the propagation of differences. Therefore, we run the comparison in both condition orders, 
-and we label a process as non-reproducible (red) if it creates different results in at least one condition order.}
+and we label a process as non-reproducible (red) if it creates different results in at least one condition order.
 
 \subsection{Implementation}
-\revised{
 \toolname is implemented in Python (>=3.6). In this work we used \toolname version 0.2 and the following version of
 the Python package dependencies: NumPy v1.19.0~\cite{oliphant2006guide} and Pandas v1.0.5~\cite{mckinney2011pandas},
 for data manipulations, SciPy v1.5.1~\cite{2020SciPy-NMeth} and Scikit-learn v.0.23.1~\cite{pedregosa2011scikit}
@@ -386,7 +384,7 @@ Examples, tutorials and usage documentation are available at \url{http://boutiqu
 system calls to identify the files and processes involved in a pipeline execution.
 Before using \toolname, users have to collect \reprozip traces of their pipeline executions.
 Examples in the \toolname documentation include \reprozip provenance capture.
-More documentation on \reprozip is available at \url{https://www.reprozip.org}.}
+More documentation on \reprozip is available at \url{https://www.reprozip.org}.
 
 \section{Experiments}
 
@@ -447,7 +445,7 @@ And the FreeSurfer pipeline consists of the following:
 
 We randomly selected 20 unprocessed subjects from the HCP data release S500
 available in \href{https://db.humanconnectome.org}{the ConnectomDB
-repository} as a subset of the 1200 Subject Release \revised{(see Supplementary Table S1)}.
+repository} as a subset of the 1200 Subject Release (see Supplementary Table S1).
 For each subject, available data consisted of 1 or 2 T1-weighted images and 1 or 2
 T2-weighted images, with $256 \times 320 \times 320$ voxels of size $0.7
 \times 0.7 \times 0.7$ mm. Acquisition protocols and parameters are
@@ -474,8 +472,8 @@ Container images contain the HCP software dependencies, including FSL
 Connectome Workbench (version 1.0).
 
 We processed the 20 subjects with PreFreeSurfer and FreeSurfer, using the 2 CentOS versions.
-\revised{The PreFreesurfer results obtained in CentOS6 were used as the input of FreeSurfer in both conditions. 
-We also used the \reprozip trace file captured in CentOS6 for labeling the processes in both pipelines.}
+The PreFreesurfer results obtained in CentOS6 were used as the input of FreeSurfer in both conditions. 
+We also used the \reprozip trace file captured in CentOS6 for labeling the processes in both pipelines.
 Each subject was processed twice on the same operating
 system to detect within-OS variability coming from pseudo-random
 operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_diff},
@@ -483,17 +481,15 @@ operations. We compared pipeline results using  FreeSurfer tools \texttt{mri\_di
 timestamps. To compare segmentations $X$ and $Y$, we used the Dice coefficient defined as follows:
 \[DICE=\frac{2|X \cap Y|}{|X| + |Y|}\]
 
-\revised{
 The Dice coefficient~\cite{dice1945measures} is a commonly used metric to validate medical image segmentation.
 Dice values range from 0 to 1, with 1 indicating a perfect overlap between two segmentation results and 0 indicating no overlap.
 Alternatively, the Jaccard coefficient~\cite{jaccard1912distribution} could be used;
-there is a direct correspondence between both metrics.}
+there is a direct correspondence between both metrics.
 
 % Finally, to cluster the subjects, the threshold value is set to zero in the clustering method.
 % Also, we used the nearest neighbor algorithm to calculate the distance between clusters.
 
 \section{Results}
-\revised{
 All experiments were run on a machine with a 3.4GHz, 8-core  Intel Core i7 processor, 32GB of RAM, 
 CentOS 7.3.1611, and Linux kernel version 3.10.
 The processing time, output file size, number of file accesses and number of processes observed in PreFreeSurfer
@@ -519,7 +515,7 @@ The scripts and analyses used to create the figures in this section are availabl
   \end{tabular}
   \end{threeparttable}
   \end{table*}
-}
+
 % All experiments were run on a machine with a 3.4GHz Intel Core i7 processor
 % and 32GB memory under the CentOS7 operating system.
 % The average processing time per subject was approximately 2~hours (with standard error X)
@@ -623,7 +619,7 @@ the observed differences in the entire pipeline, for a given subject.
   subjects: 2 instances weren't reproducible in 19 subjects, 3
   instances were always reproducible, and 1 instance wasn't reproducible in
   17 subjects.
-  \revised{Grey cells indicate that the process did not occur in the corresponding pipeline step.}}
+  Grey cells indicate that the process did not occur in the corresponding pipeline step.}
   \label{fig:pfs_heatmap}
 \end{figure*}
 
@@ -631,27 +627,25 @@ the observed differences in the entire pipeline, for a given subject.
    \centering
     \includegraphics[width=\linewidth]{figures/pfs-labeled.pdf}
     \caption{A complete provenance graph from the PreFreesurfer pipeline.
-    \revised{Node labels use the same abbreviations as in Figure~\ref{fig:pfs_heatmap}.}
+    Node labels use the same abbreviations as in Figure~\ref{fig:pfs_heatmap}.
     For better visualization, processes associated with commands
     in \texttt{/bin} or \texttt{/usr/bin} were omitted, as well as
   \texttt{imtest}, \texttt{imcp}, \texttt{remove\_ext}, \texttt{fslval}, \texttt{avscale}, and \texttt{fslhd}.}
     \label{fig:complete_pfs}
 \end{figure*}
 
-\revised{
 Figure~\ref{fig:fnirt_result} compares \fnirt results in Brain Extraction
 for a particular subject using the checkerboard pattern,
 a common method to illustrate the magnitude of the differences in registration results.
 Differences appear to be visually important, in particular in the areas framed in red, 
-to the point that most experimenters would likely reject such a registration following visual quality control.}
+to the point that most experimenters would likely reject such a registration following visual quality control.
 
 \begin{figure}
   \centering
     \includegraphics[width=\columnwidth]{figures/t2w_alignment.png}
     \caption{Differences between T2 \fnirt results in PreFreeSurfer's Brain Extraction (CentOS6 vs CentOS7).
-    \revised{
     The colored squares indicate results obtained with CentOS6 (in purple) and CentOS7 (in green).
-    The red boxes highlight regions with significant differences between the two OSes. }
+    The red boxes highlight regions with significant differences between the two OSes. 
     An animated version of the comparison is available \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/pfs_t2w_alignment.gif}{here} for better visualization.}
     \label{fig:fnirt_result}
 \end{figure}
@@ -671,8 +665,8 @@ Figure~\ref{fig:tissue_class} for whole-brain segmentations. The
 Dice coefficients associated with the 44 regions segmented by
 FreeSurfer are shown in Figure~\ref{fig:scatter_plot}, showing that Dice coefficients below 0.9 are
 observed in most regions, and particularly in the smallest ones.
-\revised{However, no significant correlation between the Dice values and the region sizes was found
-(Pearson's coefficient = 0.12, p-value = 0.43).}
+However, no significant correlation between the Dice values and the region sizes was found
+(Pearson's coefficient = 0.12, p-value = 0.43).
 
 \begin{figure}
 %  \includegraphics{brain\_classification}
@@ -682,8 +676,7 @@ observed in most regions, and particularly in the smallest ones.
   segmentations obtained from PreFreeSurfer processings in CentOS6 vs CentOS7
    (N=20). Segmentations were resampled and overlaid to the MNI152 volume
   template.
-  \revised{
-  Each voxel shows the number of subjects for which different results were observed between CentOS 6 and CentOS 7.}
+  Each voxel shows the number of subjects for which different results were observed between CentOS 6 and CentOS 7.
   An animated comparison of segmentations obtained for a particular subject is available
 \href{https://github.com/big-data-lab-team/HCP-reproducibility-paper/blob/master/figures/fs_brain_segmentation.gif}
 {here} for better visualization.}
@@ -695,7 +688,7 @@ observed in most regions, and particularly in the smallest ones.
   \includegraphics[width=1.1\linewidth]{figures/dice_regions.pdf}
     \caption{Dice coefficients between regions segmented by FreeSurfer in CentOS6 vs CentOS7 (N=20), ordered by increasing
     median values.
-    \revised{Each point represents the Dice coefficient between segmentations of a particular region obtained in CentOS 6 vs CentOS 7 for a given subject.}
+    Each point represents the Dice coefficient between segmentations of a particular region obtained in CentOS 6 vs CentOS 7 for a given subject.
     Boxes brightness is proportional to the logarithm of the corresponding brain region size.}
     \label{fig:scatter_plot}
   \end{figure*}
@@ -771,15 +764,14 @@ hardware or Linux kernel updates were not measured, as the different
 operating systems were deployed in Docker containers on the same host, that
 is, using the same kernel and hardware.
 
-\revised{
 To evaluate the reproducibility of a pipeline, \toolname needs to execute it 5 times 
 in order to (1) record a first \reprozip trace, (2) save transient files in the first condition, 
 (3) compare results in the second condition, and repeat steps (2) and (3) for the other order of execution. 
 It might be possible to further reduce this overhead by executing at step (2) only the processes 
-depending on transient files, and capturing the transient files for the second condition simultaneously at step (3).}
+depending on transient files, and capturing the transient files for the second condition simultaneously at step (3).
 
-\revised{The target users of the \toolname tool are primarily pipeline developers and users who have 
-technical skills for creating Docker containers and Boutiques JSON files.}
+The target users of the \toolname tool are primarily pipeline developers and users who have 
+technical skills for creating Docker containers and Boutiques JSON files.
 We demonstrated the applicability of our approach by evaluating two of the
 arguably most complex pipelines in neuroimaging. Technically, these
 pipelines consist of a mix of tools assembled from different toolboxes
@@ -791,7 +783,6 @@ to the absence of concurrent writes, were not violated in our analysis, and
 are likely to not impede \toolname's applicability to the most common
 neuroimaging pipelines.
 
-\revised{
 \toolname only tests pipeline reproducibility in the scope of a particular dataset. However, it is very plausible 
 for pipeline processes to exhibit different reproducibility behaviors when executed on different datasets. 
 Therefore, only the lack of reproducibility of a pipeline process could be guaranteed from an analysis with \toolname, 
@@ -802,7 +793,7 @@ the fraction of the pipeline code involved in the tested dataset and parameters.
 the representativity of the dataset and pipeline parameters used in the evaluation. Second, statistical 
 risk models could be used to estimate the probability for a process to be reproducible, given a set of 
 observations with no numerical differences. For instance, models described in~\cite{beauzamy2004methodes} 
-could be leveraged for this purpose.}
+could be leveraged for this purpose.
 
 File-based analyses also have limitations related to the
 granularity at which they operate. Indeed, differences can only be
@@ -815,7 +806,6 @@ in memory. A common scenario in neuroimaging pipelines is that tools return
 results in their standard output, which is parsed by the calling process
 and passed to subsequent ones through variables.
 
-\revised{
 Computational environments are only one of many factors contributing to the
 on-going reproducibility crisis. In fact, sample size selection,
 publication bias, or methodological flexibility in the analysis are likely
@@ -837,7 +827,7 @@ obtained on local vs HPC systems differ), or software version updates
 (results obtained before vs after the update differ), while factors related
 to replicability impact the community more broadly. Ultimately, both
 reproducibility and replicability should be understood and improved.
-}
+
 
 \section{Conclusion}
 
@@ -862,7 +852,6 @@ registration algorithms. Additionally, we plan on using Monte-Carlo arithmetic
 to inject controlled amounts of noise in pipelines and monitor
 uncertainty propagation and amplification in their results.
 
-\revised{
 \section{Availability of Source Code and Requirements}
 \begin{itemize}
   \item Project name: \toolname
@@ -884,11 +873,10 @@ Snapshots of our code and other supporting data are openly available in the Giga
 
 \section{Supplementary Data}
 Supplementary materials include Supplementary Table S1 that contains a summary of the subjects used in the experiments.
-}
 
 \section{Acknowledgments}
-\revised{We thank the reviewers for their thorough and insightul review which greatly contributed to the improvement 
-of the paper.}
+We thank the reviewers for their thorough and insightul review which greatly contributed to the improvement 
+of the paper.
 We warmly thank Compute Canada (\url{http://www.computecanada.ca}) and Calcul
 Qu\'ebec (\url{http://www.calculquebec.ca}) for providing the infrastructure used in our experiments.
 Data and pipelines were provided by the Human Connectome Project, WU-Minn
